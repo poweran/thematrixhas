@@ -407,98 +407,101 @@
             }
         }
 
-        /* === Мобильное меню (исправленное) === */
+        /* === Обновлённое адаптивное меню === */
         nav {
-            position: relative; /* контейнер для absolute-меню */
+            position: relative;
             z-index: 1200;
+            padding: 16px 20px;
         }
         
-        /* гамбургер */
+        /* Гамбургер */
         .hamburger {
             display: none;
-            width: 44px;
-            height: 44px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;              /* на всю ширину nav */
+            height: 100%;
+            justify-content: flex-end; /* иконка справа */
             align-items: center;
-            justify-content: center;
             cursor: pointer;
-            border-radius: 8px;
+            padding-right: 18px;      /* отступ справа */
+            box-sizing: border-box;
             background: transparent;
-            transition: transform .2s;
             border: none;
         }
+        
         .hamburger div {
-            width: 22px;
+            width: 24px;
             height: 3px;
             background: #667eea;
             border-radius: 2px;
-            transition: all .25s;
+            transition: all 0.25s;
         }
         
-        /* мобильные */
+        /* Адаптация */
         @media (max-width: 768px) {
-            .hamburger {
-                display: flex;
-                position: absolute;
-                top: 12px;
-                right: 16px;
+            /* уменьшенный шрифт для текста, чтобы не упирался в кнопку */
+            header h1 {
+                font-size: 1.4em;
+                padding-right: 40px; /* под иконку */
             }
         
-            /* скрываем стандартный поток списка */
+            header p {
+                font-size: 0.95em;
+                padding-right: 40px;
+            }
+        
+            .hamburger {
+                display: flex;
+            }
+        
             nav ul {
                 display: none;
                 position: absolute;
-                top: 100%; /* прямо под nav */
+                top: 100%;
                 left: 0;
                 width: 100%;
                 margin: 0;
-                padding: 12px 16px;
+                padding: 15px 20px;
                 box-sizing: border-box;
                 background: white;
                 border-radius: 0 0 12px 12px;
-                box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
                 flex-direction: column;
                 gap: 10px;
             }
         
-            /* видимое состояние */
             nav ul.active {
                 display: flex;
-                animation: menuDown .18s ease;
+                animation: menuDown .2s ease;
             }
         
             @keyframes menuDown {
-                from {opacity: 0; transform: translateY(-6px);}
-                to   {opacity: 1; transform: translateY(0);}
-            }
-        
-            nav li {
-                list-style: none;
+                from {opacity: 0; transform: translateY(-8px);}
+                to {opacity: 1; transform: translateY(0);}
             }
         
             nav a {
                 display: block;
-                width: 100%;
-                padding: 14px 12px;
+                padding: 12px;
+                font-size: 1em;
                 text-align: left;
-                font-size: 1.05em;
                 background: white;
                 color: #667eea;
                 border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             }
         
             nav a:hover {
                 background: #667eea;
                 color: #fff;
-                transform: none;
             }
         
-            /* гамбургер — анимированная трансформация в крестик */
             .hamburger.open div:nth-child(1) { transform: translateY(6px) rotate(45deg); }
             .hamburger.open div:nth-child(2) { opacity: 0; transform: scaleX(0); }
             .hamburger.open div:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
         
-            /* предотвращаем фоновой прокрутки при открытом меню */
             body.menu-open { overflow: hidden; touch-action: none; }
         }
     </style>
