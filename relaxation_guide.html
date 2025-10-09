@@ -406,6 +406,61 @@
                 font-size: 0.9em;
             }
         }
+
+        /* === Мобильное меню === */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
+        
+        .hamburger div {
+            width: 25px;
+            height: 3px;
+            background: #667eea;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+                flex-direction: column;
+                background: white;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                padding: 15px 0;
+            }
+        
+            nav ul.active {
+                display: flex;
+            }
+        
+            .hamburger {
+                display: flex;
+                position: absolute;
+                top: 20px;
+                right: 20px;
+            }
+        
+            nav a {
+                width: 100%;
+                text-align: center;
+                padding: 15px 0;
+                font-size: 1.1em;
+                background: white;
+                border-radius: 0;
+            }
+        
+            nav a:hover {
+                background: #667eea;
+                color: white;
+            }
+        }
     </style>
 </head>
 <body>
@@ -416,7 +471,12 @@
         </header>
 
         <nav>
-            <ul>
+            <div class="hamburger" id="hamburger">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <ul id="nav-list">
                 <li><a href="#why">Зачем?</a></li>
                 <li><a href="#method1">Метод 1</a></li>
                 <li><a href="#method2">Метод Якобсона</a></li>
@@ -1081,6 +1141,23 @@
                     link.style.background = '#667eea';
                     link.style.color = 'white';
                 }
+            });
+        });
+
+        // === Гамбургер меню ===
+        const hamburger = document.getElementById('hamburger');
+        const navList = document.getElementById('nav-list');
+        
+        hamburger.addEventListener('click', () => {
+            navList.classList.toggle('active');
+            hamburger.classList.toggle('open');
+        });
+        
+        // Закрываем меню при клике на пункт
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', () => {
+                navList.classList.remove('active');
+                hamburger.classList.remove('open');
             });
         });
     </script>
