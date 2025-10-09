@@ -418,25 +418,26 @@
         .hamburger {
             display: none;
             position: absolute;
-            top: 0;
-            right: 0;
-            width: 100%;              /* на всю ширину nav */
-            height: 100%;
-            justify-content: flex-end; /* иконка справа */
+            top: 16px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            justify-content: center;
             align-items: center;
             cursor: pointer;
-            padding-right: 18px;      /* отступ справа */
-            box-sizing: border-box;
             background: transparent;
             border: none;
+            z-index: 1300;
+            padding: 0;
         }
-        
+
         .hamburger div {
-            width: 24px;
+            width: 28px;
             height: 3px;
             background: #667eea;
             border-radius: 2px;
             transition: all 0.25s;
+            margin: 4px 0;
         }
         
         /* Адаптация */
@@ -446,16 +447,16 @@
                 font-size: 1.4em;
                 padding-right: 40px; /* под иконку */
             }
-        
+
             header p {
                 font-size: 0.95em;
                 padding-right: 40px;
             }
-        
+
             .hamburger {
                 display: flex;
             }
-        
+
             nav ul {
                 display: none;
                 position: absolute;
@@ -471,17 +472,17 @@
                 flex-direction: column;
                 gap: 10px;
             }
-        
+
             nav ul.active {
                 display: flex;
                 animation: menuDown .2s ease;
             }
-        
+
             @keyframes menuDown {
                 from {opacity: 0; transform: translateY(-8px);}
                 to {opacity: 1; transform: translateY(0);}
             }
-        
+
             nav a {
                 display: block;
                 padding: 12px;
@@ -492,16 +493,16 @@
                 border-radius: 8px;
                 box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             }
-        
+
             nav a:hover {
                 background: #667eea;
                 color: #fff;
             }
-        
-            .hamburger.open div:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+
+            .hamburger.open div:nth-child(1) { transform: translateY(7px) rotate(45deg); }
             .hamburger.open div:nth-child(2) { opacity: 0; transform: scaleX(0); }
-            .hamburger.open div:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-        
+            .hamburger.open div:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
             body.menu-open { overflow: hidden; touch-action: none; }
         }
     </style>
