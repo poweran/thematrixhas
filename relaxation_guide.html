@@ -407,59 +407,99 @@
             }
         }
 
-        /* === Мобильное меню === */
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            cursor: pointer;
-            gap: 5px;
+        /* === Мобильное меню (исправленное) === */
+        nav {
+            position: relative; /* контейнер для absolute-меню */
+            z-index: 1200;
         }
         
+        /* гамбургер */
+        .hamburger {
+            display: none;
+            width: 44px;
+            height: 44px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 8px;
+            background: transparent;
+            transition: transform .2s;
+            border: none;
+        }
         .hamburger div {
-            width: 25px;
+            width: 22px;
             height: 3px;
             background: #667eea;
             border-radius: 2px;
-            transition: all 0.3s;
+            transition: all .25s;
         }
         
+        /* мобильные */
         @media (max-width: 768px) {
-            nav ul {
-                display: none;
-                flex-direction: column;
-                background: white;
-                position: absolute;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-                padding: 15px 0;
-            }
-        
-            nav ul.active {
-                display: flex;
-            }
-        
             .hamburger {
                 display: flex;
                 position: absolute;
-                top: 20px;
-                right: 20px;
+                top: 12px;
+                right: 16px;
+            }
+        
+            /* скрываем стандартный поток списка */
+            nav ul {
+                display: none;
+                position: absolute;
+                top: 100%; /* прямо под nav */
+                left: 0;
+                width: 100%;
+                margin: 0;
+                padding: 12px 16px;
+                box-sizing: border-box;
+                background: white;
+                border-radius: 0 0 12px 12px;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+                flex-direction: column;
+                gap: 10px;
+            }
+        
+            /* видимое состояние */
+            nav ul.active {
+                display: flex;
+                animation: menuDown .18s ease;
+            }
+        
+            @keyframes menuDown {
+                from {opacity: 0; transform: translateY(-6px);}
+                to   {opacity: 1; transform: translateY(0);}
+            }
+        
+            nav li {
+                list-style: none;
             }
         
             nav a {
+                display: block;
                 width: 100%;
-                text-align: center;
-                padding: 15px 0;
-                font-size: 1.1em;
+                padding: 14px 12px;
+                text-align: left;
+                font-size: 1.05em;
                 background: white;
-                border-radius: 0;
+                color: #667eea;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.06);
             }
         
             nav a:hover {
                 background: #667eea;
-                color: white;
+                color: #fff;
+                transform: none;
             }
+        
+            /* гамбургер — анимированная трансформация в крестик */
+            .hamburger.open div:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+            .hamburger.open div:nth-child(2) { opacity: 0; transform: scaleX(0); }
+            .hamburger.open div:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+        
+            /* предотвращаем фоновой прокрутки при открытом меню */
+            body.menu-open { overflow: hidden; touch-action: none; }
         }
     </style>
 </head>
@@ -1144,22 +1184,51 @@
             });
         });
 
-        // === Гамбургер меню ===
-        const hamburger = document.getElementById('hamburger');
-        const navList = document.getElementById('nav-list');
+        // === Гамбургер меню (исправленное) ===
+        (function() {
+            const hamburger = document.getElementById('hamburger');
+            const navList = document.getElementById('nav-list');
+            if (!hamburger || !navList) return;
         
-        hamburger.addEventListener('click', () => {
-            navList.classList.toggle('active');
-            hamburger.classList.toggle('open');
-        });
+            const toggle = () => {
+                const opened = navList.classList.toggle('active');
+                hamburger.classList.toggle('open', opened);
+                document.body.classList.toggle('menu-open', opened);
+                hamburger.setAttribute('aria-expanded', opened ? 'true' : 'false');
+                navList.setAttribute('aria-hidden', opened ? 'false' : 'true');
+            };
         
-        // Закрываем меню при клике на пункт
-        document.querySelectorAll('nav a').forEach(link => {
-            link.addEventListener('click', () => {
-                navList.classList.remove('active');
-                hamburger.classList.remove('open');
+            hamburger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggle();
             });
-        });
+        
+            // Закрыть при клике на ссылку
+            navList.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navList.classList.contains('active')) toggle();
+                });
+            });
+        
+            // Закрыть при клике вне меню
+            document.addEventListener('click', (e) => {
+                if (!navList.classList.contains('active')) return;
+                if (!navList.contains(e.target) && !hamburger.contains(e.target)) {
+                    toggle();
+                }
+            });
+        
+            // ESC — закрыть
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && navList.classList.contains('active')) toggle();
+            });
+        
+            // Инициализация ARIA
+            hamburger.setAttribute('role', 'button');
+            hamburger.setAttribute('aria-label', 'Открыть меню');
+            hamburger.setAttribute('aria-expanded', 'false');
+            navList.setAttribute('aria-hidden', 'true');
+        })();
     </script>
 </body>
 </html>
