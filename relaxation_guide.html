@@ -409,9 +409,12 @@
 
         /* === Обновлённое адаптивное меню === */
         nav {
-            position: relative;
-            z-index: 1200;
-            padding: 16px 20px;
+            /* keep nav sticky at top while ensuring hamburger stays on top */
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+            /* reserve extra right padding so nav content (ul) doesn't cover the button */
+            padding: 16px 64px 16px 20px;
         }
         
         /* Гамбургер */
@@ -434,7 +437,7 @@
             box-sizing: border-box;
             background: transparent;
             border: none;
-            z-index: 1300;
+            z-index: 3000;
         }
 
         .hamburger:focus {
@@ -1246,6 +1249,19 @@
             hamburger.setAttribute('aria-expanded', 'false');
             hamburger.setAttribute('aria-controls', 'nav-list');
             navList.setAttribute('aria-hidden', 'true');
+
+            // Тоггл меню по клику на заголовок (на мобильных устройствах)
+            const headerTitle = document.querySelector('header h1');
+            if (headerTitle) {
+                headerTitle.style.cursor = 'pointer';
+                headerTitle.addEventListener('click', (e) => {
+                    // только когда видно гамбургер (мобильный размер)
+                    const hamburgerVisible = window.getComputedStyle(hamburger).display !== 'none';
+                    if (hamburgerVisible) {
+                        toggle();
+                    }
+                });
+            }
         })();
     </script>
 </body>
