@@ -434,11 +434,12 @@
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            padding: 8px;
+            padding: 12px; /* larger hit area */
             box-sizing: border-box;
             background: transparent;
             border: none;
             z-index: 3000;
+            pointer-events: auto;
         }
 
         .hamburger:focus {
@@ -493,6 +494,8 @@
             nav ul.active {
                 display: flex;
                 animation: menuDown .2s ease;
+                pointer-events: auto;
+                z-index: 2500;
             }
         
             @keyframes menuDown {
@@ -1211,12 +1214,32 @@
             const navList = document.getElementById('nav-list');
             if (!hamburger || !navList) return;
         
+            const nav = document.querySelector('nav');
+
             const toggle = () => {
                 const opened = navList.classList.toggle('active');
                 hamburger.classList.toggle('open', opened);
                 document.body.classList.toggle('menu-open', opened);
                 hamburger.setAttribute('aria-expanded', opened ? 'true' : 'false');
                 navList.setAttribute('aria-hidden', opened ? 'false' : 'true');
+
+                // For mobile make the dropdown fixed so it won't be clipped by parent containers
+                const hamburgerVisible = window.getComputedStyle(hamburger).display !== 'none';
+                if (hamburgerVisible && opened) {
+                    const rect = nav.getBoundingClientRect();
+                    navList.style.position = 'fixed';
+                    navList.style.top = rect.bottom + 'px';
+                    navList.style.left = '0';
+                    navList.style.width = '100%';
+                    navList.style.zIndex = '2500';
+                } else {
+                    // cleanup inline styles when closed or on desktop
+                    navList.style.position = '';
+                    navList.style.top = '';
+                    navList.style.left = '';
+                    navList.style.width = '';
+                    navList.style.zIndex = '';
+                }
             };
         
             hamburger.addEventListener('click', (e) => {
@@ -1263,6 +1286,40 @@
                     }
                 });
             }
+
+            // Position the hamburger fixed over the nav on mobile so it's never covered
+            const positionHamburger = () => {
+                const isMobile = window.getComputedStyle(hamburger).display !== 'none';
+                if (!isMobile) {
+                    // ensure hamburger returns to absolute inside nav
+                    hamburger.style.position = 'absolute';
+                    hamburger.style.top = '50%';
+                    hamburger.style.right = '18px';
+                    hamburger.style.transform = 'translateY(-50%)';
+                    hamburger.style.left = '';
+                    return;
+                }
+
+                const rect = nav.getBoundingClientRect();
+                // place the button fixed at the right edge of the nav, vertically centered
+                hamburger.style.position = 'fixed';
+                hamburger.style.top = (rect.top + rect.height / 2) + 'px';
+                hamburger.style.right = '18px';
+                hamburger.style.transform = 'translateY(-50%)';
+                hamburger.style.zIndex = '3000';
+            };
+
+            // run on load/resize/scroll to keep position correct
+            window.addEventListener('resize', positionHamburger);
+            window.addEventListener('scroll', positionHamburger);
+            // initial call
+            positionHamburger();
+
+            // cleanup on unload
+            window.addEventListener('unload', () => {
+                window.removeEventListener('resize', positionHamburger);
+                window.removeEventListener('scroll', positionHamburger);
+            });
         })();
     </script>
 </body>
