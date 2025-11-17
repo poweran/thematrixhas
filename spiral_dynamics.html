@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Комплексный тест: Мышление и Ценности</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Используем Inter как основной шрифт */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        /* Плавные переходы для кнопок и карточек */
+        .transition-all {
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Кастомный стиль для плавного появления */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* Стиль для полос гистограммы */
+        .chart-bar {
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="container max-w-3xl w-full mx-auto">
+        
+        <!-- Главный контейнер теста -->
+        <div id="quiz-container" class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            
+            <!-- Заголовок -->
+            <div class="p-6 md:p-10">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-2">Комплексный тест: Мышление и Ценности</h1>
+                <p class="text-center text-gray-600">На основе модели Спиральной Динамики</p>
+            </div>
+            
+            <!-- Область контента (вопросы/результаты) -->
+            <div id="content-area" class="p-6 md:p-10 bg-gray-50">
+
+                <!-- Стартовый экран и Дисклеймер -->
+                <div id="start-screen" class="fade-in">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Важное примечание</h2>
+                    <div class="text-gray-700 space-y-4">
+                        <p>Этот тест предназначен исключительно для <strong class="font-semibold">самоисследования и образования</strong>.</p>
+                        <p>Он <strong class="font-semibold text-red-600">не является</strong> профессиональным, научным или психологическим инструментом оценки. Его результаты — это не диагноз и не исчерпывающая характеристика вашей личности.</p>
+                        <p>Модель Спиральной Динамики описывает <strong class="font-semibold">системы ценностей</strong>, а не "типы" людей. В каждом человеке присутствует смесь всех этих систем.</p>
+                    </div>
+                    <button id="start-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg mt-8 text-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl">
+                        Начать тест
+                    </button>
+                </div>
+
+                <!-- Экран с вопросами (скрыт по умолчанию) -->
+                <div id="question-screen" class="hidden">
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-blue-700">Вопрос <span id="question-number"></span> из <span id="total-questions"></span></span>
+                            <span id="question-theme" class="text-xs font-semibold uppercase text-gray-500 rounded-full px-3 py-1 bg-gray-200">Тема</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <h2 id="question-text" class="text-xl md:text-2xl font-bold text-gray-900 mb-8 min-h-[60px]">Загрузка вопроса...</h2>
+                    <div id="answer-buttons" class="space-y-4">
+                        <!-- Кнопки ответов будут генерироваться здесь -->
+                    </div>
+                </div>
+
+                <!-- Экран результатов (скрыт по умолчанию) -->
+                <div id="result-screen" class="hidden">
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-6">Ваш профиль ценностей</h2>
+                    
+                    <div class="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h3 class="text-xl font-bold text-blue-800 mb-2" id="dominant-profile-title">Ваш доминирующий мотив</h3>
+                        <p class="text-gray-700" id="dominant-profile-description">Анализ...</p>
+                    </div>
+
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Полный профиль</h3>
+                        <div id="results-chart" class="space-y-4">
+                            <!-- Гистограмма будет сгенерирована здесь -->
+                        </div>
+                    </div>
+
+                    <button id="restart-btn" class="w-full bg-gray-700 text-white font-bold py-3 px-6 rounded-lg mt-8 text-lg hover:bg-gray-800 transition-all">
+                        Пройти заново
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center mt-6 text-sm text-gray-500">
+            <p>Это приложение создано для образовательных целей. Не является профессиональным инструментом.</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- DOM Элементы ---
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        const questionNumberEl = document.getElementById('question-number');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const questionThemeEl = document.getElementById('question-theme');
+        const progressBar = document.getElementById('progress-bar');
+        const questionTextEl = document.getElementById('question-text');
+        const answerButtonsEl = document.getElementById('answer-buttons');
+        
+        const resultsChartEl = document.getElementById('results-chart');
+        const dominantTitleEl = document.getElementById('dominant-profile-title');
+        const dominantDescriptionEl = document.getElementById('dominant-profile-description');
+
+        // --- Состояние теста ---
+        let currentQuestionIndex = 0;
+        let scores = {
+            beige: 0,
+            purple: 0,
+            red: 0,
+            blue: 0,
+            orange: 0,
+            green: 0,
+            yellow: 0,
+            turquoise: 0
+        };
+
+        // --- Блок данных: Вопросы ---
+        // Каждый вопрос имеет "тему" и "фокус" (прямой или обратный)
+        // Прямой: "Мне нравится" - +1 балл
+        // Обратный: "Мне не нравится" - -1 балл (штраф)
+        const questions = [
+            // Тема: Безопасность и Выживание (БЕЖЕВЫЙ, ФИОЛЕТОВЫЙ)
+            {
+                text: "Какое утверждение о безопасности вам ближе?",
+                theme: "Безопасность",
+                answers: [
+                    { text: "Главное - это физическое выживание и инстинкты.", value: "beige", focus: "direct" },
+                    { text: "Безопасность - в нашей группе, в семье, в традициях.", value: "purple", focus: "direct" },
+                    { text: "Безопасность - в силе, в том, что тебя боятся.", value: "red", focus: "direct" },
+                    { text: "Безопасность - в законе и порядке.", value: "blue", focus: "direct" },
+                ]
+            },
+            {
+                text: "Что вызывает у вас наибольший дискомфорт?",
+                theme: "Дискомфорт",
+                answers: [
+                    { text: "Физический голод, холод, угроза жизни.", value: "beige", focus: "direct" },
+                    { text: "Изгнание из клана, неуважение к предкам, нарушение табу.", value: "purple", focus: "direct" },
+                    { text: "Унижение, потеря лица, проявление слабости.", value: "red", focus: "direct" },
+                    { text: "Хаос, анархия, несоблюдение правил, грех.", value: "blue", focus: "direct" },
+                ]
+            },
+            // Тема: Сила и Самовыражение (КРАСНЫЙ)
+            {
+                text: "Когда вы сталкиваетесь с препятствием, ваша первая реакция:",
+                theme: "Препятствие",
+                answers: [
+                    { text: "Проломить его силой, показать, кто здесь главный.", value: "red", focus: "direct" },
+                    { text: "Найти обходной путь, который принесет мне выгоду.", value: "orange", focus: "direct" },
+                    { text: "Подумать, как это вписывается в общую систему.", value: "yellow", focus: "direct" },
+                    { text: "Посоветоваться с группой, как поступить.", value: "purple", focus: "direct" },
+                ]
+            },
+            {
+                text: "Меня больше всего раздражает...",
+                theme: "Раздражение",
+                answers: [
+                    { text: "Излишняя 'чувствительность' и 'толерантность' к слабости.", value: "red", focus: "direct" },
+                    { text: "Скучные правила и бюрократия, мешающие действовать.", value: "red", focus: "direct" }, // Да, два на красный, но с разным фокусом
+                    { text: "'Слепой' фанатизм и вера в единственно правильный путь.", value: "green", focus: "direct" },
+                    { text: "Неэффективность и пустая трата времени.", value: "orange", focus: "direct" },
+                ]
+            },
+            // Тема: Порядок и Смысл (СИНИЙ)
+            {
+                text: "Что, по-вашему, является основой стабильного общества?",
+                theme: "Общество",
+                answers: [
+                    { text: "Четкие, единые для всех законы и моральные устои.", value: "blue", focus: "direct" },
+                    { text: "Свободная конкуренция и возможность для каждого добиться успеха.", value: "orange", focus: "direct" },
+                    { text: "Равенство, гармония и забота о каждом члене общества.", value: "green", focus: "direct" },
+                    { text: "Сильный лидер, который ведет за собой.", value: "red", focus: "direct" },
+                ]
+            },
+            {
+                text: "Вы бы скорее пожертвовали...",
+                theme: "Выбор",
+                answers: [
+                    { text: "Личным комфортом ради высшей цели или долга.", value: "blue", focus: "direct" },
+                    { text: "Высшей целью ради личного комфорта и немедленной выгоды.", value: "red", focus: "direct" },
+                    { text: "Личным комфортом ради благополучия всей группы.", value: "green", focus: "direct" },
+                    { text: "Благополучием группы ради личного успеха и победы.", value: "orange", focus: "direct" },
+                ]
+            },
+            // Тема: Успех и Достижения (ОРАНЖЕВЫЙ)
+            {
+                text: "Какая стратегия в игре вам ближе?",
+                theme: "Стратегия",
+                answers: [
+                    { text: "Анализ правил, поиск лучшей тактики и победа.", value: "orange", focus: "direct" },
+                    { text: "Игра по правилам, за 'честную игру' и 'честь мундира'.", value: "blue", focus: "direct" },
+                    { text: "Наслаждение процессом, общение с другими игроками.", value: "green", focus: "direct" },
+                    { text: "Изменение правил игры, чтобы она стала интереснее/сложнее.", value: "yellow", focus: "direct" },
+                ]
+            },
+            {
+                text: "Что для вас 'успех'?",
+                theme: "Успех",
+                answers: [
+                    { text: "Материальное благополучие, карьерный рост, признание.", value: "orange", focus: "direct" },
+                    { text: "Уважение, слава, власть над другими.", value: "red", focus: "direct" },
+                    { text: "Внутренняя гармония и мир с окружающими.", value: "green", focus: "direct" },
+                    { text: "Выполнение своего предназначения, служение высшей силе.", value: "blue", focus: "direct" },
+                ]
+            },
+            // Тема: Гармония и Сообщество (ЗЕЛЕНЫЙ)
+            {
+                text: "При принятии группового решения, что самое важное?",
+                theme: "Решение",
+                answers: [
+                    { text: "Чтобы каждый был услышан и мы пришли к консенсусу.", value: "green", focus: "direct" },
+                    { text: "Чтобы было принято самое эффективное и логичное решение.", value: "orange", focus: "direct" },
+                    { text: "Чтобы решение соответствовало правилам/уставу.", value: "blue", focus: "direct" },
+                    { text: "Чтобы решение было гибким и учитывало всю сложность системы.", value: "yellow", focus: "direct" },
+                ]
+            },
+            {
+                text: "Какое из этих утверждений вам кажется наиболее сомнительным?",
+                theme: "Сомнение",
+                answers: [
+                    { text: "'Побеждает сильнейший' - это жестоко и неправильно.", value: "green", focus: "direct" }, // Атака на красного/оранжевого
+                    { text: "'Есть только один правильный путь' - это ограничивает.", value: "green", focus: "direct" }, // Атака на синего
+                    { text: "'Все относительно' - это ведет к хаосу.", value: "blue", focus: "direct" },
+                    { text: "'Главное - эффективность' - это бесчеловечно.", value: "green", focus: "direct" }, // Атака на оранжевого
+                ]
+            },
+            // Тема: Системы и Компетентность (ЖЕЛТЫЙ)
+            {
+                text: "Столкнувшись со сложной проблемой, вы в первую очередь:",
+                theme: "Проблема",
+                answers: [
+                    { text: "Пытаюсь понять все взаимосвязи и 'большую картину'.", value: "yellow", focus: "direct" },
+                    { text: "Ищу готовое, проверенное решение или инструкцию.", value: "blue", focus: "direct" },
+                    { text: "Разбиваю ее на части и ищу самый быстрый способ решения.", value: "orange", focus: "direct" },
+                    { text: "Спрашиваю себя, что я 'чувствую' по этому поводу.", value: "green", focus: "direct" },
+                ]
+            },
+            {
+                text: "Что такое 'знание'?",
+                theme: "Знание",
+                answers: [
+                    { text: "Набор фактов и навыков для достижения цели.", value: "orange", focus: "direct" },
+                    { text: "Священный текст, передаваемый из поколения в поколение.", value: "blue", focus: "direct" },
+                    { text: "Инструмент для понимания сложных систем.", value: "yellow", focus: "direct" },
+                    { text: "Интуитивное 'понимание' мира и людей.", value: "green", focus: "direct" },
+                ]
+            },
+            // Тема: Глобальное единство (БИРЮЗОВЫЙ)
+            {
+                text: "Какое видение будущего вас больше вдохновляет?",
+                theme: "Будущее",
+                answers: [
+                    { text: "Мир, где технологии и разум решают все проблемы.", value: "orange", focus: "direct" },
+                    { text: "Мир, где все люди живут в мире, гармонии и равенстве.", value: "green", focus: "direct" },
+                    { text: "Мир, где люди понимают сложные системы и живут в балансе с планетой.", value: "yellow", focus: "direct" },
+                    { text: "Мир как единый, живой, взаимосвязанный организм.", value: "turquoise", focus: "direct" },
+                ]
+            },
+            // Обратные вопросы (Фокус: "reverse" - отнимает балл)
+            {
+                text: "Какая идея кажется вам наименее привлекательной?",
+                theme: "Антипатия",
+                answers: [
+                    { text: "Жертвовать собой ради 'высшего блага' или 'долга'.", value: "blue", focus: "reverse" },
+                    { text: "Необходимость постоянно конкурировать и 'быть лучшим'.", value: "orange", focus: "reverse" },
+                    { text: "Подчиняться 'духам' или 'традициям' без логического объяснения.", value: "purple", focus: "reverse" },
+                    { text: "Постоянно 'рефлексировать' и 'искать консенсус' вместо дела.", value: "green", focus: "reverse" },
+                ]
+            },
+            {
+                text: "Что из этого, по-вашему, больше всего вредит прогрессу?",
+                theme: "Вред",
+                answers: [
+                    { text: "Устаревшие, жесткие догмы и бюрократия.", value: "blue", focus: "reverse" },
+                    { text: "Импульсивный эгоизм и 'закон джунглей'.", value: "red", focus: "reverse" },
+                    { text: "'Холодный' расчет и эксплуатация ради выгоды.", value: "orange", focus: "reverse" },
+                    { text: "Аморфность, 'всеобщее равенство' и нежелание принимать решения.", value: "green", focus: "reverse" },
+                ]
+            },
+            {
+                text: "В какой среде вам было бы сложнее всего работать?",
+                theme: "Работа",
+                answers: [
+                    { text: "Где все решают эмоции и 'чувства', а не факты.", value: "green", focus: "reverse" },
+                    { text: "Где все строго по инструкции и нет места инициативе.", value: "blue", focus: "reverse" },
+                    { text: "Где все постоянно меняется и нет четких целей.", value: "yellow", focus: "reverse" }, // Обратный для Желтого - он любит изменения, но с целью
+                    { text: "Где царит жесткая конкуренция и 'человек человеку волк'.", value: "orange", focus: "reverse" },
+                ]
+            },
+            // Сложные вопросы (Желтый/Бирюзовый)
+            {
+                text: "Вы считаете, что...",
+                theme: "Убеждение",
+                answers: [
+                    { text: "Конфликт - это плохо, его нужно избегать.", value: "green", focus: "direct" },
+                    { text: "Конфликт - это возможность доказать свою правоту.", value: "red", focus: "direct" },
+                    { text: "Конфликт - это естественная часть развития системы.", value: "yellow", focus: "direct" },
+                    { text: "Конфликт - это признак греха или отклонения от нормы.", value: "blue", focus: "direct" },
+                ]
+            },
+             {
+                text: "Лучший способ изменить мир - это...",
+                theme: "Изменения",
+                answers: [
+                    { text: "Создать и внедрить более совершенную, справедливую систему.", value: "blue", focus: "direct" },
+                    { text: "Создать технологию/бизнес, который повысит эффективность.", value: "orange", focus: "direct" },
+                    { text: "Повысить уровень осознанности и сострадания людей.", value: "green", focus: "direct" },
+                    { text: "Понять, как он работает, и найти точки 'рычага' для изменений.", value: "yellow", focus: "direct" },
+                ]
+            },
+             {
+                text: "Правда - это...",
+                theme: "Правда",
+                answers: [
+                    { text: "То, что говорят мои предки и духи.", value: "purple", focus: "direct" },
+                    { text: "То, что написано в священной книге / законе.", value: "blue", focus: "direct" },
+                    { text: "То, что можно доказать фактами и экспериментами.", value: "orange", focus: "direct" },
+                    { text: "Контекстуально-зависимая модель, полезная в данный момент.", value: "yellow", focus: "direct" },
+                ]
+            },
+            {
+                text: "Как вы относитесь к идее 'глобального сознания'?",
+                theme: "Глобальность",
+                answers: [
+                    { text: "Это эзотерическая чушь.", value: "orange", focus: "direct" },
+                    { text: "Это опасная идея, стирающая границы наций и вер.", value: "blue", focus: "direct" },
+                    { text: "Это прекрасная идея, все люди - братья.", value: "green", focus: "direct" },
+                    { text: "Это логичное описание следующего этапа эволюции инфосферы.", value: "turquoise", focus: "direct" },
+                ]
+            }
+        ];
+
+        // --- Блок данных: Описания Результатов ---
+        const resultsData = {
+            beige: {
+                name: "Бежевый (Выживание)",
+                color: "#D2B48C", // Коричневатый
+                description: "Фокус на инстинктивном выживании. Мотивация: еда, вода, безопасность, размножение. Это базовый уровень, 'точка ноль', которая активируется в кризисных ситуациях."
+            },
+            purple: {
+                name: "Фиолетовый (Племенной)",
+                color: "#A020F0", // Фиолетовый
+                description: "Фокус на безопасности через принадлежность к группе. Мотивация: традиции, ритуалы, уважение к старшим, духи, семья. 'Мы' важнее, чем 'Я'."
+            },
+            red: {
+                name: "Красный (Героический)",
+                color: "#DC143C", // Багровый
+                description: "Фокус на силе и самоутверждении. Мотивация: власть, доминирование, немедленное вознаграждение, 'быть героем', жить 'здесь и сейчас'. 'Я' - центр вселенной."
+            },
+            blue: {
+                name: "Синий (Порядка)",
+                color: "#007BFF", // Ярко-синий
+                description: "Фокус на стабильности через порядок и правила. Мотивация: долг, честь, дисциплина, 'единственно верный путь', отложенное вознаграждение, иерархия."
+            },
+            orange: {
+                name: "Оранжевый (Достижений)",
+                color: "#FFA500", // Оранжевый
+                description: "Фокус на личном успехе и эффективности. Мотивация: достижения, конкуренция, наука, рациональность, материальный успех, 'игра по правилам' для победы."
+            },
+            green: {
+                name: "Зеленый (Коммунальный)",
+                color: "#28A745", // Зеленый
+                description: "Фокус на гармонии и равенстве. Мотивация: чувства, эмпатия, консенсус, экология, социальная справедливость. 'Мы все равны и должны заботиться друг о друге'."
+            },
+            yellow: {
+                name: "Желтый (Интегральный)",
+                color: "#FFD700", // Золотой
+                description: "Фокус на системном мышлении и компетентности. Мотивация: знание, гибкость, понимание 'большой картины', взаимосвязи всего. Правда контекстуальна. 'Как все это работает?'"
+            },
+            turquoise: {
+                name: "Бирюзовый (Глобальный)",
+                color: "#40E0D0", // Бирюзовый
+                description: "Фокус на глобальном единстве и холистическом видении. Мотивация: со-бытие, планетарное сознание, мир как единый живой организм. 'Все есть Одно'."
+            }
+        };
+
+
+        // --- Логика Теста ---
+
+        function startQuiz() {
+            // Перемешиваем вопросы для разнообразия
+            questions.sort(() => Math.random() - 0.5);
+            
+            currentQuestionIndex = 0;
+            scores = { beige: 0, purple: 0, red: 0, blue: 0, orange: 0, green: 0, yellow: 0, turquoise: 0 };
+            
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            
+            totalQuestionsEl.textContent = questions.length;
+            showNextQuestion();
+        }
+
+        function showNextQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                updateProgress();
+                showQuestion(questions[currentQuestionIndex]);
+            } else {
+                showResult();
+            }
+        }
+
+        function updateProgress() {
+            questionNumberEl.textContent = currentQuestionIndex + 1;
+            const percentage = ((currentQuestionIndex) / questions.length) * 100;
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        function showQuestion(question) {
+            // Очищаем предыдущие ответы
+            answerButtonsEl.innerHTML = '';
+            
+            questionTextEl.textContent = question.text;
+            questionThemeEl.textContent = question.theme;
+
+            // Перемешиваем ответы
+            const shuffledAnswers = [...question.answers].sort(() => Math.random() - 0.5);
+            
+            shuffledAnswers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerHTML = answer.text; // Используем innerHTML для поддержки тегов, если понадобятся
+                button.className = "w-full text-left bg-white p-5 rounded-lg border border-gray-300 hover:bg-gray-100 hover:border-blue-500 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500";
+                
+                button.dataset.value = answer.value;
+                button.dataset.focus = answer.focus;
+                
+                button.addEventListener('click', selectAnswer);
+                answerButtonsEl.appendChild(button);
+            });
+        }
+
+        function selectAnswer(e) {
+            const selectedButton = e.currentTarget;
+            const value = selectedButton.dataset.value;
+            const focus = selectedButton.dataset.focus;
+
+            if (focus === "direct") {
+                // Прямой вопрос: "Что вам нравится?"
+                // Увеличиваем балл за выбранный цвет
+                scores[value] += 1;
+                
+                // Также можем немного увеличить "смежные" ценности, чтобы сделать профиль плавнее (опционально)
+                // Например, Оранжевый также ценит часть Синего (правила) и часть Желтого (знания)
+                
+            } else if (focus === "reverse") {
+                // Обратный вопрос: "Что вам НЕ нравится?"
+                // Мы НЕ отнимаем балл у выбранного.
+                // Вместо этого, мы прибавляем баллы всем ОСТАЛЬНЫМ.
+                // Это отражает идею "Отталкиваясь от X, я прихожу к Y"
+                for (const vMeme in scores) {
+                    if (vMeme !== value) {
+                        scores[vMeme] += 0.5; // Добавляем по полбалла остальным
+                    }
+                }
+            }
+
+            // Добавляем небольшой вес всем "просмотренным" вариантам, 
+            // так как сам факт их наличия в вопросе уже влияет на мышление (очень продвинутая логика, но можно упростить)
+            // questions[currentQuestionIndex].answers.forEach(ans => {
+            //     if (ans.value !== value) scores[ans.value] += 0.1; 
+            // });
+
+
+            currentQuestionIndex++;
+            showNextQuestion();
+        }
+
+        function showResult() {
+            questionScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            resultScreen.classList.add('fade-in');
+
+            // 1. Найти доминирующие профили
+            const sortedScores = Object.entries(scores)
+                .sort(([,a],[,b]) => b - a); // [["orange", 5], ["blue", 3], ...]
+
+            const [topValue, topScore] = sortedScores[0];
+            const [secondValue, secondScore] = sortedScores[1];
+
+            const topResult = resultsData[topValue];
+            const secondResult = resultsData[secondValue];
+
+            // 2. Сформировать текстовое описание
+            dominantTitleEl.textContent = `Доминанта: ${topResult.name}`;
+            let description = topResult.description;
+
+            // Если второй результат близок к первому
+            if (topScore > 0 && secondScore > 0 && topScore - secondScore <= 1) {
+                dominantTitleEl.textContent = `Смешанный профиль: ${topResult.name} / ${secondResult.name}`;
+                description += ` <br><br><strong class="font-semibold">Также сильно выражен: ${secondResult.name}</strong>. ${secondResult.description}`;
+            }
+            
+            dominantDescriptionEl.innerHTML = description;
+
+            // 3. Построить гистограмму
+            resultsChartEl.innerHTML = ''; // Очистить
+            const maxScore = sortedScores[0][1]; // Максимальный балл для нормализации
+
+            if (maxScore === 0) {
+                resultsChartEl.innerHTML = '<p class="text-gray-600">Вы не выбрали ни одного варианта, или произошла ошибка. Попробуйте пройти тест еще раз.</p>';
+                return;
+            }
+
+            // Проходимся по всем vMemes в правильном порядке
+            const vMemeOrder = ["beige", "purple", "red", "blue", "orange", "green", "yellow", "turquoise"];
+            
+            vMemeOrder.forEach(vMeme => {
+                const score = scores[vMeme];
+                const data = resultsData[vMeme];
+                const percentage = (score / maxScore) * 100;
+                
+                const barHtml = `
+                    <div class="mb-3">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-base font-medium" style="color: ${data.color};">${data.name}</span>
+                            <span class="text-sm font-medium text-gray-700">${score.toFixed(1)} баллов</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-4">
+                            <div class="h-4 rounded-full chart-bar" style="width: ${percentage}%; background-color: ${data.color};"></div>
+                        </div>
+                    </div>
+                `;
+                resultsChartEl.innerHTML += barHtml;
+            });
+        }
+
+        // --- Event Listeners ---
+        startBtn.addEventListener('click', startQuiz);
+        restartBtn.addEventListener('click', startQuiz);
+
+    </script>
+</body>
+</html>
