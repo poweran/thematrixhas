@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEON ODYSSEY: SYMPHONY</title>
+    <title>NEON SYMPHONY: TURBO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body { 
@@ -57,16 +57,16 @@
             z-index: 10; pointer-events: none; opacity: 0; transition: opacity 1s;
         }
         .phase-text {
-            color: #fff; font-size: 2.5rem; font-weight: 900; letter-spacing: 5px;
-            text-shadow: 0 0 20px #ff00ff;
+            color: #fff; font-size: 3rem; font-weight: 900; letter-spacing: 5px;
+            text-shadow: 0 0 20px #ff00ff; transition: color 0.5s;
         }
         .sub-phase {
             font-size: 1rem; color: #00ffff; letter-spacing: 3px; margin-top: 5px;
         }
         
         .progress-bar-container {
-            width: 400px; height: 4px; background: #222; margin: 15px auto;
-            border: 1px solid #444;
+            width: 400px; height: 6px; background: #222; margin: 15px auto;
+            border: 1px solid #444; transform: skewX(-20deg);
         }
         .progress-bar {
             width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #ff00ff);
@@ -86,6 +86,12 @@
             font-size: 0.8rem; opacity: 0; transition: opacity 0.5s;
             z-index: 10; pointer-events: none; text-transform: uppercase; letter-spacing: 2px;
         }
+        
+        .flash {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; opacity: 0; pointer-events: none; z-index: 5;
+            mix-blend-mode: overlay; transition: opacity 0.1s;
+        }
 
         @keyframes pulse-slow {
             0%, 100% { filter: brightness(100%) drop-shadow(0 0 10px #00ffff); }
@@ -96,10 +102,11 @@
 <body>
 
 <div id="canvas-container"></div>
+<div class="flash" id="flashOverlay"></div>
 
 <div class="ui-layer" id="ui">
     <h1>NEON<br>SYMPHONY</h1>
-    <div class="subtitle">Evolving Musical Lifeform</div>
+    <div class="subtitle">Fast Evolution Engine</div>
     <button id="startBtn">INITIATE SEQUENCE</button>
     <button id="resetBtn">WIPE MEMORY</button>
 </div>
@@ -121,27 +128,28 @@
 <!-- SHADERS -->
 <script type="x-shader/x-vertex" id="vShader">
     varying vec2 vUv;
-    varying vec3 vColor;
-    varying float vAlpha;
+    varying float vMix;
+    varying float vDepth;
 
     uniform float uTime;
     uniform float uSpeed;
     uniform float uWarp;     
     uniform float uBass;
+    uniform float uStretch; // New: Z-stretch for warp speed
 
     attribute float aSize;
-    attribute vec3 aColor;
+    attribute vec3 aColor; // Used as mix factor
     attribute float aOffset; 
 
     void main() {
         vUv = uv;
-        vColor = aColor;
+        vMix = aColor.r; // Use red channel as mix factor
 
         vec3 pos = position;
         
         // Infinite Tunnel Movement
         float zPos = mod(pos.z + uTime * uSpeed + aOffset, 1200.0) - 1000.0;
-        pos.z = zPos;
+        pos.z = zPos * (1.0 + uStretch * 2.0); // Stretch effect
 
         // Spiral Twist based on Audio
         float angle = pos.z * 0.002 * uWarp;
@@ -152,22 +160,25 @@
         pos.x = nx;
         pos.y = ny;
 
-        // Bass Expansion
-        float pulse = 1.0 + uBass * 0.3 * smoothstep(-800.0, -100.0, zPos);
+        // Bass Expansion (Reactive)
+        float pulse = 1.0 + uBass * 0.4 * smoothstep(-500.0, -100.0, zPos);
         pos.xy *= pulse;
 
         vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
         gl_PointSize = aSize * (500.0 / -mvPosition.z) * (1.0 + uBass * 0.5);
         gl_Position = projectionMatrix * mvPosition;
 
-        // Fog
-        vAlpha = smoothstep(-1100.0, -900.0, zPos) * (1.0 - smoothstep(0.0, 200.0, zPos));
+        vDepth = zPos;
     }
 </script>
 
 <script type="x-shader/x-fragment" id="fShader">
-    varying vec3 vColor;
-    varying float vAlpha;
+    varying float vMix;
+    varying float vDepth;
+
+    uniform vec3 uColor1; // Dynamic Palette 1
+    uniform vec3 uColor2; // Dynamic Palette 2
+    uniform float uFlash; // White flash on kick
 
     void main() {
         vec2 uv = gl_PointCoord.xy - 0.5;
@@ -176,10 +187,18 @@
         
         // Glow gradient
         float glow = 1.0 - (dist * 2.0);
-        glow = pow(glow, 2.0);
+        glow = pow(glow, 1.5);
         
-        vec3 finalColor = vColor + vec3(0.8) * glow; // White core
-        gl_FragColor = vec4(finalColor, vAlpha * glow);
+        // Dynamic Palette Mixing
+        vec3 finalColor = mix(uColor1, uColor2, vMix);
+        
+        // Flash add
+        finalColor += vec3(uFlash * 0.8);
+
+        // Distance Fog
+        float alpha = smoothstep(-1100.0, -900.0, vDepth) * (1.0 - smoothstep(0.0, 200.0, vDepth));
+        
+        gl_FragColor = vec4(finalColor, alpha * glow);
     }
 </script>
 
@@ -191,45 +210,46 @@
     // GAME STATE (Saved)
     let gameData = {
         score: 0,
-        cycle: 1, // Evolution Level
-        rootNoteIndex: 0 // For key modulation
+        cycle: 1, 
+        rootNoteIndex: 0 
     };
     
-    const STORAGE_KEY = 'neon_symphony_v1';
+    const STORAGE_KEY = 'neon_symphony_turbo_v2';
 
     // --- MUSIC THEORY CORE ---
-    // Frequency of F#1
     const BASE_FREQ = 46.25; 
     const NOTES = ["F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F"];
+    const SCALE_INTERVALS = [0, 2, 3, 5, 7, 8, 10]; // Minor
     
-    // Scale intervals (Minor)
-    const SCALE_INTERVALS = [0, 2, 3, 5, 7, 8, 10]; // Minor Scale
-    
-    // Chord Progressions (Degrees) - The "Story"
-    // I - VI - III - VII (Epic)
+    // Progression: i - VI - III - VII
     const PROGRESSION = [
-        { degree: 0, name: "i (Tonic)" }, 
-        { degree: 5, name: "VI (Submediant)" }, 
-        { degree: 2, name: "III (Mediant)" }, 
-        { degree: 6, name: "VII (Subtonic)" }
+        { degree: 0, name: "i" }, 
+        { degree: 5, name: "VI" }, 
+        { degree: 2, name: "III" }, 
+        { degree: 6, name: "VII" }
     ];
 
+    // --- COLOR PALETTES FOR PHASES ---
+    const PALETTES = {
+        "INTRO": { c1: 0x001133, c2: 0x0044ff }, // Deep Blue
+        "BUILD": { c1: 0x00ffff, c2: 0xff00ff }, // Cyberpunk Cyan/Pink
+        "CLIMAX": { c1: 0xffaa00, c2: 0xff0000 }, // Fire / Gold
+        "RELEASE": { c1: 0x00ff00, c2: 0x004400 } // Matrix Green
+    };
+
     function getFreq(noteIndex, octave) {
-        // semitone shift
         const semitones = noteIndex + (octave * 12) + gameData.rootNoteIndex;
         return BASE_FREQ * Math.pow(2, semitones / 12);
     }
 
     function getScaleNote(scaleDegree, octave) {
-        // Map scale degree to chromatic index
         const octaveShift = Math.floor(scaleDegree / 7);
-        const indexInScale = Math.abs(scaleDegree % 7); // Safe mod
+        const indexInScale = Math.abs(scaleDegree % 7); 
         const chromaticIndex = SCALE_INTERVALS[indexInScale];
         return getFreq(chromaticIndex, octave + octaveShift);
     }
 
     function getChordFreqs(rootDegree, octave) {
-        // Build triad (Root, 3rd, 5th)
         return [
             getScaleNote(rootDegree, octave),
             getScaleNote(rootDegree + 2, octave),
@@ -246,18 +266,24 @@
     let current16th = 0;
     let measure = 0;
     let currentChordIdx = 0;
-    let currentPhase = 0;
+    let currentPhaseIdx = 0;
     let phaseStartMeasure = 0;
     
-    // Melody Generator State
-    let motif = [0, 1, 2, 0]; // Default
+    let motif = [0, 1, 2, 0];
     
+    // Shorter phases for faster evolution
+    const PHASES = [
+        { name: "INTRO",   bars: 4,  kick: false, bass: false, arp: true,  pad: true, filterTarget: 400 },
+        { name: "BUILD",   bars: 8, kick: true,  bass: true,  arp: true,  pad: true, filterTarget: 1000 },
+        { name: "CLIMAX",  bars: 16, kick: true,  bass: true,  arp: true,  pad: true, filterTarget: 10000 }, // Full Open
+        { name: "RELEASE", bars: 4,  kick: false, bass: true,  arp: false, pad: true, filterTarget: 300 }
+    ];
+
     function initAudio() {
         ac = new (window.AudioContext || window.webkitAudioContext)();
         master = ac.createGain();
         master.gain.value = 0.5;
 
-        // Filter for dynamics
         masterFilter = ac.createBiquadFilter();
         masterFilter.type = 'lowpass';
         masterFilter.frequency.value = 200; 
@@ -267,7 +293,6 @@
         compressor.threshold.value = -10;
         compressor.ratio.value = 12;
 
-        // Massive Reverb
         const len = ac.sampleRate * 3;
         const buf = ac.createBuffer(2, len, ac.sampleRate);
         for(let i=0; i<len; i++) {
@@ -283,8 +308,6 @@
         master.connect(masterFilter);
         masterFilter.connect(compressor);
         compressor.connect(ac.destination);
-        
-        // Send to reverb (Post filter)
         masterFilter.connect(reverbNode);
         reverbNode.connect(revMix);
         revMix.connect(compressor);
@@ -303,7 +326,7 @@
         osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
         g.gain.setValueAtTime(1.0 * vel, t);
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-        osc.connect(g); g.connect(master); // Direct (bypass filter for punch)
+        osc.connect(g); g.connect(master); 
         osc.start(t); osc.stop(t+0.3);
     }
 
@@ -355,7 +378,6 @@
             const osc = ac.createOscillator();
             osc.type = 'sawtooth';
             osc.frequency.value = f;
-            // Detune for fatness
             osc.detune.value = (i % 2 === 0 ? 1 : -1) * 5; 
             osc.connect(g);
             osc.start(t); osc.stop(t + 1.0);
@@ -387,18 +409,7 @@
     }
 
     // --- PROCEDURAL COMPOSER ---
-    // Phase definitions
-    const PHASES = [
-        { name: "INTRO",   bars: 8,  kick: false, bass: false, arp: true,  pad: true, filterTarget: 400 },
-        { name: "BUILD",   bars: 16, kick: true,  bass: true,  arp: true,  pad: true, filterTarget: 1000 },
-        { name: "CLIMAX",  bars: 32, kick: true,  bass: true,  arp: true,  pad: true, filterTarget: 10000 }, // Full Open
-        { name: "RELEASE", bars: 8,  kick: false, bass: true,  arp: false, pad: true, filterTarget: 300 }
-    ];
-    let phaseIndex = 0;
-
     function generateMelody() {
-        // Create a 4-note motif based on scale degrees
-        // biased towards root (0), third (2), fifth (4)
         const safeNotes = [0, 2, 4, 7, 1];
         motif = [];
         for(let i=0; i<4; i++) {
@@ -407,37 +418,53 @@
     }
 
     function updateProgression() {
-        const currentP = PHASES[phaseIndex];
+        const currentP = PHASES[currentPhaseIdx];
         
         // Check if phase ended
         if (measure >= phaseStartMeasure + currentP.bars) {
-            phaseIndex++;
-            if (phaseIndex >= PHASES.length) {
+            currentPhaseIdx++;
+            if (currentPhaseIdx >= PHASES.length) {
                 // CYCLE COMPLETE -> EVOLVE
-                phaseIndex = 0;
+                currentPhaseIdx = 0;
                 gameData.cycle++;
-                gameData.rootNoteIndex = (gameData.rootNoteIndex + 2) % 12; // Modulate Key UP a whole step
+                gameData.rootNoteIndex = (gameData.rootNoteIndex + 2) % 12; // Modulate Key
                 saveGame();
-                // Generate new melody for new cycle
                 generateMelody();
             }
             phaseStartMeasure = measure;
             
-            // Trigger Riser on transitions
-            playNoiseRise(ac.currentTime, 2.0);
-            saveGame(); // Save checkpoint
+            // Visual Flash on transition
+            triggerFlash();
+            
+            // Trigger Riser on transitions to Climax
+            if(PHASES[currentPhaseIdx].name === "CLIMAX") {
+                 playNoiseRise(ac.currentTime, 2.0);
+            }
+            saveGame();
         }
 
+        const p = PHASES[currentPhaseIdx];
+
         // Update UI
-        const p = PHASES[phaseIndex];
         const phText = document.getElementById('phaseText');
-        if(phText) phText.innerText = p.name + " " + gameData.cycle;
+        if(phText) {
+            phText.innerText = p.name;
+            phText.style.color = (p.name === "CLIMAX") ? "#ff0055" : "#fff";
+        }
         
         // Audio Automation
         if (isBoosting) {
             masterFilter.frequency.setTargetAtTime(20000, ac.currentTime, 0.1);
         } else {
-            masterFilter.frequency.setTargetAtTime(p.filterTarget, ac.currentTime, 2.0); // Slow sweep
+            masterFilter.frequency.setTargetAtTime(p.filterTarget, ac.currentTime, 2.0); 
+        }
+        
+        // Uniforms Update (Colors)
+        const palette = PALETTES[p.name] || PALETTES["INTRO"];
+        if(uniforms) {
+            uniforms.uSpeed.value = p.speed;
+            new TWEEN.Tween(uniforms.uColor1.value).to(new THREE.Color(palette.c1), 1000).start();
+            new TWEEN.Tween(uniforms.uColor2.value).to(new THREE.Color(palette.c2), 1000).start();
         }
 
         // Key UI
@@ -452,10 +479,9 @@
     }
 
     function processStep(s, t) {
-        const p = PHASES[phaseIndex];
+        const p = PHASES[currentPhaseIdx];
         
         // Chord Progression Walker
-        // Change chord every 4 measures
         if (measure % 4 === 0 && s === 0) {
             currentChordIdx = (measure/4) % PROGRESSION.length;
             const chordNameEl = document.getElementById('chordText');
@@ -464,34 +490,29 @@
         
         const rootDeg = PROGRESSION[currentChordIdx].degree;
         
-        // 1. KICK (4/4 with ghost notes)
+        // 1. KICK
         if (p.kick) {
             if (s % 4 === 0) playKick(t, 1.0);
         }
 
-        // 2. BASS (Offbeat or Gallop)
+        // 2. BASS
         if (p.bass) {
-            // Root note of current chord in bass octave (0)
             const bassFreq = getScaleNote(rootDeg, 1); 
-            if (s % 4 === 2) playBass(t, bassFreq); // Offbeat
-            if (isBoosting && s % 4 !== 0) playBass(t, bassFreq); // Driving on boost
+            if (s % 4 === 2) playBass(t, bassFreq); 
+            if (isBoosting && s % 4 !== 0) playBass(t, bassFreq); 
         }
 
-        // 3. ARP (Melody)
+        // 3. ARP
         if (p.arp) {
-            // Pattern: 16th notes
             if (s % 2 === 0) {
-                // Use motif relative to chord root
                 const motifNote = motif[(s/2) % motif.length];
-                const note = getScaleNote(rootDeg + motifNote, 3); // Octave 3
-                
-                // Stereo pan
+                const note = getScaleNote(rootDeg + motifNote, 3); 
                 const pan = (s % 4 === 0) ? -0.5 : 0.5;
                 playPluck(t, note, pan);
             }
         }
 
-        // 4. PAD (Chords)
+        // 4. PAD
         if (p.pad && s === 0 && measure % 2 === 0) {
             const chordFreqs = getChordFreqs(rootDeg, 3);
             playChordStab(t, chordFreqs);
@@ -511,20 +532,60 @@
                 current16th = 0;
                 measure++;
                 updateProgression();
+                
+                // Save often
+                if(measure % 4 === 0) saveGame();
             }
         }
         if(isPlaying) setTimeout(schedule, 25);
     }
 
     // --- VISUALS (THREE.JS) ---
-    let tunnelSystem, uniforms;
+    let tunnelPoints, uniforms;
     
-    function initVisuals() {
+    // Simple Tween Lib for colors
+    const TWEEN = {
+        tweens: [],
+        update(time) {
+            this.tweens = this.tweens.filter(t => t.update(time));
+        },
+        Tween: function(obj) {
+            this.obj = obj;
+            this.target = {};
+            this.startTime = 0;
+            this.duration = 0;
+            this.to = function(target, duration) {
+                this.target = target;
+                this.duration = duration;
+                this.startVals = { r: obj.r, g: obj.g, b: obj.b };
+                this.startTime = performance.now();
+                TWEEN.tweens.push(this);
+                return this;
+            }
+            this.start = function() { return this; }
+            this.update = function(time) {
+                const elapsed = time - this.startTime;
+                if(elapsed >= this.duration) {
+                    this.obj.r = this.target.r;
+                    this.obj.g = this.target.g;
+                    this.obj.b = this.target.b;
+                    return false;
+                }
+                const pct = elapsed / this.duration;
+                this.obj.r = this.startVals.r + (this.target.r - this.startVals.r) * pct;
+                this.obj.g = this.startVals.g + (this.target.g - this.startVals.g) * pct;
+                this.obj.b = this.startVals.b + (this.target.b - this.startVals.b) * pct;
+                return true;
+            }
+        }
+    };
+    
+    function init3D() {
         const container = document.getElementById('canvas-container');
         clock = new THREE.Clock();
         scene = new THREE.Scene();
 
-        camera = new THREE.PerspectiveCamera(80, window.innerWidth/window.innerHeight, 0.1, 3000);
+        camera = new THREE.PerspectiveCamera(80, window.innerWidth/window.innerHeight, 0.1, 2000);
         camera.position.z = 100;
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -537,7 +598,6 @@
         const count = 10000;
         const pos = [];
         const colors = [];
-        const sizes = [];
         const offsets = [];
 
         const c1 = new THREE.Color(0x00ffff);
@@ -545,13 +605,12 @@
 
         for(let i=0; i<count; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const r = 30 + Math.random() * 60;
+            const r = 30 + Math.random() * 50;
             const x = Math.cos(angle) * r;
             const y = Math.sin(angle) * r;
             const z = (Math.random() - 0.5) * 2000;
             
             pos.push(x,y,z);
-            sizes.push(Math.random() * 2 + 1);
             offsets.push(Math.random() * 1000);
             
             const col = Math.random() > 0.5 ? c1 : c2;
@@ -560,21 +619,25 @@
 
         geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
         geo.setAttribute('aColor', new THREE.Float32BufferAttribute(colors, 3));
-        geo.setAttribute('aSize', new THREE.Float32BufferAttribute(sizes, 1));
+        geo.setAttribute('aSize', new THREE.Float32BufferAttribute(new Float32Array(count).fill(2.0), 1));
         geo.setAttribute('aOffset', new THREE.Float32BufferAttribute(offsets, 1));
+
+        uniforms = {
+            uTime: { value: 0 },
+            uSpeed: { value: 50 },
+            uWarp: { value: 1.0 },
+            uBass: { value: 0 },
+            uColor1: { value: new THREE.Color(0x00ffff) },
+            uColor2: { value: new THREE.Color(0xff00ff) }
+        };
 
         const mat = new THREE.ShaderMaterial({
             vertexShader: document.getElementById('vShader').textContent,
             fragmentShader: document.getElementById('fShader').textContent,
-            uniforms: {
-                uTime: { value: 0 },
-                uSpeed: { value: 50 },
-                uWarp: { value: 1.0 },
-                uBass: { value: 0 }
-            },
+            uniforms: uniforms,
             transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
         });
 
         tunnelSystem = new THREE.Points(geo, mat);
@@ -586,7 +649,6 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Boost interaction
         const handleBoost = (active) => { isBoosting = active; };
         document.addEventListener('mousedown', () => handleBoost(true));
         document.addEventListener('mouseup', () => handleBoost(false));
@@ -594,10 +656,17 @@
         document.addEventListener('touchend', (e) => { e.preventDefault(); handleBoost(false); });
     }
 
+    function triggerFlash() {
+        const f = document.getElementById('flashOverlay');
+        f.style.opacity = 0.5;
+        setTimeout(() => f.style.opacity = 0, 100);
+    }
+
     function animate() {
         requestAnimationFrame(animate);
         if(!clock) return;
         const time = clock.getElapsedTime();
+        TWEEN.update(performance.now());
 
         // Visual Params logic
         let targetSpeed = 50 + (gameData.cycle * 10);
@@ -635,43 +704,16 @@
         // HUD Energy
         const elEnergy = document.getElementById('energyVal');
         if(elEnergy) elEnergy.innerText = Math.floor(uni.uSpeed.value / 10) + "%";
-    }
-
-    // --- SYSTEM ---
-    function saveGame() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameData));
-        const icon = document.getElementById('saveIcon');
-        if(icon) {
-            icon.style.opacity = 1;
-            setTimeout(() => icon.style.opacity = 0, 800);
-        }
-    }
-    
-    function loadGame() {
-        const d = localStorage.getItem(STORAGE_KEY);
-        if(d) {
-            try { 
-                const data = JSON.parse(d);
-                gameData = data;
-                // Fix potential nulls
-                gameData.cycle = Number(gameData.cycle) || 1;
-                gameData.score = Number(gameData.score) || 0;
-                gameData.rootNoteIndex = Number(gameData.rootNoteIndex) || 0;
-                
-                document.getElementById('cycleVal').innerText = gameData.cycle;
-                document.getElementById('startBtn').innerText = "RESUME CYCLE " + gameData.cycle;
-            } catch(e) { console.error(e); }
+        
+        const elFilter = document.getElementById('filterVal');
+        if(elFilter && masterFilter) {
+            const pct = Math.floor((masterFilter.frequency.value / 20000) * 100);
+            elFilter.innerText = pct + "%";
         }
     }
 
-    function resetGame() {
-        localStorage.removeItem(STORAGE_KEY);
-        location.reload();
-    }
-
-    // Initialize
+    // --- INIT ---
     loadGame();
-    generateMelody();
 
     document.getElementById('startBtn').addEventListener('click', () => {
         const ui = document.getElementById('ui');
@@ -681,15 +723,15 @@
         document.getElementById('hudTop').style.opacity = 1;
         document.getElementById('hudBottom').style.opacity = 1;
 
-        initVisuals();
+        init3D();
         initAudio();
         
         if(ac.state === 'suspended') ac.resume();
         isPlaying = true;
         nextNoteTime = ac.currentTime + 0.1;
         
-        // Kickstart progression
-        updateProgression();
+        // Kickstart progression if restarting from 0
+        if(measure === 0) updateProgression();
         
         schedule();
         animate();
