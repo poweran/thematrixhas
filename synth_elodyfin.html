@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON SYMPHONY: EVOLVED</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { 
+            margin: 0; overflow: hidden; background: #000; 
+            font-family: 'Courier New', monospace; cursor: crosshair; 
+            user-select: none;
+        }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        
+        .ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            background: radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, #000 100%);
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        h1 {
+            color: #fff; font-size: 5vw; margin: 0; line-height: 1;
+            text-transform: uppercase; font-weight: 900; letter-spacing: 10px;
+            text-shadow: 0 0 30px #00ffff;
+            animation: pulse-slow 4s infinite;
+        }
+
+        .subtitle {
+            color: #ff00ff; font-size: 1.2rem; letter-spacing: 5px; margin-top: 20px;
+            text-transform: uppercase; border-top: 1px solid #ff00ff; padding-top: 10px;
+        }
+
+        #startBtn {
+            margin-top: 60px;
+            background: rgba(0,0,0,0.5); color: #fff; border: 2px solid #fff; 
+            padding: 20px 80px; font-size: 1.2rem; font-weight: bold; 
+            cursor: pointer; text-transform: uppercase; letter-spacing: 5px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+        #startBtn:hover { 
+            background: #fff; color: #000; 
+            box-shadow: 0 0 80px #00ffff; letter-spacing: 8px;
+        }
+        
+        #resetBtn {
+            margin-top: 20px; font-size: 0.8em; color: #666; border: none; background: none; cursor: pointer; text-decoration: underline;
+        }
+        #resetBtn:hover { color: #ff0055; }
+
+        /* HUD */
+        .hud-top {
+            position: absolute; top: 30px; left: 0; width: 100%; text-align: center;
+            z-index: 10; pointer-events: none; opacity: 0; transition: opacity 1s;
+        }
+        .phase-text {
+            color: #fff; font-size: 2.5rem; font-weight: 900; letter-spacing: 5px;
+            text-shadow: 0 0 20px #ff00ff; transition: color 0.5s;
+        }
+        .sub-phase {
+            font-size: 1rem; color: #00ffff; letter-spacing: 3px; margin-top: 5px;
+        }
+        
+        .progress-bar-container {
+            width: 400px; height: 6px; background: #222; margin: 15px auto;
+            border: 1px solid #444; transform: skewX(-20deg);
+        }
+        .progress-bar {
+            width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #ff00ff);
+            box-shadow: 0 0 15px #00ffff;
+            transition: width 0.1s linear;
+        }
+
+        .hud-bottom {
+            position: absolute; bottom: 30px; left: 40px; 
+            z-index: 10; pointer-events: none; opacity: 0; transition: opacity 1s;
+            color: #888; font-size: 0.8rem; line-height: 1.6;
+        }
+        .val { color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff; }
+
+        .save-icon {
+            position: absolute; bottom: 30px; right: 40px; color: #00ff00;
+            font-size: 0.8rem; opacity: 0; transition: opacity 0.5s;
+            z-index: 10; pointer-events: none; text-transform: uppercase; letter-spacing: 2px;
+        }
+        
+        .flash {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; opacity: 0; pointer-events: none; z-index: 5;
+            mix-blend-mode: overlay; transition: opacity 0.1s;
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% { filter: brightness(100%) drop-shadow(0 0 10px #00ffff); }
+            50% { filter: brightness(150%) drop-shadow(0 0 40px #00ffff); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+<div class="flash" id="flashOverlay"></div>
+
+<div class="ui-layer" id="ui">
+    <h1>NEON<br>SYMPHONY</h1>
+    <div class="subtitle">Fast Evolution Engine</div>
+    <button id="startBtn">INITIATE SEQUENCE</button>
+    <button id="resetBtn">WIPE MEMORY</button>
+</div>
+
+<div class="hud-top" id="hudTop">
+    <div class="phase-text" id="phaseText">SYSTEM IDLE</div>
+    <div class="sub-phase" id="chordText">--</div>
+    <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+</div>
+
+<div class="hud-bottom" id="hudBottom">
+    EVOLUTION CYCLE: <span class="val" id="cycleVal">1</span><br>
+    KEY: <span class="val" id="keyVal">F# Minor</span><br>
+    INTENSITY: <span class="val" id="energyVal">0%</span><br>
+    FILTER: <span class="val" id="filterVal">0%</span>
+</div>
+
+<div class="save-icon" id="saveIcon">PROGRESS SAVED</div>
+
+<!-- SHADERS -->
+<script type="x-shader/x-vertex" id="vShader">
+    varying vec2 vUv;
+    varying float vMix;
+    varying float vDepth;
+
+    uniform float uTime;
+    uniform float uSpeed;
+    uniform float uWarp;     
+    uniform float uBass;
+    uniform float uStretch; 
+
+    attribute float aSize;
+    attribute vec3 aColor; 
+    attribute float aOffset; 
+
+    void main() {
+        vUv = uv;
+        vMix = aColor.r; 
+
+        vec3 pos = position;
+        
+        float zPos = mod(pos.z + uTime * uSpeed + aOffset, 1200.0) - 1000.0;
+        pos.z = zPos * (1.0 + uStretch * 2.0); 
+
+        float angle = pos.z * 0.002 * uWarp;
+        float s = sin(angle);
+        float c = cos(angle);
+        float nx = pos.x * c - pos.y * s;
+        float ny = pos.x * s + pos.y * c;
+        pos.x = nx;
+        pos.y = ny;
+
+        float pulse = 1.0 + uBass * 0.4 * smoothstep(-500.0, -100.0, zPos);
+        pos.xy *= pulse;
+
+        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+        gl_PointSize = aSize * (500.0 / -mvPosition.z) * (1.0 + uBass * 0.5);
+        gl_Position = projectionMatrix * mvPosition;
+
+        vDepth = zPos;
+    }
+</script>
+
+<script type="x-shader/x-fragment" id="fShader">
+    varying float vMix;
+    varying float vDepth;
+
+    uniform vec3 uColor1; 
+    uniform vec3 uColor2; 
+    uniform float uFlash; 
+
+    void main() {
+        vec2 uv = gl_PointCoord.xy - 0.5;
+        float dist = length(uv);
+        if (dist > 0.5) discard;
+        
+        float glow = 1.0 - (dist * 2.0);
+        glow = pow(glow, 1.5);
+        
+        vec3 finalColor = mix(uColor1, uColor2, vMix);
+        finalColor += vec3(uFlash * 0.8);
+
+        float alpha = smoothstep(-1100.0, -900.0, vDepth) * (1.0 - smoothstep(0.0, 200.0, vDepth));
+        
+        gl_FragColor = vec4(finalColor, alpha * glow);
+    }
+</script>
+
+<script>
+    // --- SIMPLE TWEEN LIBRARY ---
+    const TWEEN = {
+        tweens: [],
+        update(time) {
+            this.tweens = this.tweens.filter(t => t.update(time));
+        },
+        Tween: function(obj) {
+            this.obj = obj;
+            this.target = {};
+            this.startTime = 0;
+            this.duration = 0;
+            this.to = function(target, duration) {
+                this.target = target;
+                this.duration = duration;
+                this.startVals = { r: obj.r, g: obj.g, b: obj.b };
+                this.startTime = performance.now();
+                TWEEN.tweens.push(this);
+                return this;
+            }
+            this.start = function() { return this; }
+            this.update = function(time) {
+                const elapsed = time - this.startTime;
+                if(elapsed >= this.duration) {
+                    this.obj.r = this.target.r;
+                    this.obj.g = this.target.g;
+                    this.obj.b = this.target.b;
+                    return false;
+                }
+                const pct = elapsed / this.duration;
+                this.obj.r = this.startVals.r + (this.target.r - this.startVals.r) * pct;
+                this.obj.g = this.startVals.g + (this.target.g - this.startVals.g) * pct;
+                this.obj.b = this.startVals.b + (this.target.b - this.startVals.b) * pct;
+                return true;
+            }
+        }
+    };
+
+    // --- GLOBAL VARIABLES ---
+    let isPlaying = false;
+    let isBoosting = false; 
+    
+    // GAME STATE (Saved)
+    let gameData = {
+        score: 0,
+        cycle: 1, 
+        rootNoteIndex: 0 
+    };
+    
+    const STORAGE_KEY = 'neon_symphony_turbo_v2';
+
+    // --- MUSIC THEORY CORE ---
+    const BASE_FREQ = 46.25; 
+    const NOTES = ["F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F"];
+    const SCALE_INTERVALS = [0, 2, 3, 5, 7, 8, 10]; // Minor
+    
+    // Progression: i - VI - III - VII
+    const PROGRESSION = [
+        { degree: 0, name: "i" }, 
+        { degree: 5, name: "VI" }, 
+        { degree: 2, name: "III" }, 
+        { degree: 6, name: "VII" }
+    ];
+
+    // --- COLOR PALETTES FOR PHASES ---
+    const PALETTES = {
+        "INTRO": { c1: 0x001133, c2: 0x0044ff }, // Deep Blue
+        "BUILD": { c1: 0x00ffff, c2: 0xff00ff }, // Cyberpunk Cyan/Pink
+        "CLIMAX": { c1: 0xffaa00, c2: 0xff0000 }, // Fire / Gold
+        "RELEASE": { c1: 0x00ff00, c2: 0x004400 } // Matrix Green
+    };
+
+    function getFreq(noteIndex, octave) {
+        const semitones = noteIndex + (octave * 12) + gameData.rootNoteIndex;
+        return BASE_FREQ * Math.pow(2, semitones / 12);
+    }
+
+    function getScaleNote(scaleDegree, octave) {
+        const octaveShift = Math.floor(scaleDegree / 7);
+        const indexInScale = Math.abs(scaleDegree % 7); 
+        const chromaticIndex = SCALE_INTERVALS[indexInScale];
+        return getFreq(chromaticIndex, octave + octaveShift);
+    }
+
+    function getChordFreqs(rootDegree, octave) {
+        return [
+            getScaleNote(rootDegree, octave),
+            getScaleNote(rootDegree + 2, octave),
+            getScaleNote(rootDegree + 4, octave)
+        ];
+    }
+
+    // --- SAVE SYSTEM ---
+    function saveGame() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameData));
+        const icon = document.getElementById('saveIcon');
+        if(icon) {
+            icon.style.opacity = 1;
+            setTimeout(() => icon.style.opacity = 0, 1000);
+        }
+    }
+
+    function loadGame() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if(saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                gameData = { ...gameData, ...parsed }; // Merge
+                const btn = document.getElementById('startBtn');
+                if(btn && gameData.cycle > 1) {
+                    btn.innerText = "RESUME CYCLE " + gameData.cycle;
+                }
+                updateHUD();
+            } catch(e) { console.error("Save corrupted", e); }
+        }
+    }
+
+    function resetGame() {
+        localStorage.removeItem(STORAGE_KEY);
+        gameData = { score: 0, cycle: 1, rootNoteIndex: 0 };
+        updateHUD();
+        const btn = document.getElementById('startBtn');
+        if (btn) btn.innerText = "INITIATE SEQUENCE";
+    }
+
+    function updateHUD() {
+        const cycleEl = document.getElementById('cycleVal');
+        if(cycleEl) cycleEl.innerText = gameData.cycle;
+        
+        const keyName = NOTES[gameData.rootNoteIndex] + " Minor";
+        const keyEl = document.getElementById('keyVal');
+        if(keyEl) keyEl.innerText = keyName;
+    }
+
+    // --- AUDIO SYSTEM ---
+    let ac, master, masterFilter, compressor, reverbNode;
+    let analyser;
+    
+    // Sequencer
+    let nextNoteTime = 0;
+    let current16th = 0;
+    let measure = 0;
+    let currentChordIdx = 0;
+    let currentPhaseIdx = 0;
+    let phaseStartMeasure = 0;
+    
+    let motif = [0, 1, 2, 0];
+    
+    // Shorter phases for faster evolution
+    const PHASES = [
+        { name: "INTRO",   bars: 4,  kick: false, bass: false, arp: true,  pad: true, filterTarget: 400 },
+        { name: "BUILD",   bars: 8, kick: true,  bass: true,  arp: true,  pad: true, filterTarget: 1000 },
+        { name: "CLIMAX",  bars: 16, kick: true,  bass: true,  arp: true,  pad: true, filterTarget: 10000 }, // Full Open
+        { name: "RELEASE", bars: 4,  kick: false, bass: true,  arp: false, pad: true, filterTarget: 300 }
+    ];
+
+    function initAudio() {
+        ac = new (window.AudioContext || window.webkitAudioContext)();
+        master = ac.createGain();
+        master.gain.value = 0.5;
+
+        masterFilter = ac.createBiquadFilter();
+        masterFilter.type = 'lowpass';
+        masterFilter.frequency.value = 200; 
+        masterFilter.Q.value = 1;
+
+        compressor = ac.createDynamicsCompressor();
+        compressor.threshold.value = -10;
+        compressor.ratio.value = 12;
+
+        const len = ac.sampleRate * 3;
+        const buf = ac.createBuffer(2, len, ac.sampleRate);
+        for(let i=0; i<len; i++) {
+            let d = Math.pow(1 - i/len, 2);
+            buf.getChannelData(0)[i] = (Math.random()*2-1)*d;
+            buf.getChannelData(1)[i] = (Math.random()*2-1)*d;
+        }
+        reverbNode = ac.createConvolver();
+        reverbNode.buffer = buf;
+        const revMix = ac.createGain();
+        revMix.gain.value = 0.3;
+
+        master.connect(masterFilter);
+        masterFilter.connect(compressor);
+        compressor.connect(ac.destination);
+        masterFilter.connect(reverbNode);
+        reverbNode.connect(revMix);
+        revMix.connect(compressor);
+
+        analyser = ac.createAnalyser();
+        analyser.fftSize = 256;
+        compressor.connect(analyser);
+    }
+
+    // --- SYNTHS ---
+    function playKick(t, vel=1.0) {
+        if(!ac) return;
+        const osc = ac.createOscillator();
+        const g = ac.createGain();
+        osc.frequency.setValueAtTime(150, t);
+        osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
+        g.gain.setValueAtTime(1.0 * vel, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        osc.connect(g); g.connect(master); 
+        osc.start(t); osc.stop(t+0.3);
+    }
+
+    function playBass(t, freq) {
+        if(!ac) return;
+        const osc = ac.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, t);
+        
+        const f = ac.createBiquadFilter();
+        f.type = 'lowpass';
+        f.frequency.setValueAtTime(400, t);
+        f.frequency.exponentialRampToValueAtTime(100, t + 0.2);
+        
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0.6, t);
+        g.gain.linearRampToValueAtTime(0, t + 0.2);
+        
+        osc.connect(f); f.connect(g); g.connect(master);
+        osc.start(t); osc.stop(t+0.2);
+    }
+
+    function playPluck(t, freq, panVal=0) {
+        if(!ac) return;
+        const osc = ac.createOscillator();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, t);
+        
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.15, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        
+        const pan = ac.createStereoPanner();
+        pan.pan.value = panVal;
+        
+        osc.connect(g); g.connect(pan); pan.connect(masterFilter);
+        osc.start(t); osc.stop(t+0.3);
+    }
+
+    function playChordStab(t, freqs) {
+        if(!ac) return;
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.1, t + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 1.0);
+        
+        freqs.forEach((f, i) => {
+            const osc = ac.createOscillator();
+            osc.type = 'sawtooth';
+            osc.frequency.value = f;
+            osc.detune.value = (i % 2 === 0 ? 1 : -1) * 5; 
+            osc.connect(g);
+            osc.start(t); osc.stop(t + 1.0);
+        });
+        
+        g.connect(masterFilter);
+    }
+    
+    function playNoiseRise(t, dur) {
+        if(!ac) return;
+        const bSize = ac.sampleRate * dur;
+        const b = ac.createBuffer(1, bSize, ac.sampleRate);
+        const d = b.getChannelData(0);
+        for(let i=0;i<bSize;i++) d[i] = Math.random()*2-1;
+        const src = ac.createBufferSource();
+        src.buffer = b;
+        
+        const f = ac.createBiquadFilter();
+        f.type='bandpass'; f.Q.value=5;
+        f.frequency.setValueAtTime(200, t);
+        f.frequency.exponentialRampToValueAtTime(10000, t+dur);
+        
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0.1, t);
+        g.gain.linearRampToValueAtTime(0, t+dur);
+        
+        src.connect(f); f.connect(g); g.connect(master);
+        src.start(t);
+    }
+
+    // --- PROCEDURAL COMPOSER ---
+    function generateMelody() {
+        const safeNotes = [0, 2, 4, 7, 1];
+        motif = [];
+        for(let i=0; i<4; i++) {
+            motif.push(safeNotes[Math.floor(Math.random()*safeNotes.length)]);
+        }
+    }
+
+    function updateProgression() {
+        const currentP = PHASES[currentPhaseIdx];
+        
+        // Check if phase ended
+        if (measure >= phaseStartMeasure + currentP.bars) {
+            currentPhaseIdx++;
+            if (currentPhaseIdx >= PHASES.length) {
+                // CYCLE COMPLETE -> EVOLVE
+                currentPhaseIdx = 0;
+                gameData.cycle++;
+                gameData.rootNoteIndex = (gameData.rootNoteIndex + 2) % 12; // Modulate Key
+                saveGame();
+                generateMelody();
+                updateHUD();
+            }
+            phaseStartMeasure = measure;
+            
+            // Visual Flash on transition
+            triggerFlash();
+            
+            // Trigger Riser on transitions to Climax
+            if(PHASES[currentPhaseIdx].name === "CLIMAX") {
+                 playNoiseRise(ac.currentTime, 2.0);
+            }
+            saveGame();
+        }
+
+        const p = PHASES[currentPhaseIdx];
+
+        // Update UI
+        const phText = document.getElementById('phaseText');
+        if(phText) {
+            phText.innerText = p.name;
+            phText.style.color = (p.name === "CLIMAX") ? "#ff0055" : "#fff";
+        }
+        
+        // Audio Automation
+        if (isBoosting) {
+            masterFilter.frequency.setTargetAtTime(20000, ac.currentTime, 0.1);
+        } else {
+            masterFilter.frequency.setTargetAtTime(p.filterTarget, ac.currentTime, 2.0); 
+        }
+        
+        // Uniforms Update (Colors)
+        const palette = PALETTES[p.name] || PALETTES["INTRO"];
+        if(uniforms) {
+            uniforms.uSpeed.value = p.speed;
+            new TWEEN.Tween(uniforms.uColor1.value).to(new THREE.Color(palette.c1), 1000).start();
+            new TWEEN.Tween(uniforms.uColor2.value).to(new THREE.Color(palette.c2), 1000).start();
+        }
+
+        // Key UI (Update in case of cycle change)
+        const keyName = NOTES[gameData.rootNoteIndex] + " Minor";
+        const keyEl = document.getElementById('keyVal');
+        if(keyEl) keyEl.innerText = keyName;
+
+        // Progress Bar
+        const progress = (measure - phaseStartMeasure) / p.bars;
+        const bar = document.getElementById('progressBar');
+        if(bar) bar.style.width = (progress * 100) + "%";
+    }
+
+    function processStep(s, t) {
+        const p = PHASES[currentPhaseIdx];
+        
+        // Chord Progression Walker
+        if (measure % 4 === 0 && s === 0) {
+            currentChordIdx = (measure/4) % PROGRESSION.length;
+            const chordNameEl = document.getElementById('chordText');
+            if(chordNameEl) chordNameEl.innerText = PROGRESSION[currentChordIdx].name;
+        }
+        
+        const rootDeg = PROGRESSION[currentChordIdx].degree;
+        
+        // 1. KICK
+        if (p.kick) {
+            if (s % 4 === 0) playKick(t, 1.0);
+        }
+
+        // 2. BASS
+        if (p.bass) {
+            const bassFreq = getScaleNote(rootDeg, 1); 
+            if (s % 4 === 2) playBass(t, bassFreq); 
+            if (isBoosting && s % 4 !== 0) playBass(t, bassFreq); 
+        }
+
+        // 3. ARP
+        if (p.arp) {
+            if (s % 2 === 0) {
+                const motifNote = motif[(s/2) % motif.length];
+                const note = getScaleNote(rootDeg + motifNote, 3); 
+                const pan = (s % 4 === 0) ? -0.5 : 0.5;
+                playPluck(t, note, pan);
+            }
+        }
+
+        // 4. PAD
+        if (p.pad && s === 0 && measure % 2 === 0) {
+            const chordFreqs = getChordFreqs(rootDeg, 3);
+            playChordStab(t, chordFreqs);
+        }
+    }
+
+    function schedule() {
+        const tempo = 138 + (gameData.cycle * 2); 
+        const secPer16th = 60/tempo/4;
+        const lookahead = 0.1;
+
+        while(nextNoteTime < ac.currentTime + lookahead) {
+            processStep(current16th, nextNoteTime);
+            nextNoteTime += secPer16th;
+            current16th++;
+            if(current16th === 16) {
+                current16th = 0;
+                measure++;
+                updateProgression();
+                
+                // Save often
+                if(measure % 4 === 0) saveGame();
+            }
+        }
+        if(isPlaying) setTimeout(schedule, 25);
+    }
+
+    // --- VISUALS (THREE.JS) ---
+    let tunnelPoints, uniforms;
+    
+    function init3D() {
+        const container = document.getElementById('canvas-container');
+        clock = new THREE.Clock();
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(80, window.innerWidth/window.innerHeight, 0.1, 2000);
+        camera.position.z = 100;
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        container.appendChild(renderer.domElement);
+
+        // PARTICLE TUNNEL
+        const geo = new THREE.BufferGeometry();
+        const count = 10000;
+        const pos = [];
+        const colors = [];
+        const offsets = [];
+
+        const c1 = new THREE.Color(0x00ffff);
+        const c2 = new THREE.Color(0xff00ff);
+
+        for(let i=0; i<count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const r = 30 + Math.random() * 50;
+            const x = Math.cos(angle) * r;
+            const y = Math.sin(angle) * r;
+            const z = (Math.random() - 0.5) * 2000;
+            
+            pos.push(x,y,z);
+            offsets.push(Math.random() * 1000);
+            
+            const col = Math.random() > 0.5 ? c1 : c2;
+            colors.push(col.r, col.g, col.b);
+        }
+
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        geo.setAttribute('aColor', new THREE.Float32BufferAttribute(colors, 3));
+        geo.setAttribute('aSize', new THREE.Float32BufferAttribute(new Float32Array(count).fill(2.0), 1));
+        geo.setAttribute('aOffset', new THREE.Float32BufferAttribute(offsets, 1));
+
+        uniforms = {
+            uTime: { value: 0 },
+            uSpeed: { value: 50 },
+            uWarp: { value: 1.0 },
+            uBass: { value: 0 },
+            uColor1: { value: new THREE.Color(0x00ffff) },
+            uColor2: { value: new THREE.Color(0xff00ff) }
+        };
+
+        const mat = new THREE.ShaderMaterial({
+            vertexShader: document.getElementById('vShader').textContent,
+            fragmentShader: document.getElementById('fShader').textContent,
+            uniforms: uniforms,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+
+        tunnelSystem = new THREE.Points(geo, mat);
+        scene.add(tunnelSystem);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        const handleBoost = (active) => { isBoosting = active; };
+        document.addEventListener('mousedown', () => handleBoost(true));
+        document.addEventListener('mouseup', () => handleBoost(false));
+        document.addEventListener('touchstart', (e) => { e.preventDefault(); handleBoost(true); }, {passive:false});
+        document.addEventListener('touchend', (e) => { e.preventDefault(); handleBoost(false); });
+    }
+
+    function triggerFlash() {
+        const f = document.getElementById('flashOverlay');
+        f.style.opacity = 0.5;
+        setTimeout(() => f.style.opacity = 0, 100);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        if(!clock) return;
+        const time = clock.getElapsedTime();
+        TWEEN.update(performance.now());
+
+        // Visual Params logic
+        let targetSpeed = 50 + (gameData.cycle * 10);
+        let targetWarp = 1.0 + (gameData.cycle * 0.5);
+
+        if (isBoosting) {
+            targetSpeed *= 4;
+            targetWarp += 5.0;
+        }
+
+        const uni = tunnelSystem.material.uniforms;
+        uni.uTime.value = time;
+        uni.uSpeed.value += (targetSpeed - uni.uSpeed.value) * 0.05;
+        uni.uWarp.value += (targetWarp - uni.uWarp.value) * 0.05;
+
+        // Audio Reactivity
+        if(analyser) {
+            const data = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(data);
+            const bass = data[4] / 255.0;
+            uni.uBass.value += (bass - uni.uBass.value) * 0.3;
+            
+            // Shake
+            if (bass > 0.7) {
+                camera.position.x = (Math.random()-0.5) * 0.5;
+                camera.position.y = (Math.random()-0.5) * 0.5;
+            }
+        }
+
+        // Camera Spiral
+        camera.rotation.z = Math.sin(time * 0.1) * 0.1;
+
+        renderer.render(scene, camera);
+        
+        // HUD Energy
+        const elEnergy = document.getElementById('energyVal');
+        if(elEnergy) elEnergy.innerText = Math.floor(uni.uSpeed.value / 10) + "%";
+        
+        const elFilter = document.getElementById('filterVal');
+        if(elFilter && masterFilter) {
+            const pct = Math.floor((masterFilter.frequency.value / 20000) * 100);
+            elFilter.innerText = pct + "%";
+        }
+    }
+
+    // --- INIT ---
+    loadGame();
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+        const ui = document.getElementById('ui');
+        ui.style.opacity = 0;
+        setTimeout(() => ui.style.display = 'none', 800);
+        
+        document.getElementById('hudTop').style.opacity = 1;
+        document.getElementById('hudBottom').style.opacity = 1;
+
+        init3D();
+        initAudio();
+        
+        if(ac.state === 'suspended') ac.resume();
+        isPlaying = true;
+        nextNoteTime = ac.currentTime + 0.1;
+        
+        // Kickstart progression if restarting from 0
+        if(measure === 0) updateProgression();
+        
+        schedule();
+        animate();
+    });
+    
+    document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+</script>
+</body>
+</html>
