@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEON SYMPHONY: TURBO</title>
+    <title>NEON SYMPHONY: EVOLVED</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body { 
@@ -57,7 +57,7 @@
             z-index: 10; pointer-events: none; opacity: 0; transition: opacity 1s;
         }
         .phase-text {
-            color: #fff; font-size: 3rem; font-weight: 900; letter-spacing: 5px;
+            color: #fff; font-size: 2.5rem; font-weight: 900; letter-spacing: 5px;
             text-shadow: 0 0 20px #ff00ff; transition: color 0.5s;
         }
         .sub-phase {
@@ -257,6 +257,47 @@
         ];
     }
 
+    // --- SAVE SYSTEM ---
+    function saveGame() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameData));
+        const icon = document.getElementById('saveIcon');
+        if(icon) {
+            icon.style.opacity = 1;
+            setTimeout(() => icon.style.opacity = 0, 1000);
+        }
+    }
+
+    function loadGame() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if(saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                gameData = { ...gameData, ...parsed }; // Merge
+                const btn = document.getElementById('startBtn');
+                if(btn && gameData.cycle > 1) {
+                    btn.innerText = "RESUME CYCLE " + gameData.cycle;
+                }
+                updateHUD();
+            } catch(e) { console.error("Save corrupted", e); }
+        }
+    }
+
+    function resetGame() {
+        localStorage.removeItem(STORAGE_KEY);
+        gameData = { score: 0, cycle: 1, rootNoteIndex: 0 };
+        updateHUD();
+        document.getElementById('startBtn').innerText = "INITIATE SEQUENCE";
+    }
+
+    function updateHUD() {
+        const cycleEl = document.getElementById('cycleVal');
+        if(cycleEl) cycleEl.innerText = gameData.cycle;
+        
+        const keyName = NOTES[gameData.rootNoteIndex] + " Minor";
+        const keyEl = document.getElementById('keyVal');
+        if(keyEl) keyEl.innerText = keyName;
+    }
+
     // --- AUDIO SYSTEM ---
     let ac, master, masterFilter, compressor, reverbNode;
     let analyser;
@@ -430,6 +471,7 @@
                 gameData.rootNoteIndex = (gameData.rootNoteIndex + 2) % 12; // Modulate Key
                 saveGame();
                 generateMelody();
+                updateHUD();
             }
             phaseStartMeasure = measure;
             
@@ -467,7 +509,7 @@
             new TWEEN.Tween(uniforms.uColor2.value).to(new THREE.Color(palette.c2), 1000).start();
         }
 
-        // Key UI
+        // Key UI (Update in case of cycle change)
         const keyName = NOTES[gameData.rootNoteIndex] + " Minor";
         const keyEl = document.getElementById('keyVal');
         if(keyEl) keyEl.innerText = keyName;
