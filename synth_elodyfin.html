@@ -120,7 +120,8 @@
 <div class="hud-bottom" id="hudBottom">
     EVOLUTION CYCLE: <span class="val" id="cycleVal">1</span><br>
     KEY: <span class="val" id="keyVal">F# Minor</span><br>
-    INTENSITY: <span class="val" id="energyVal">0%</span>
+    INTENSITY: <span class="val" id="energyVal">0%</span><br>
+    FILTER: <span class="val" id="filterVal">0%</span>
 </div>
 
 <div class="save-icon" id="saveIcon">PROGRESS SAVED</div>
@@ -135,23 +136,21 @@
     uniform float uSpeed;
     uniform float uWarp;     
     uniform float uBass;
-    uniform float uStretch; // New: Z-stretch for warp speed
+    uniform float uStretch; 
 
     attribute float aSize;
-    attribute vec3 aColor; // Used as mix factor
+    attribute vec3 aColor; 
     attribute float aOffset; 
 
     void main() {
         vUv = uv;
-        vMix = aColor.r; // Use red channel as mix factor
+        vMix = aColor.r; 
 
         vec3 pos = position;
         
-        // Infinite Tunnel Movement
         float zPos = mod(pos.z + uTime * uSpeed + aOffset, 1200.0) - 1000.0;
-        pos.z = zPos * (1.0 + uStretch * 2.0); // Stretch effect
+        pos.z = zPos * (1.0 + uStretch * 2.0); 
 
-        // Spiral Twist based on Audio
         float angle = pos.z * 0.002 * uWarp;
         float s = sin(angle);
         float c = cos(angle);
@@ -160,7 +159,6 @@
         pos.x = nx;
         pos.y = ny;
 
-        // Bass Expansion (Reactive)
         float pulse = 1.0 + uBass * 0.4 * smoothstep(-500.0, -100.0, zPos);
         pos.xy *= pulse;
 
@@ -176,26 +174,21 @@
     varying float vMix;
     varying float vDepth;
 
-    uniform vec3 uColor1; // Dynamic Palette 1
-    uniform vec3 uColor2; // Dynamic Palette 2
-    uniform float uFlash; // White flash on kick
+    uniform vec3 uColor1; 
+    uniform vec3 uColor2; 
+    uniform float uFlash; 
 
     void main() {
         vec2 uv = gl_PointCoord.xy - 0.5;
         float dist = length(uv);
         if (dist > 0.5) discard;
         
-        // Glow gradient
         float glow = 1.0 - (dist * 2.0);
         glow = pow(glow, 1.5);
         
-        // Dynamic Palette Mixing
         vec3 finalColor = mix(uColor1, uColor2, vMix);
-        
-        // Flash add
         finalColor += vec3(uFlash * 0.8);
 
-        // Distance Fog
         float alpha = smoothstep(-1100.0, -900.0, vDepth) * (1.0 - smoothstep(0.0, 200.0, vDepth));
         
         gl_FragColor = vec4(finalColor, alpha * glow);
@@ -203,7 +196,7 @@
 </script>
 
 <script>
-    // --- SIMPLE TWEEN LIBRARY (Restored to fix crash) ---
+    // --- SIMPLE TWEEN LIBRARY ---
     const TWEEN = {
         tweens: [],
         update(time) {
@@ -323,7 +316,8 @@
         localStorage.removeItem(STORAGE_KEY);
         gameData = { score: 0, cycle: 1, rootNoteIndex: 0 };
         updateHUD();
-        document.getElementById('startBtn').innerText = "INITIATE SEQUENCE";
+        const btn = document.getElementById('startBtn');
+        if (btn) btn.innerText = "INITIATE SEQUENCE";
     }
 
     function updateHUD() {
