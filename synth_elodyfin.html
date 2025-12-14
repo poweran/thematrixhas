@@ -36,165 +36,144 @@
         #startBtn:hover { background: #fff; color: #000; box-shadow: 0 0 50px #fff; }
 
         /* HUD */
-        .hud-bottom {
-            position: absolute; bottom: 30px; left: 40px; 
-            z-index: 10; pointer-events: none; opacity: 0; transition: opacity 1s;
-            color: #888; font-size: 0.8rem; line-height: 1.6;
-        }
-        .val { color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff; }
+        .hud { position: absolute; padding: 20px; color: #fff; font-family: monospace; z-index: 10; pointer-events: none; opacity: 0; transition: opacity 1s; }
+        .hud-top { top: 0; width: 100%; text-align: center; }
+        .hud-bottom { bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-between; box-sizing: border-box; }
         
-        .msg-box {
-            position: absolute; top: 20%; width: 100%; text-align: center;
-            font-size: 2rem; font-weight: 900; color: #fff; letter-spacing: 5px;
-            text-shadow: 0 0 20px #00ffff; opacity: 0; transition: opacity 0.5s;
-            pointer-events: none; z-index: 15;
-        }
+        .phase-label { font-size: 3rem; font-weight: 900; letter-spacing: 5px; text-shadow: 0 0 20px #ff00ff; }
+        .data-val { color: #00ffff; font-weight: bold; }
+        
+        .bar-container { width: 200px; height: 5px; background: #333; margin-top: 5px; }
+        .bar-fill { width: 0%; height: 100%; background: #00ffff; box-shadow: 0 0 10px #00ffff; transition: width 0.1s; }
 
-        .hint {
-            position: absolute; bottom: 100px; width: 100%; text-align: center;
-            color: rgba(255,255,255,0.4); font-size: 0.9rem; letter-spacing: 2px;
-            pointer-events: none; opacity: 0; transition: opacity 1s; z-index: 15;
-        }
-
-        @keyframes breathe { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; text-shadow: 0 0 50px #00ffff; } }
     </style>
 </head>
 <body>
 
 <div id="canvas-container"></div>
-<div class="msg-box" id="msgBox">SEQUENCE START</div>
-<div class="hint" id="hintBox">MOVE MOUSE UP TO EVOLVE</div>
 
 <div class="ui-layer" id="ui">
-    <h1>SYMPHONY</h1>
-    <div class="subtitle">Generative Evolution</div>
-    <button id="startBtn">INITIATE SYMPHONY</button>
+    <h1>EUPHORIA</h1>
+    <button id="startBtn">INITIATE SYSTEM</button>
 </div>
 
-<div class="hud-bottom" id="hud">
-    COMPLEXITY: <span class="val" id="complexVal">1</span><br>
-    KEY: <span class="val" id="keyVal">F# Minor</span><br>
-    STRUCTURE: <span class="val" id="structVal">Intro</span>
+<div class="hud hud-top" id="hudTop">
+    <div class="phase-label" id="phaseDisplay">WAITING</div>
+</div>
+
+<div class="hud hud-bottom" id="hudBottom">
+    <div>
+        FILTER: <span class="data-val" id="filterVal">0%</span>
+        <div class="bar-container"><div class="bar-fill" id="filterBar"></div></div>
+    </div>
+    <div style="text-align:right">
+        ENERGY: <span class="data-val" id="energyVal">0%</span>
+        <div class="bar-container"><div class="bar-fill" id="energyBar" style="float:right"></div></div>
+    </div>
 </div>
 
 <!-- SHADERS -->
 <script type="x-shader/x-vertex" id="vShader">
     varying vec2 vUv;
-    varying vec3 vColor;
-    varying float vAlpha;
-
+    varying float vDist;
     uniform float uTime;
     uniform float uSpeed;
     uniform float uBass;
-    uniform float uComplex; // Complexity 1.0 - 5.0
-
-    attribute vec3 aColor;
-    attribute float aOffset; 
-    attribute float aSize;
+    uniform float uTwist;
 
     void main() {
         vUv = uv;
-        vColor = aColor;
-
         vec3 pos = position;
         
         // Infinite Tunnel
-        float zPos = mod(pos.z + uTime * uSpeed + aOffset, 1000.0) - 800.0;
-        pos.z = zPos;
+        float z = mod(pos.z + uTime * uSpeed, 1000.0) - 800.0;
+        pos.z = z;
 
-        // Evolving Geometry
-        // Low complexity: Cylinder
-        // High complexity: Twisted Organic Shape
-        float angle = zPos * 0.005 * uComplex;
+        // Twist Logic
+        float angle = z * 0.005 * uTwist;
         float s = sin(angle);
         float c = cos(angle);
-        
         float nx = pos.x * c - pos.y * s;
         float ny = pos.x * s + pos.y * c;
-        
-        // Expand based on complexity
-        float expand = 1.0 + (sin(zPos * 0.02 + uTime) * 0.5 + 0.5) * (uComplex - 1.0) * 0.5;
-        
-        pos.x = nx * expand;
-        pos.y = ny * expand;
+        pos.x = nx;
+        pos.y = ny;
 
         // Bass Pulse
-        float pulse = 1.0 + uBass * 0.3 * smoothstep(-500.0, 0.0, zPos);
+        float pulse = 1.0 + uBass * 0.3 * smoothstep(-500.0, 0.0, z);
         pos.xy *= pulse;
 
         vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-        gl_PointSize = aSize * (300.0 / -mvPosition.z) * (1.0 + uBass * 0.5);
+        gl_PointSize = (8.0 + uBass * 15.0) * (300.0 / -mvPosition.z);
         gl_Position = projectionMatrix * mvPosition;
-
-        // Distance Fog
-        vAlpha = smoothstep(-900.0, -700.0, zPos) * (1.0 - smoothstep(100.0, 200.0, zPos));
+        vDist = z;
     }
 </script>
 
 <script type="x-shader/x-fragment" id="fShader">
-    varying vec3 vColor;
-    varying float vAlpha;
+    varying float vDist;
+    uniform float uBass;
     uniform float uHigh;
+    uniform vec3 uColor1;
+    uniform vec3 uColor2;
 
     void main() {
         vec2 uv = gl_PointCoord.xy - 0.5;
-        float dist = length(uv);
-        if (dist > 0.5) discard;
+        if(length(uv) > 0.5) discard;
         
-        // Sparkle core
-        float glow = 1.0 - (dist * 2.0);
-        glow = pow(glow, 1.5);
-        
-        // Add brightness on High Frequencies
-        vec3 finalColor = vColor + vec3(uHigh * 0.5);
+        // Dynamic Color Mixing
+        vec3 col = mix(uColor1, uColor2, vDist/200.0 + 0.5);
+        col += vec3(uBass * 0.5); // Flash on kick
 
-        gl_FragColor = vec4(finalColor, vAlpha * glow);
+        // Distance Fog
+        float alpha = smoothstep(-900.0, -800.0, vDist) * (1.0 - smoothstep(100.0, 200.0, vDist));
+        
+        // Core glow
+        float core = 1.0 - length(uv) * 2.0;
+        gl_FragColor = vec4(col * 1.5, alpha * core);
     }
 </script>
 
 <script>
-    // --- GLOBAL STATE ---
+    // --- MUSIC THEORY: F# MINOR ---
+    const SCALE = [46.25, 55.0, 65.41, 82.41, 98.0, 110.0, 130.81]; // F#1 Pentatonic
+    // Chords: F#m -> D -> A -> E (Classic Euphoric)
+    const CHORDS = [
+        [0, 2, 4], // F# A C#
+        [5, 7, 9], // D F# A
+        [2, 4, 6], // A C# E
+        [6, 8, 10] // E G# B
+    ];
+    // "Anthem" Melody Motif (Scale Degrees)
+    const MOTIF = [4, 2, 0, 2, 4, 2, 4, 7, 6, 5, 2, 0];
+
+    // --- STATE ---
     let isPlaying = false;
-    let mouseY = 0; // 0.0 to 1.0 (Energy/Evolution input)
-    let complexity = 1.0; // Evolving complexity
+    let ac, master, compressor, reverb, filter;
+    let analyser;
+    let clock;
     
-    // --- MUSIC THEORY ENGINE ---
-    const BASE_FREQ = 46.25; // F#1
-    const NOTES = ["F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F"];
-    const SCALE_MINOR = [0, 2, 3, 5, 7, 8, 10]; // Minor Intervals
+    // Control State
+    let mouseX = 0, mouseY = 0; // -1 to 1, 0 to 1
+    let filterFreq = 200;
+    let currentPhase = 0;
     
-    let currentRoot = 0; // Index in NOTES
-    let currentScale = SCALE_MINOR;
-    let currentChordDegree = 0; // 0 (i), 2 (III), 4 (v), etc.
-
-    function getFreq(noteIndex, octave) {
-        const semitones = noteIndex + (octave * 12) + currentRoot;
-        return BASE_FREQ * Math.pow(2, semitones / 12);
-    }
-
-    function getScaleNote(degree, octave) {
-        const octShift = Math.floor(degree / 7);
-        const idx = degree % 7;
-        const semi = currentScale[idx];
-        return getFreq(semi, octave + octShift);
-    }
-
-    // --- SEQUENCER STATE ---
-    let ac, master, filter, limiter, analyser, reverb;
-    let nextNoteTime = 0;
-    let measure = 0;
+    // Sequencer
+    let nextTime = 0;
     let step = 0;
-    
-    // Generative Patterns
-    let bassPattern = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
-    let melodyMotif = [0, 2, 4, 7]; // Scale degrees
-    
-    // Song Structure
-    let section = "INTRO";
-    let sectionTimer = 0;
+    let measure = 0;
+    let chordIdx = 0;
+
+    // Phases
+    const PHASES = [
+        { name: "ATMOSPHERE", bars: 8,  kick:0, bass:0, arp:1, pad:1, speed: 50 },
+        { name: "RISING",     bars: 16, kick:1, bass:1, arp:1, pad:1, speed: 200 }, // Snare roll logic handled in loop
+        { name: "THE DROP",   bars: 32, kick:1, bass:1, arp:1, pad:1, speed: 600, lead:1 },
+        { name: "BREAKDOWN",  bars: 16, kick:0, bass:0, arp:0, pad:1, speed: 100 }
+    ];
+    let phaseStartMeasure = 0;
 
     // --- 3D VISUALS ---
-    let scene, camera, renderer, clock, tunnelPoints, uniforms;
+    let scene, camera, renderer, tunnelPoints, uniforms;
 
     function init3D() {
         const container = document.getElementById('canvas-container');
@@ -208,43 +187,24 @@
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         container.appendChild(renderer.domElement);
 
-        // PARTICLES
+        // Particle System
         const geo = new THREE.BufferGeometry();
-        const count = 10000;
         const pos = [];
-        const colors = [];
-        const sizes = [];
-        const offsets = [];
-
-        const c1 = new THREE.Color(0x00ffff);
-        const c2 = new THREE.Color(0xff00ff);
-
-        for(let i=0; i<count; i++) {
+        for(let i=0; i<15000; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const r = 30 + Math.random() * 60;
-            const x = Math.cos(angle) * r;
-            const y = Math.sin(angle) * r;
-            const z = (Math.random() - 0.5) * 2000;
-            
-            pos.push(x, y, z);
-            sizes.push(Math.random() * 3.0 + 0.5);
-            offsets.push(Math.random() * 1000);
-            
-            const col = Math.random() > 0.5 ? c1 : c2;
-            colors.push(col.r, col.g, col.b);
+            const r = 30 + Math.random() * 50;
+            pos.push(Math.cos(angle)*r, Math.sin(angle)*r, (Math.random()-0.5)*2000);
         }
-
         geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-        geo.setAttribute('aColor', new THREE.Float32BufferAttribute(colors, 3));
-        geo.setAttribute('aSize', new THREE.Float32BufferAttribute(sizes, 1));
-        geo.setAttribute('aOffset', new THREE.Float32BufferAttribute(offsets, 1));
 
         uniforms = {
             uTime: { value: 0 },
             uSpeed: { value: 50 },
             uBass: { value: 0 },
             uHigh: { value: 0 },
-            uComplex: { value: 1.0 }
+            uTwist: { value: 0 },
+            uColor1: { value: new THREE.Color(0x00ffff) },
+            uColor2: { value: new THREE.Color(0xff00ff) }
         };
 
         const mat = new THREE.ShaderMaterial({
@@ -259,48 +219,61 @@
         tunnelPoints = new THREE.Points(geo, mat);
         scene.add(tunnelPoints);
 
-        window.addEventListener('resize', onWindowResize);
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
         document.addEventListener('mousemove', e => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
             mouseY = 1.0 - (e.clientY / window.innerHeight);
         });
-    }
-
-    function onWindowResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
     function animate() {
         requestAnimationFrame(animate);
         if(!clock) return;
-        
         const time = clock.getElapsedTime();
-        
-        // Evolve Complexity based on Mouse Y + Music Phase
-        let targetComplex = 1.0 + (mouseY * 3.0);
-        if(section === "CLIMAX") targetComplex += 2.0;
-        
-        complexity += (targetComplex - complexity) * 0.05;
-        
-        uniforms.uTime.value = time;
-        uniforms.uSpeed.value = 50 + (complexity * 100);
-        uniforms.uComplex.value = complexity;
+        const dt = clock.getDelta();
 
+        // 1. Audio Analysis
+        let bass = 0, high = 0;
         if(analyser) {
             const data = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(data);
-            uniforms.uBass.value += ((data[2]/255) - uniforms.uBass.value) * 0.2;
-            uniforms.uHigh.value += ((data[30]/255) - uniforms.uHigh.value) * 0.1;
+            bass = data[2] / 255.0; 
+            high = data[30] / 255.0;
         }
 
-        // Camera Spiral
-        camera.rotation.z = Math.sin(time * 0.1) * 0.2;
+        // 2. Phase Logic
+        const phase = PHASES[currentPhase];
+        let targetSpeed = phase.speed;
+        let targetTwist = mouseX * 2.0;
+
+        // Visual smoothing
+        uniforms.uTime.value = time;
+        uniforms.uSpeed.value += (targetSpeed - uniforms.uSpeed.value) * 0.05;
+        uniforms.uBass.value = bass;
+        uniforms.uTwist.value += (targetTwist - uniforms.uTwist.value) * 0.1;
+        
+        // Colors based on mouse Y (Energy Control)
+        const energy = mouseY;
+        uniforms.uColor1.value.setHSL(0.5 + energy * 0.1, 1.0, 0.5); // Cyan -> Blue
+        uniforms.uColor2.value.setHSL(0.8 + energy * 0.2, 1.0, 0.5); // Magenta -> Red
+
+        // Camera Shake
+        if(bass > 0.6) {
+            camera.position.x = (Math.random()-0.5) * bass;
+            camera.position.y = (Math.random()-0.5) * bass;
+        }
 
         renderer.render(scene, camera);
         
-        // Update HUD
-        document.getElementById('complexVal').innerText = complexity.toFixed(1);
+        // HUD
+        document.getElementById('filterVal').innerText = Math.floor(energy * 100) + "%";
+        document.getElementById('filterBar').style.width = (energy * 100) + "%";
+        document.getElementById('energyVal').innerText = phase.name;
     }
 
     // --- AUDIO ENGINE ---
@@ -309,137 +282,122 @@
         master = ac.createGain();
         master.gain.value = 0.5;
 
-        // Filter controlled by Mouse + Envelopes
+        // Filter controlled by Mouse Y
         filter = ac.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.value = 200;
         filter.Q.value = 2;
 
-        limiter = ac.createDynamicsCompressor();
-        limiter.threshold.value = -5;
-        limiter.ratio.value = 20;
+        compressor = ac.createDynamicsCompressor();
+        compressor.threshold.value = -10;
+        compressor.ratio.value = 12;
 
+        // Stereo Delay
+        const delayL = ac.createDelay(); delayL.delayTime.value = 0.3;
+        const delayR = ac.createDelay(); delayR.delayTime.value = 0.45;
+        const delayFb = ac.createGain(); delayFb.gain.value = 0.4;
+        
         // Reverb
+        const verb = ac.createConvolver();
         const len = ac.sampleRate * 3;
         const buf = ac.createBuffer(2, len, ac.sampleRate);
-        for(let i=0; i<len; i++) {
-            let d = (1 - i/len);
-            buf.getChannelData(0)[i] = (Math.random()*2-1)*d;
-            buf.getChannelData(1)[i] = (Math.random()*2-1)*d;
+        for(let i=0;i<len;i++) {
+            let d = (1-i/len);
+            buf.getChannelData(0)[i]=(Math.random()*2-1)*d;
+            buf.getChannelData(1)[i]=(Math.random()*2-1)*d;
         }
-        reverb = ac.createConvolver();
-        reverb.buffer = buf;
-        const revMix = ac.createGain();
-        revMix.gain.value = 0.4;
+        verb.buffer = buf;
+        const verbMix = ac.createGain(); verbMix.gain.value = 0.4;
 
+        // Routing
         master.connect(filter);
-        filter.connect(limiter);
-        limiter.connect(ac.destination);
-        filter.connect(reverb);
-        reverb.connect(revMix);
-        revMix.connect(limiter);
+        filter.connect(compressor);
+        compressor.connect(ac.destination);
+        
+        // FX Sends
+        filter.connect(verb); verb.connect(verbMix); verbMix.connect(compressor);
+        filter.connect(delayL); filter.connect(delayR);
+        delayL.connect(delayFb); delayR.connect(delayFb);
+        delayFb.connect(delayL); delayFb.connect(delayR); // Feedback loop
+        delayL.connect(compressor); delayR.connect(compressor);
 
         analyser = ac.createAnalyser();
-        analyser.fftSize = 64;
-        limiter.connect(analyser);
+        analyser.fftSize = 128;
+        compressor.connect(analyser);
 
         schedule();
     }
 
-    // --- GENERATIVE COMPOSITION ---
-    function evolveMusic() {
-        // This function is called at section transitions
-        
-        // 1. Modulate Key (Up a fifth or fourth)
-        if(Math.random() > 0.5) {
-            currentRoot = (currentRoot + 7) % 12; // Circle of fifths
-            showMsg("MODULATION: " + NOTES[currentRoot]);
-            document.getElementById('keyVal').innerText = NOTES[currentRoot] + " Minor";
-        }
-        
-        // 2. Evolve Bass Pattern
-        if(complexity > 2) {
-            // Euclidean-ish rhythm: 1 = hit, 0 = rest
-            bassPattern = [1,0,1,0, 1,0,0,1, 1,0,1,0, 1,1,0,0];
-        } else {
-            bassPattern = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0]; // Basic
-        }
-        
-        // 3. Evolve Melody Motif
-        // Add notes, change intervals
-        motif = motif.map(n => n + (Math.random()>0.5 ? 1 : -1));
-        // Ensure valid scale degrees
-        motif = motif.map(n => Math.abs(n) % 7);
-        if(motif.length < 8) motif.push(Math.floor(Math.random()*7)); // Grow length
-    }
-
-    function showMsg(text) {
-        const el = document.getElementById('msgBox');
-        el.innerText = text;
-        el.style.opacity = 1;
-        setTimeout(() => el.style.opacity = 0, 2000);
-    }
-
-    // --- INSTRUMENTS ---
-    function playKick(t) {
-        const osc = ac.createOscillator();
-        const g = ac.createGain();
-        osc.frequency.setValueAtTime(150, t);
-        osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
-        g.gain.setValueAtTime(1.0, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-        osc.connect(g); g.connect(master); // Direct punch
-        osc.start(t); osc.stop(t+0.3);
-    }
-
-    function playBass(t, freq) {
-        const osc = ac.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(freq, t);
-        const f = ac.createBiquadFilter();
-        f.type = 'lowpass';
-        f.frequency.setValueAtTime(400, t);
-        f.frequency.exponentialRampToValueAtTime(100, t + 0.2);
-        const g = ac.createGain();
-        g.gain.setValueAtTime(0.6, t);
-        g.gain.linearRampToValueAtTime(0, t+0.2);
-        osc.connect(f); f.connect(g); g.connect(master);
-        osc.start(t); osc.stop(t+0.2);
-    }
-
-    function playArp(t, freq) {
-        // Stereo Arp
-        const osc = ac.createOscillator();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(freq, t);
-        const g = ac.createGain();
-        g.gain.setValueAtTime(0.1, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-        
-        const pan = ac.createStereoPanner();
-        pan.pan.value = Math.sin(t * 5); // Auto-pan
-        
-        osc.connect(g); g.connect(pan); pan.connect(filter);
-        osc.start(t); osc.stop(t+0.15);
-    }
-
-    function playPad(t, freq) {
-        // SuperSaw Pad
+    // --- SYNTHS ---
+    function playSuperSaw(freq, t, dur, vol, panX) {
         const g = ac.createGain();
         g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(0.1, t+0.5);
-        g.gain.linearRampToValueAtTime(0, t+2.0);
-        
-        // 3 osc unison
-        [-5, 0, 5].forEach(d => {
+        g.gain.linearRampToValueAtTime(vol, t+0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+
+        const p = ac.createStereoPanner();
+        p.pan.value = panX;
+
+        [-10, -5, 0, 5, 10].forEach(d => {
             const o = ac.createOscillator();
             o.type = 'sawtooth';
             o.frequency.value = freq;
             o.detune.value = d;
             o.connect(g);
-            o.start(t); o.stop(t+2.0);
+            o.start(t); o.stop(t+dur);
         });
-        g.connect(filter);
+
+        g.connect(p); p.connect(master);
+    }
+
+    function playAcidBass(freq, t) {
+        const o = ac.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.value = freq;
+        
+        const f = ac.createBiquadFilter();
+        f.type = 'lowpass';
+        f.Q.value = 10;
+        f.frequency.setValueAtTime(100, t);
+        f.frequency.linearRampToValueAtTime(800, t+0.1);
+        f.frequency.linearRampToValueAtTime(100, t+0.2);
+
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0.5, t);
+        g.gain.linearRampToValueAtTime(0, t+0.2);
+
+        o.connect(f); f.connect(g); g.connect(master);
+        o.start(t); o.stop(t+0.2);
+    }
+
+    function playKick(t) {
+        const o = ac.createOscillator();
+        const g = ac.createGain();
+        o.frequency.setValueAtTime(150, t);
+        o.frequency.exponentialRampToValueAtTime(40, t+0.1);
+        g.gain.setValueAtTime(1, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t+0.4);
+        o.connect(g); g.connect(master);
+        o.start(t); o.stop(t+0.4);
+    }
+
+    function playNoise(t, dur, type) {
+        const b = ac.createBuffer(1, ac.sampleRate*dur, ac.sampleRate);
+        const d = b.getChannelData(0);
+        for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+        const s = ac.createBufferSource(); s.buffer=b;
+        
+        const f = ac.createBiquadFilter();
+        if(type==='snare') { f.type='highpass'; f.frequency.value=1000; }
+        else { f.type='bandpass'; f.frequency.value=2000; } // Rise
+
+        const g = ac.createGain();
+        g.gain.setValueAtTime(type==='rise'?0:0.3, t);
+        if(type==='rise') g.gain.linearRampToValueAtTime(0.5, t+dur);
+        else g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+
+        s.connect(f); f.connect(g); g.connect(master);
+        s.start(t);
     }
 
     // --- SEQUENCER ---
@@ -448,95 +406,86 @@
         const sec16 = 60/tempo/4;
         const lookahead = 0.1;
 
-        while(nextNoteTime < ac.currentTime + lookahead) {
-            processStep(step, nextNoteTime);
-            nextNoteTime += sec16;
+        while(nextTime < ac.currentTime + lookahead) {
+            playStep(step, nextTime);
+            nextTime += sec16;
             step++;
             if(step===16) {
                 step=0; measure++;
-                updateStructure();
+                if(measure % 4 === 0) chordIdx = (chordIdx + 1) % CHORDS.length;
+                updatePhase();
             }
         }
         if(isPlaying) setTimeout(schedule, 25);
     }
 
-    function updateStructure() {
-        // 1. CHORD PROGRESSION
-        if(measure % 4 === 0) {
-            // Cycle through i - VI - III - VII
-            currentChordDegree = [0, 5, 2, 6][(measure/4)%4];
-        }
-
-        // 2. SONG SECTIONS
-        // Every 16 measures, change section
-        if(measure % 16 === 0) {
-            const sections = ["INTRO", "BUILD", "CLIMAX", "COOL"];
-            const idx = Math.floor(measure/16) % sections.length;
-            section = sections[idx];
+    function updatePhase() {
+        const p = PHASES[currentPhase];
+        if(measure >= phaseStartMeasure + p.bars) {
+            currentPhase = (currentPhase + 1) % PHASES.length;
+            phaseStartMeasure = measure;
+            const newP = PHASES[currentPhase];
+            document.getElementById('phaseDisplay').innerText = newP.name;
             
-            document.getElementById('structVal').innerText = section;
-            
-            if(section === "CLIMAX") {
-                evolveMusic(); // Upgrade melody
-                showMsg("CLIMAX REACHED");
-            }
+            // Auto-Riser on transition
+            if(newP.name === "THE DROP") playNoise(ac.currentTime, 2.0, 'rise');
         }
     }
 
-    function processStep(s, t) {
-        // Mouse Filter Control override
-        const targetF = 200 + (mouseY * 15000);
-        filter.frequency.setTargetAtTime(targetF, t, 0.1);
+    function playStep(s, t) {
+        const p = PHASES[currentPhase];
+        
+        // Dynamic Filter Control (Mouse Y)
+        const targetFreq = 100 + (Math.pow(mouseY, 2) * 15000);
+        filter.frequency.setTargetAtTime(targetFreq, t, 0.1);
 
-        // 1. KICK
-        let kickOn = (section !== "INTRO" && section !== "COOL");
-        if(kickOn && s % 4 === 0) playKick(t);
+        // 1. Kick
+        if(p.kick && s%4===0) playKick(t);
 
-        // 2. BASS
-        // Use pattern
-        if(section !== "INTRO") {
-            if(bassPattern[s] === 1) {
-                playBass(t, getScaleNote(currentChordDegree, 1));
-            }
+        // 2. Bass (Acid)
+        if(p.bass && s%4===2) playAcidBass(SCALE[0], t);
+
+        // 3. Arp / Melody
+        if(p.arp && s%2===0) {
+            const chord = CHORDS[chordIdx];
+            const noteIdx = MOTIF[(measure*8 + s/2) % MOTIF.length]; // Walk motif
+            // Map motif index to chord tone approximation
+            const freq = SCALE[noteIdx % SCALE.length] * 2;
+            playSuperSaw(freq, t, 0.1, 0.1, Math.sin(t*5));
         }
 
-        // 3. ARP (Melody)
-        if(section === "BUILD" || section === "CLIMAX") {
-            if(s % 2 === 0) {
-                // Use motif relative to chord
-                const motifNote = motif[(s/2) % motif.length];
-                const note = getScaleNote(currentChordDegree + motifNote, 3);
-                playArp(t, note);
-            }
+        // 4. Pad / Chords (Big wall)
+        if(p.pad && s===0) {
+             CHORDS[chordIdx].forEach(idx => {
+                 playSuperSaw(SCALE[idx], t, 2.0, 0.15, 0); // Long sustain
+             });
         }
-
-        // 4. PAD
-        if(s === 0 && measure % 2 === 0) {
-            playPad(t, getScaleNote(currentChordDegree, 2));
-            playPad(t, getScaleNote(currentChordDegree+2, 2)); // 3rd
+        
+        // 5. Build-up Snare
+        if(p.name === "RISING" && measure % 8 > 6) {
+            if(s%2===0) playNoise(t, 0.05, 'snare'); // Snare roll
         }
     }
 
-    // --- INIT ---
+    // --- BOOT ---
     document.getElementById('startBtn').addEventListener('click', () => {
         document.getElementById('ui').style.opacity = 0;
-        setTimeout(() => document.getElementById('ui').style.display='none', 800);
-        document.querySelector('.hud-bottom').style.opacity = 1;
-        document.querySelector('.hud-top').style.opacity = 1;
-        document.getElementById('hintBox').style.opacity = 1;
-        setTimeout(() => document.getElementById('hintBox').style.opacity = 0, 4000);
+        setTimeout(()=>document.getElementById('ui').style.display='none', 1000);
+        document.querySelector('.hud').style.opacity = 1;
+        
+        if(ac && ac.state === 'suspended') ac.resume();
+        else {
+            init3D();
+            initAudio();
+            isPlaying = true;
+            nextTime = ac.currentTime + 0.1;
+            
+            // Set initial state
+            document.getElementById('phaseDisplay').innerText = PHASES[0].name;
 
-        init3D();
-        initAudio();
-        
-        if(ac.state === 'suspended') ac.resume();
-        isPlaying = true;
-        nextNoteTime = ac.currentTime + 0.1;
-        
-        schedule();
-        animate();
+            animate();
+        }
     });
-
 </script>
 </body>
 </html>
