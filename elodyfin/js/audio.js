@@ -248,6 +248,11 @@ function processStep(s, t) {
 
     const rootDeg = PROGRESSION[currentChordIdx].degree;
 
+    if (s % 4 === 0) {
+        // Dispatch with timestamp for precise visual sync
+        window.dispatchEvent(new CustomEvent('ns-beat-scheduled', { detail: { time: t } }));
+    }
+
     if (p.kick && s % 4 === 0) playKick(t, 1.0);
 
     if (p.bass) {

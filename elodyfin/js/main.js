@@ -1,7 +1,7 @@
 import { loadGame, resetGame, gameData } from './state.js';
-import { initAudio, startSequencer, stopSequencer, setBoost, getCurrentPhase } from './audio.js';
+import { initAudio, startSequencer, stopSequencer, setBoost, getCurrentPhase, ac } from './audio.js';
 import { initVisuals, animate } from './visuals.js';
-import { getRandomWord } from './words.js';
+import { getRandomMode } from './words.js';
 
 // --- INIT ---
 loadGame();
@@ -71,43 +71,153 @@ window.addEventListener('ns-chord', (e) => {
     chordText.innerText = e.detail.name;
 
     // Emotional Word Trigger
-    // Check phase via gameData or just access the text from the UI (hacky but works)
-    // Better: Helper function
-    const currentPhaseName = phaseText.innerText.split(" ")[0]; // "INTRO", "BUILD" etc.
-
-    if (currentPhaseName === "BUILD" || currentPhaseName === "CLIMAX") {
-        // Higher chance in CLIMAX
-        const chance = currentPhaseName === "CLIMAX" ? 0.7 : 0.3;
-        if (Math.random() < chance) {
-            triggerEmotionalWord();
-        }
+    // Use getCurrentPhase for reliability
+    const currentPhase = getCurrentPhase();
+    if (currentPhase && (currentPhase.name === "BUILD" || currentPhase.name === "CLIMAX")) {
+        // ... handled in ns-beat now
     }
 });
 
-function triggerEmotionalWord() {
+// Queue for rhythmic delivery
+let verseQueue = [];
+let beatQueue = []; // Timestamps of beats
+
+window.addEventListener('ns-beat-scheduled', (e) => {
+    beatQueue.push(e.detail.time);
+});
+
+// Precision Sync Loop
+function syncLoop() {
+    requestAnimationFrame(syncLoop);
+    if (!ac) return;
+
+    const now = ac.currentTime;
+    // Tolerance window (e.g. if we missed it by a frame, still play, but don't play too far in future)
+
+    while (beatQueue.length > 0) {
+        if (beatQueue[0] <= now) {
+            beatQueue.shift();
+            handleOnBeat();
+        } else {
+            break; // Next beat is in future
+        }
+    }
+}
+syncLoop();
+
+// Queue for content
+let verseData = [];      // Current verse (array of lines of syllables)
+let pendingVisualConfig = null; // Store config for delayed application
+let currentLineIdx = 0;
+let currentSylIdx = 0;
+let currentLineEl = null;
+
+// Beat Trigger Logic
+function handleOnBeat() {
+    const currentPhase = getCurrentPhase();
+    if (!currentPhase) return;
+
+    // A. Check if we have active content
+    if (!verseData || verseData.length === 0) {
+        // CONTINUOUS FLOW: Auto-refill immediately in active phases
+        // No probability gaps. If we are in BUILD/CLIMAX, we flow.
+        if (currentPhase.name === "BUILD" || currentPhase.name === "CLIMAX") {
+            const mode = getRandomMode(gameData.cycle);
+            verseData = mode.verses[0]; // Get the 4-line verse
+
+            // STORE CONFIG (Delayed Apply: "Execute Code")
+            pendingVisualConfig = mode.config;
+
+            currentLineIdx = 0;
+            currentSylIdx = 0;
+        } else {
+            return; // Silence in INTRO/RELEASE
+        }
+    }
+
+    // B. Trigger Next Syllable
+    triggerNextSyllable();
+}
+
+function triggerNextSyllable() {
     const container = document.getElementById('emotional-word-overlay');
     if (!container) return;
 
-    const word = getRandomWord();
-    const el = document.createElement('div');
-    el.classList.add('emotional-word');
-    el.innerText = word;
+    // 1. Get current line data
+    const lineData = verseData[currentLineIdx]; // ["<span..>Syl</span>", "la", "ble"]
 
-    // Random position offset
-    const x = (Math.random() - 0.5) * 40; // +/- 20%
-    const y = (Math.random() - 0.5) * 30;
+    // 2. Start new line element if needed
+    if (currentSylIdx === 0) {
 
-    // We modify margin instead of transform to avoid conflict with animation
-    el.style.marginLeft = `${x}%`;
-    el.style.marginTop = `${y}%`;
+        // NEW: Check if we need a new VERSE CONTAINER (Start of Verse)
+        if (currentLineIdx === 0) {
+            // Create a wrapper for the whole verse
+            const verseBlock = document.createElement('div');
+            verseBlock.classList.add('verse-block');
+            verseBlock.style.marginBottom = '20px'; // Spacing between formulas
 
-    container.innerHTML = ''; // Clear previous
-    container.appendChild(el);
+            // Append to overlay
+            container.appendChild(verseBlock);
 
-    // Cleanup after animation
-    setTimeout(() => {
-        if (container.contains(el)) container.removeChild(el);
-    }, 4000);
+            // LIMIT TO 2 VERSES (Current + Previous)
+            // "Old formulas disappeared immediately"
+            while (container.children.length > 2) {
+                container.removeChild(container.firstChild);
+            }
+
+            // Store reference to current verse block
+            // We can attach it to the container or use a global, but let's use lastChild
+        }
+
+        const currentVerseBlock = container.lastElementChild;
+
+        // Create new line container attached to Verse Block
+        currentLineEl = document.createElement('div');
+        currentLineEl.classList.add('emotional-word');
+        currentVerseBlock.appendChild(currentLineEl);
+    }
+
+    // Approximating syllables by spaces + 1? Or just random high density for effect
+    // Math Generation Metric
+    // const entropy = (Math.random() * 10).toFixed(4); // Removed by request
+
+    // 3. Append syllable
+    const syl = lineData[currentSylIdx];
+    const sylSpan = document.createElement('span');
+    sylSpan.classList.add('emotional-syllable'); // Trigger pop animation
+    sylSpan.innerHTML = syl; // Clean math symbols only
+    currentLineEl.appendChild(sylSpan);
+
+    // 4. Advance Pointers
+    currentSylIdx++;
+
+    // 5. Check End of Line
+    if (currentSylIdx >= lineData.length) {
+        // Line Complete
+        // Add Metric at end of line? Or just let it stick.
+        // Add class to trigger eventual fade out? 
+        // No, let's keep them solid until the whole block is removed.
+        // Or keep the fade out for lines is okay, as long as the whole block vanishes later.
+        currentLineEl.classList.add('line-finished');
+
+        // Prepare for next line
+        currentLineIdx++;
+        currentSylIdx = 0;
+        currentLineEl = null; // Reset current element ref
+
+        // Check End of Verse
+        if (currentLineIdx >= verseData.length) {
+            verseData = []; // Clear verse
+
+            // DELAYED VISUAL CONFIG: Execute now!
+            if (pendingVisualConfig) {
+                // Flash effect to signify "Code Executed"
+                window.dispatchEvent(new CustomEvent('ns-flash'));
+                window.dispatchEvent(new CustomEvent('ns-visual-config', { detail: pendingVisualConfig }));
+                pendingVisualConfig = null;
+            }
+        }
+    }
 }
 
 window.addEventListener('ns-ui-update', (e) => {

@@ -136,17 +136,34 @@ export function initVisuals() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Handle Color Phasing
+    // Handle Color Phasing (Phase-based)
     window.addEventListener('ns-phase', (e) => {
-        const pName = e.detail.name;
-        const palette = PALETTES[pName] || PALETTES["INTRO"];
+        // ... phase handling can stay or be overridden by math
+    });
 
+    // HANDLE MATH-DRIVEN VISUALS
+    window.addEventListener('ns-visual-config', (e) => {
+        const cfg = e.detail;
+
+        // Tween Uniforms (Smooth transition to new formula state)
+        // We update the "Target" variables that animate() uses, 
+        // OR we can tween the uniforms directly if we change animate() logic.
+        // Let's modify the globals that animate() uses as base inputs.
+
+        // We'll attach these targets to the uniforms object for storage
+        uniforms.targetWarp = cfg.warp;
+        uniforms.targetSpeed = cfg.speed;
+        uniforms.targetBass = cfg.bass;
+
+        // Tween Colors
         new TWEEN.Tween(uniforms.uColor1.value)
-            .to(new THREE.Color(palette.c1), 1000)
+            .to(new THREE.Color(cfg.colors.c1), 200) // Snappier 200ms
+            .easing(TWEEN.Easing.Quadratic.Out)
             .start();
 
         new TWEEN.Tween(uniforms.uColor2.value)
-            .to(new THREE.Color(palette.c2), 1000)
+            .to(new THREE.Color(cfg.colors.c2), 200)
+            .easing(TWEEN.Easing.Quadratic.Out)
             .start();
     });
 }
@@ -157,17 +174,25 @@ export function animate() {
     const time = clock.getElapsedTime();
     TWEEN.update(performance.now());
 
-    let targetSpeed = 50 + (gameData.cycle * 10);
-    let targetWarp = 1.0 + (gameData.cycle * 0.5);
-    const boosting = getBoost();
+    const uni = tunnelSystem.material.uniforms;
 
+    // Defaults if config not set yet
+    const tSpeed = (uni.targetSpeed !== undefined) ? uni.targetSpeed : (50 + gameData.cycle * 10);
+    const tWarp = (uni.targetWarp !== undefined) ? uni.targetWarp : 1.0;
+    const tBassSens = (uni.targetBass !== undefined) ? uni.targetBass : 1.0;
+
+    let targetSpeed = tSpeed;
+    let targetWarp = tWarp;
+
+    // Boost override
+    const boosting = getBoost();
     if (boosting) {
         targetSpeed *= 4;
         targetWarp += 5.0;
     }
 
-    const uni = tunnelSystem.material.uniforms;
     uni.uTime.value = time;
+    // Smooth interpolation to target
     uni.uSpeed.value += (targetSpeed - uni.uSpeed.value) * 0.05;
     uni.uWarp.value += (targetWarp - uni.uWarp.value) * 0.05;
 
@@ -175,7 +200,11 @@ export function animate() {
         const data = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(data);
         const bass = data[4] / 255.0;
-        uni.uBass.value += (bass - uni.uBass.value) * 0.3;
+
+        // Use Math-driven bass sensitivity
+        const bassReaction = bass * tBassSens;
+
+        uni.uBass.value += (bassReaction - uni.uBass.value) * 0.3;
 
         if (bass > 0.7) {
             camera.position.x = (Math.random() - 0.5) * 0.5;
