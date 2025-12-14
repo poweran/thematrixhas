@@ -14,7 +14,7 @@
             z-index: 20; display: flex; flex-direction: column;
             justify-content: center; align-items: center;
             background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, #000 100%);
-            transition: opacity 1s;
+            transition: opacity 0.8s ease-in-out;
         }
 
         h1 {
@@ -271,9 +271,13 @@
         renderer.render(scene, camera);
         
         // HUD
-        document.getElementById('filterVal').innerText = Math.floor(energy * 100) + "%";
-        document.getElementById('filterBar').style.width = (energy * 100) + "%";
-        document.getElementById('energyVal').innerText = phase.name;
+        const filterValEl = document.getElementById('filterVal');
+        const filterBarEl = document.getElementById('filterBar');
+        const energyValEl = document.getElementById('energyVal');
+        
+        if (filterValEl) filterValEl.innerText = Math.floor(energy * 100) + "%";
+        if (filterBarEl) filterBarEl.style.width = (energy * 100) + "%";
+        if (energyValEl) energyValEl.innerText = phase.name;
     }
 
     // --- AUDIO ENGINE ---
@@ -469,14 +473,18 @@
 
     // --- BOOT ---
     document.getElementById('startBtn').addEventListener('click', () => {
-        document.getElementById('ui').style.opacity = 0;
-        setTimeout(()=>document.getElementById('ui').style.display='none', 1000);
-        document.querySelector('.hud').style.opacity = 1;
-        
-        if(ac && ac.state === 'suspended') ac.resume();
-        else {
+        try {
+            const ui = document.getElementById('ui');
+            ui.style.opacity = 0;
+            setTimeout(() => ui.style.display = 'none', 800);
+            
+            document.getElementById('hudTop').style.opacity = 1;
+            document.getElementById('hudBottom').style.opacity = 1;
+
             init3D();
             initAudio();
+            
+            if (ac.state === 'suspended') ac.resume();
             isPlaying = true;
             nextTime = ac.currentTime + 0.1;
             
@@ -484,8 +492,12 @@
             document.getElementById('phaseDisplay').innerText = PHASES[0].name;
 
             animate();
+        } catch(e) {
+            console.error("Initialization Failed", e);
+            alert("Audio System Failed to Start. Please refresh.");
         }
     });
+
 </script>
 </body>
 </html>
