@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEON ODYSSEY: ETERNAL</title>
+    <title>NEON ODYSSEY: ASCENSION</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body { 
@@ -93,7 +93,7 @@
 
 <div class="ui-layer" id="ui">
     <h1>NEON<br>ODYSSEY</h1>
-    <div class="subtitle">Eternal Progression</div>
+    <div class="subtitle">Ascension Protocol</div>
     <button id="startBtn">INITIATE SEQUENCE</button>
     <button id="resetBtn">RESET DATA</button>
 </div>
@@ -193,6 +193,7 @@
     let reverbNode;
     let clock;
     let analyser;
+    let saveInterval;
     
     // Sequencer State
     let nextNoteTime = 0;
@@ -212,17 +213,16 @@
     
     function generatePhase(type) {
         // Procedurally generate parameters based on Cycle count
-        // Increased multiplier for faster evolution (0.25 instead of 0.1)
         const intensityMult = 1 + (gameData.cycle * 0.25); 
         
         if (type === "BUILD") {
-            return { name: "UPLINK " + gameData.cycle, bars: 8, kick: true, bass: true, arp: true, pad: true, filter: 0.4, speed: 100 * intensityMult };
+            return { name: "UPLINK " + gameData.cycle, bars: 8, kick: true, bass: true, arp: true, pad: true, lead: false, filter: 0.4, speed: 100 * intensityMult };
         } else if (type === "DROP") {
-            return { name: "VELOCITY " + gameData.cycle, bars: 16, kick: true, bass: true, arp: true, pad: true, filter: 1.0, speed: 600 * intensityMult };
+            return { name: "VELOCITY " + gameData.cycle, bars: 16, kick: true, bass: true, arp: true, pad: true, lead: true, filter: 1.0, speed: 600 * intensityMult };
         } else if (type === "BREAK") {
-            return { name: "VOID", bars: 8, kick: false, bass: false, arp: true, pad: true, filter: 0.2, speed: 50 };
+            return { name: "VOID", bars: 8, kick: false, bass: false, arp: true, pad: true, lead: true, filter: 0.3, speed: 50 };
         } else { // EVOLVE (Transition)
-            return { name: "EVOLUTION", bars: 8, kick: true, bass: false, arp: false, pad: true, filter: 0.5, speed: 200 * intensityMult };
+            return { name: "EVOLUTION", bars: 8, kick: true, bass: false, arp: false, pad: true, lead: false, filter: 0.5, speed: 200 * intensityMult };
         }
     }
 
@@ -254,7 +254,7 @@
         const icon = document.getElementById('saveIcon');
         if(icon) {
             icon.style.opacity = 1;
-            setTimeout(() => icon.style.opacity = 0, 2000);
+            setTimeout(() => icon.style.opacity = 0, 1000);
         }
     }
 
@@ -295,8 +295,6 @@
         const colors = [];
         const offsets = [];
 
-        // Dynamic Palette based on Cycle?
-        // Let's stick to Cyan/Magenta for consistency but maybe shift hue later
         const c1 = new THREE.Color(0x00ffff);
         const c2 = new THREE.Color(0xff00ff);
         const c3 = new THREE.Color(0xffffff);
@@ -375,7 +373,7 @@
             gameData.score += dt * 10; // Passive points
         }
         
-        // Ensure UI elements exist before updating
+        // Update score visually (throttled to avoid layout thrashing ideally, but ok here)
         const scoreEl = document.getElementById('scoreVal');
         if (scoreEl) scoreEl.innerText = Math.floor(gameData.score);
 
@@ -401,7 +399,6 @@
         
         const filterP = Math.floor(masterFilter ? masterFilter.frequency.value / 200 : 0);
         
-        // Safety checks for HUD updates
         const elFilter = document.getElementById('filterVal');
         if(elFilter) elFilter.innerText = filterP + "%";
         
@@ -410,7 +407,20 @@
     }
 
     // --- AUDIO ENGINE ---
-    const SCALE = [46.25, 55.00, 65.41, 82.41, 98.00];
+    // RICH HARMONIC SCALE (F Minor Extended)
+    // F2, G2, Ab2, Bb2, C3, Db3, Eb3
+    const ROOT = 43.65; // F1
+    // Harmonic Series ratios derived scale
+    const SCALE = [
+        ROOT * 2, // F2
+        ROOT * 2 * 1.2, // Ab2
+        ROOT * 2 * 1.5, // C3
+        ROOT * 4, // F3
+        ROOT * 4 * 1.2, // Ab3
+        ROOT * 4 * 1.5, // C3
+        ROOT * 8, // F4
+        ROOT * 8 * 1.25 // A4 (Major lift occasionally?)
+    ];
 
     function initAudio() {
         ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -420,13 +430,13 @@
         masterFilter = ac.createBiquadFilter();
         masterFilter.type = 'lowpass';
         masterFilter.frequency.value = 200; 
-        masterFilter.Q.value = 2;
+        masterFilter.Q.value = 3;
 
         limiter = ac.createDynamicsCompressor();
-        limiter.threshold.value = -3;
+        limiter.threshold.value = -5;
         limiter.ratio.value = 20;
 
-        const len = ac.sampleRate * 2;
+        const len = ac.sampleRate * 3;
         const buf = ac.createBuffer(2, len, ac.sampleRate);
         for(let i=0; i<len; i++) {
             let d = (1 - i/len);
@@ -436,7 +446,7 @@
         reverbNode = ac.createConvolver();
         reverbNode.buffer = buf;
         const revMix = ac.createGain();
-        revMix.gain.value = 0.3;
+        revMix.gain.value = 0.4;
 
         master.connect(masterFilter);
         masterFilter.connect(limiter);
@@ -456,7 +466,7 @@
         const g = ac.createGain();
         osc.frequency.setValueAtTime(150, t);
         osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
-        g.gain.setValueAtTime(1.2, t);
+        g.gain.setValueAtTime(1.5, t);
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
         osc.connect(g); g.connect(master);
         osc.start(t); osc.stop(t+0.3);
@@ -469,11 +479,12 @@
         
         const f = ac.createBiquadFilter();
         f.type = 'lowpass';
-        f.frequency.setValueAtTime(400, t);
+        f.frequency.setValueAtTime(800, t);
         f.frequency.exponentialRampToValueAtTime(100, t + 0.2);
+        f.Q.value = 5; // Acid resonance
         
         const g = ac.createGain();
-        g.gain.setValueAtTime(0.5, t);
+        g.gain.setValueAtTime(0.6, t);
         g.gain.linearRampToValueAtTime(0, t+0.2);
         
         osc.connect(f); f.connect(g); g.connect(master);
@@ -486,23 +497,56 @@
         osc.frequency.setValueAtTime(freq, t);
         
         const g = ac.createGain();
-        g.gain.setValueAtTime(0.1, t);
+        g.gain.setValueAtTime(0.15, t);
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
         
-        osc.connect(g); g.connect(masterFilter);
+        // Stereo spread
+        const pan = ac.createStereoPanner();
+        pan.pan.value = Math.sin(t * 10);
+        
+        osc.connect(g); g.connect(pan); pan.connect(masterFilter);
         osc.start(t); osc.stop(t+0.1);
     }
 
     function playPad(t, freq, dur) {
-        const osc = ac.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.value = freq;
+        // SuperSaw Pad Chord
+        const osc1 = ac.createOscillator(); osc1.type = 'sawtooth';
+        const osc2 = ac.createOscillator(); osc2.type = 'sawtooth';
+        osc1.frequency.value = freq;
+        osc2.frequency.value = freq * 1.5; // 5th
+        
+        osc1.detune.value = -10;
+        osc2.detune.value = 10;
+
         const g = ac.createGain();
         g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(0.05, t + 0.1);
+        g.gain.linearRampToValueAtTime(0.1, t + 0.5);
         g.gain.linearRampToValueAtTime(0, t + dur);
-        osc.connect(g); g.connect(masterFilter);
-        osc.start(t); osc.stop(t+dur);
+        
+        osc1.connect(g); osc2.connect(g);
+        g.connect(masterFilter);
+        osc1.start(t); osc1.stop(t+dur);
+        osc2.start(t); osc2.stop(t+dur);
+    }
+    
+    function playLead(t, freq) {
+        // Soaring Lead
+        const osc = ac.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, t);
+        // Portamento slide from previous note simulation
+        osc.frequency.linearRampToValueAtTime(freq * 1.01, t + 0.5); 
+        
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.1, t + 0.05);
+        g.gain.linearRampToValueAtTime(0, t + 0.5);
+        
+        const delay = ac.createDelay();
+        delay.delayTime.value = 0.25;
+        
+        osc.connect(g); g.connect(masterFilter); g.connect(delay); delay.connect(masterFilter);
+        osc.start(t); osc.stop(t+0.5);
     }
 
     function playNoiseSweep(t, dur) {
@@ -525,7 +569,7 @@
 
     // --- INFINITE SEQUENCER ---
     function schedule() {
-        const tempo = 138 + (gameData.cycle * 2); // Get faster each cycle
+        const tempo = 138 + (gameData.cycle * 2); 
         const secPer16th = 60/tempo/4;
         const lookahead = 0.1;
 
@@ -543,27 +587,22 @@
     }
 
     function updateProgression() {
-        // If we don't have a phase, or we exceeded current phase bars
         if (!currentPhase || measure >= phaseStartMeasure + currentPhase.bars) {
             
-            // Move to next phase type in loop
             const type = phaseSequence[phaseIndex % phaseSequence.length];
             phaseIndex++;
             
-            // If we completed a full loop (Evolution), increment cycle
             if (type === "EVOLVE") {
                 gameData.cycle++;
+                saveGame();
             }
             
-            // Generate phase parameters based on current game state
             currentPhase = generatePhase(type);
             phaseStartMeasure = measure;
             
-            // UI Update (Safe check)
             const phaseTextEl = document.getElementById('phaseText');
             if (phaseTextEl) phaseTextEl.innerText = currentPhase.name;
             
-            // Audio Automation
             const rampTime = currentPhase.name.includes("VELOCITY") ? 0.1 : 4.0;
             const targetFreq = currentPhase.filter * 20000 + 200;
             masterFilter.frequency.setTargetAtTime(targetFreq, ac.currentTime, rampTime);
@@ -574,7 +613,6 @@
             saveGame();
         }
         
-        // Progress Bar
         const progress = (measure - phaseStartMeasure) / currentPhase.bars;
         const progBar = document.getElementById('progressBar');
         if (progBar) progBar.style.width = (progress * 100) + "%";
@@ -584,11 +622,22 @@
             saveGame();
         }
     }
+    
+    // Generative Motif Logic
+    let motif = [0, 2, 4, 7]; // Initial
+    
+    function mutateMotif() {
+        // Change one note in the motif
+        const idx = Math.floor(Math.random() * 4);
+        motif[idx] = Math.floor(Math.random() * 8); // Pick scale index
+    }
 
     function processStep(step, t) {
         if (!currentPhase) return;
 
-        // Manual Boost
+        // Mutate melody every 4 bars
+        if (step === 0 && measure % 4 === 0) mutateMotif();
+
         if (isBoosting) {
             masterFilter.frequency.setTargetAtTime(20000, t, 0.1);
         }
@@ -601,29 +650,34 @@
             playBass(t, SCALE[0]);
         }
 
-        // 3. ARP (Scales with Cycle)
+        // 3. ARP (Evolved)
         if (currentPhase.arp && step % 2 === 0) {
-            const noteIdx = (step % 3) + (measure % 2);
-            let freq = SCALE[noteIdx % SCALE.length] * 2;
-            if (isBoosting) freq *= 2;
+            // Use Motif
+            const noteIndex = motif[(step / 2) % 4];
+            let freq = SCALE[noteIndex] * 2;
             
-            // FASTER EVOLUTION: Add complexity immediately from Cycle 2
-            if (gameData.cycle > 1) { 
-                if (step % 4 === 1) freq *= 1.5; // Syncopation
-            }
+            if (isBoosting) freq *= 2;
+            if (gameData.cycle > 1 && step % 4 === 1) freq *= 1.5; 
             
             playArp(t, freq);
         }
 
         // 4. PAD
         if (currentPhase.pad && step === 0) {
-            playPad(t, SCALE[0]/2, 2.0);
-            playPad(t, SCALE[2]/2, 2.0);
+            playPad(t, SCALE[0]/2, 2.0); // F2
+        }
+        
+        // 5. LEAD (New Layer)
+        if (currentPhase.lead && step % 8 === 0) {
+             const leadNote = SCALE[motif[0] % SCALE.length] * 4;
+             playLead(t, leadNote);
         }
     }
 
     // --- INIT ---
-    // Load save immediately
+    // Start Auto-Save Interval
+    setInterval(saveGame, 1000); // Save every second
+
     loadGame();
 
     document.getElementById('startBtn').addEventListener('click', () => {
@@ -641,7 +695,6 @@
         isPlaying = true;
         nextNoteTime = ac.currentTime + 0.1;
         
-        // Kickstart progression
         updateProgression();
         
         schedule();
