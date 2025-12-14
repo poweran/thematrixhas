@@ -212,7 +212,8 @@
     
     function generatePhase(type) {
         // Procedurally generate parameters based on Cycle count
-        const intensityMult = 1 + (gameData.cycle * 0.1); 
+        // Increased multiplier for faster evolution (0.25 instead of 0.1)
+        const intensityMult = 1 + (gameData.cycle * 0.25); 
         
         if (type === "BUILD") {
             return { name: "UPLINK " + gameData.cycle, bars: 8, kick: true, bass: true, arp: true, pad: true, filter: 0.4, speed: 100 * intensityMult };
@@ -398,8 +399,9 @@
         camera.rotation.z = Math.sin(time * 0.1) * 0.2;
         renderer.render(scene, camera);
         
-        // Update HUD Details
         const filterP = Math.floor(masterFilter ? masterFilter.frequency.value / 200 : 0);
+        
+        // Safety checks for HUD updates
         const elFilter = document.getElementById('filterVal');
         if(elFilter) elFilter.innerText = filterP + "%";
         
@@ -551,7 +553,6 @@
             // If we completed a full loop (Evolution), increment cycle
             if (type === "EVOLVE") {
                 gameData.cycle++;
-                saveGame(); // SAVE DATA ON CYCLE COMPLETE
             }
             
             // Generate phase parameters based on current game state
@@ -568,6 +569,9 @@
             masterFilter.frequency.setTargetAtTime(targetFreq, ac.currentTime, rampTime);
             
             if(type === "DROP" || type === "EVOLVE") playNoiseSweep(ac.currentTime, 2.0);
+
+            // SAVE ON PHASE CHANGE
+            saveGame();
         }
         
         // Progress Bar
@@ -575,8 +579,8 @@
         const progBar = document.getElementById('progressBar');
         if (progBar) progBar.style.width = (progress * 100) + "%";
         
-        // Also save periodically inside Drop for safety
-        if (measure % 16 === 0) {
+        // FREQUENT SAVE (Every 4 measures)
+        if (measure % 4 === 0) {
             saveGame();
         }
     }
@@ -602,8 +606,12 @@
             const noteIdx = (step % 3) + (measure % 2);
             let freq = SCALE[noteIdx % SCALE.length] * 2;
             if (isBoosting) freq *= 2;
-            // Add complexity with cycle
-            if (gameData.cycle > 2 && step % 4 === 0) freq *= 1.5; 
+            
+            // FASTER EVOLUTION: Add complexity immediately from Cycle 2
+            if (gameData.cycle > 1) { 
+                if (step % 4 === 1) freq *= 1.5; // Syncopation
+            }
+            
             playArp(t, freq);
         }
 
