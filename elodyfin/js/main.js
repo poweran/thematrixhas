@@ -1,6 +1,7 @@
 import { loadGame, resetGame, gameData } from './state.js';
 import { initAudio, startSequencer, stopSequencer, setBoost, getCurrentPhase } from './audio.js';
 import { initVisuals, animate } from './visuals.js';
+import { getRandomWord } from './words.js';
 
 // --- INIT ---
 loadGame();
@@ -68,7 +69,46 @@ window.addEventListener('ns-phase', (e) => {
 
 window.addEventListener('ns-chord', (e) => {
     chordText.innerText = e.detail.name;
+
+    // Emotional Word Trigger
+    // Check phase via gameData or just access the text from the UI (hacky but works)
+    // Better: Helper function
+    const currentPhaseName = phaseText.innerText.split(" ")[0]; // "INTRO", "BUILD" etc.
+
+    if (currentPhaseName === "BUILD" || currentPhaseName === "CLIMAX") {
+        // Higher chance in CLIMAX
+        const chance = currentPhaseName === "CLIMAX" ? 0.7 : 0.3;
+        if (Math.random() < chance) {
+            triggerEmotionalWord();
+        }
+    }
 });
+
+function triggerEmotionalWord() {
+    const container = document.getElementById('emotional-word-overlay');
+    if (!container) return;
+
+    const word = getRandomWord();
+    const el = document.createElement('div');
+    el.classList.add('emotional-word');
+    el.innerText = word;
+
+    // Random position offset
+    const x = (Math.random() - 0.5) * 40; // +/- 20%
+    const y = (Math.random() - 0.5) * 30;
+
+    // We modify margin instead of transform to avoid conflict with animation
+    el.style.marginLeft = `${x}%`;
+    el.style.marginTop = `${y}%`;
+
+    container.innerHTML = ''; // Clear previous
+    container.appendChild(el);
+
+    // Cleanup after animation
+    setTimeout(() => {
+        if (container.contains(el)) container.removeChild(el);
+    }, 4000);
+}
 
 window.addEventListener('ns-ui-update', (e) => {
     // High frequency updates
