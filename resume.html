@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artur Yudin | Software Architect Interactive Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Chart Containers - Mandatory Strict Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Default height */
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px; /* Taller on desktop */
+            }
+        }
+
+        .chart-container-sm {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+        }
+
+        /* Timeline Scrollbar */
+        .timeline-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .timeline-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .timeline-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .timeline-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Interactive Element Styles */
+        .role-card {
+            transition: all 0.2s ease-in-out;
+            border-left: 4px solid transparent;
+        }
+        .role-card:hover {
+            background-color: #f8fafc;
+            transform: translateX(4px);
+        }
+        .role-card.active {
+            border-left-color: #4f46e5; /* Indigo 600 */
+            background-color: #eff6ff; /* Blue 50 */
+        }
+        
+        /* Fade Animation for Content Updates */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <!-- Chosen Palette: Corporate Indigo & Slate
+         Background: Slate-50 (#f8fafc) - Professional, clean, light.
+         Text: Slate-900 (#0f172a) for readability.
+         Primary: Indigo-600 (#4f46e5) for actions, active states, and key data.
+         Secondary: Slate-500 for metadata.
+    -->
+
+    <!-- Application Structure Plan:
+         1. **Header**: Professional identity, contact info, and role definition.
+         2. **Executive Dashboard (KPIs)**: Instant quantitative proof of seniority (Years, RPS, Team size).
+         3. **Competency Visualization**: Charts showing Tech Stack (Years) and Domain Expertise (Radar).
+         4. **Interactive Career Log (Timeline)**: A master-detail view. 
+            - Left: List of roles (Bitcraft, Wildberries, etc.).
+            - Right: Detail panel with Summary, Tech Stack, and specific Achievements.
+            - Justification: Allows users to drill down into specific experiences (e.g., "Tell me about the payment gateways") without cluttering the page.
+         5. **Impact Analysis (Case Studies)**: Visualizing the "Before/After" metrics mentioned in the resume (Deployment time, Test coverage).
+         6. **Footer**: Education and Languages.
+    -->
+
+    <!-- Visualization & Content Choices:
+         - **Tech Stack Bar Chart**: To visualize the dominant languages (Go) vs others (TS, Python).
+         - **Impact Bar Charts**: To quantify success (e.g., 600s to 10s deployment).
+         - **Interactive List**: To organize the rich history of 6+ major roles efficiently.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        <!-- HEADER -->
+        <header class="mb-12 border-b border-slate-200 pb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">Artur Yudin</h1>
+                <p class="text-xl text-indigo-600 font-semibold mt-2">Senior Backend Engineer / Software Architect</p>
+                <div class="mt-4 flex flex-wrap gap-4 text-sm text-slate-600 font-medium">
+                    <span class="flex items-center gap-1">📍 Yerevan, Armenia</span>
+                    <a href="mailto:artur.yudin.88@gmail.com" class="hover:text-indigo-600 transition-colors flex items-center gap-1">✉️ artur.yudin.88@gmail.com</a>
+                    <span class="flex items-center gap-1">📞 +374 95 019 753</span>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <a href="https://linkedin.com/in/superslimfeel" target="_blank" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-sm">LinkedIn</a>
+                <a href="https://t.me/superslimfeel" target="_blank" class="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg font-medium transition-colors shadow-sm">Telegram</a>
+            </div>
+        </header>
+
+        <!-- INTRO & KPI DASHBOARD -->
+        <section class="mb-16">
+            <div class="mb-6">
+                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Executive Summary</h2>
+                <p class="text-lg text-slate-700 max-w-4xl leading-relaxed">
+                    Software Architect with <strong>11+ years</strong> of experience building high-load, fault-tolerant systems in Fintech and E-commerce. Expert in <strong>Go (Golang)</strong>, microservices migration, and system optimization. Proven ability to handle traffic up to <strong>50k RPS</strong> and lead engineering teams to increase velocity by 30%.
+                </p>
+            </div>
+            
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-3xl font-bold text-slate-900">11+</div>
+                    <div class="text-xs font-semibold text-slate-500 uppercase mt-1">Years Experience</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-3xl font-bold text-indigo-600">50k</div>
+                    <div class="text-xs font-semibold text-slate-500 uppercase mt-1">Peak RPS Managed</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-3xl font-bold text-slate-900">~90</div>
+                    <div class="text-xs font-semibold text-slate-500 uppercase mt-1">Payment Gateways</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-3xl font-bold text-emerald-600">60x</div>
+                    <div class="text-xs font-semibold text-slate-500 uppercase mt-1">Deploy Speedup</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISUAL SKILLS ANALYSIS -->
+        <section class="mb-16 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Technical Arsenal</h3>
+                        <p class="text-sm text-slate-500">Primary languages and frameworks by years of practice.</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">Core Competencies</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase mb-1">Architecture</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded">Microservices</span>
+                                <span class="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded">Clean Arch</span>
+                                <span class="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded">High-load</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase mb-1">Infrastructure</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded">K8s</span>
+                                <span class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded">Docker</span>
+                                <span class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded">GitLab CI</span>
+                                <span class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded">Prometheus</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase mb-1">Data</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded">PostgreSQL</span>
+                                <span class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded">Redis</span>
+                                <span class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded">Kafka</span>
+                                <span class="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded">Elasticsearch</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                     <h4 class="text-sm font-bold text-slate-900 mb-2">Soft Skills</h4>
+                     <ul class="text-sm text-slate-600 space-y-1">
+                        <li class="flex items-center gap-2">🔹 Team Leadership (5+ devs)</li>
+                        <li class="flex items-center gap-2">🔹 Mentoring & Code Review</li>
+                        <li class="flex items-center gap-2">🔹 Agile/Scrum Management</li>
+                     </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- INTERACTIVE EXPERIENCE TIMELINE -->
+        <section class="mb-16">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Professional Experience</h2>
+                    <p class="text-slate-500 text-sm">Select a role to view architectural challenges and solutions.</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row h-auto md:h-[600px]">
+                <!-- Role List (Sidebar) -->
+                <div class="md:w-1/3 border-r border-slate-200 overflow-y-auto timeline-list bg-slate-50 p-2" id="roleList">
+                    <!-- Javascript populates this -->
+                </div>
+
+                <!-- Detail View (Main Content) -->
+                <div class="md:w-2/3 p-6 overflow-y-auto timeline-list bg-white" id="roleDetails">
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400">
+                        <p>Select a position to view details</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- IMPACT METRICS -->
+        <section class="mb-16">
+             <h2 class="text-2xl font-bold text-slate-900 mb-6">Quantifiable Impact</h2>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Chart 1: Deployment Time -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="mb-4">
+                        <h3 class="font-bold text-slate-900">CI/CD Optimization (IP Chain)</h3>
+                        <p class="text-sm text-slate-500">Drastic reduction in deployment latency.</p>
+                    </div>
+                    <div class="chart-container-sm">
+                        <canvas id="impactChart1"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Test Coverage -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="mb-4">
+                        <h3 class="font-bold text-slate-900">Code Quality (Wildberries)</h3>
+                        <p class="text-sm text-slate-500">Test coverage improvement during refactoring.</p>
+                    </div>
+                    <div class="chart-container-sm">
+                        <canvas id="impactChart2"></canvas>
+                    </div>
+                </div>
+             </div>
+        </section>
+
+        <!-- FOOTER: EDUCATION & LANGUAGES -->
+        <footer class="bg-slate-900 text-slate-300 rounded-2xl p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h4 class="text-white font-bold text-lg mb-4">Education</h4>
+                <div class="mb-2">
+                    <div class="text-white font-semibold">National Polytechnic University of Armenia</div>
+                    <div class="text-sm text-slate-400">ICT and Electronics (2004 - 2006)</div>
+                    <div class="text-sm text-slate-500 mt-1">Yerevan, Armenia</div>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-white font-bold text-lg mb-4">Languages</h4>
+                <div class="space-y-2">
+                    <div class="flex justify-between border-b border-slate-700 pb-1">
+                        <span>Russian / Armenian</span>
+                        <span class="text-white font-semibold">Native</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-700 pb-1">
+                        <span>English</span>
+                        <span class="text-white font-semibold">Professional Working</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        
+        <div class="text-center text-slate-400 text-sm mt-8 pb-4">
+            &copy; 2025 Artur Yudin. Generated Interactive Resume.
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- DATA STORE ---
+        const resumeData = {
+            roles: [
+                {
+                    id: 'bitcraft',
+                    company: 'Bitcraft',
+                    role: 'Backend Developer',
+                    period: 'Sep 2024 — Apr 2025',
+                    duration: '8 mos',
+                    summary: 'Engineered complex fintech integrations and automated construction estimation systems (BIM) using Go.',
+                    stack: ['Go', 'go-ethereum', 'btcsuite', 'PostgreSQL', 'Redis', 'Sentry', 'Prometheus'],
+                    achievements: [
+                        'Integrated <strong>~90 payment gateways</strong> (Crypto & Fiat) handling diverse protocols.',
+                        'Built error-handling system reducing payment failures significantly.',
+                        'Developed <strong>BIM Construction Estimate</strong> system importing data from 3D models.',
+                        'Created algorithms for dynamic cost calculation based on regulatory DBs (FER, TER).'
+                    ]
+                },
+                {
+                    id: 'wildberries',
+                    company: 'Wildberries',
+                    role: 'Backend Developer',
+                    period: 'Oct 2023 — Jun 2024',
+                    duration: '9 mos',
+                    summary: 'Key contributor to a high-load authentication microservice for one of the largest e-commerce platforms.',
+                    stack: ['Go', 'OAuth', 'gRPC', 'K8s', 'Grafana', 'PostgreSQL'],
+                    achievements: [
+                        'Handled peak loads of <strong>10,000 – 50,000 RPS</strong>.',
+                        'Integrated OAuth for >50% of user base.',
+                        'Increased test coverage to <strong>90%</strong> while refactoring legacy code.'
+                    ]
+                },
+                {
+                    id: 'mag',
+                    company: 'MAG Development',
+                    role: 'Senior Backend Engineer',
+                    period: 'Mar 2022 — Mar 2023',
+                    duration: '1 yr 1 mo',
+                    summary: 'Architected a greenfield authorization system using microservices patterns.',
+                    stack: ['Go', 'gRPC', 'Redis', 'Docker', 'GitLab CI'],
+                    achievements: [
+                        'Designed auth system handling <strong>10,000 RPS</strong>.',
+                        'Optimized data storage for low-latency response using Redis.',
+                        'Implemented secure inter-service communication via gRPC.'
+                    ]
+                },
+                {
+                    id: 'kaspersky',
+                    company: 'Kaspersky Lab',
+                    role: 'Senior Backend Engineer',
+                    period: 'Mar 2021 — Mar 2022',
+                    duration: '1 yr 1 mo',
+                    summary: 'Backend infrastructure for cybersecurity tools (Targeted Attack Liaison).',
+                    stack: ['Go', 'Elasticsearch', 'Kafka', 'PostgreSQL'],
+                    achievements: [
+                        'Built backend for TAL security project.',
+                        'Integrated <strong>Elasticsearch</strong> for high-speed security event analysis.',
+                        'Delivered project from MVP to full production.'
+                    ]
+                },
+                {
+                    id: 'ipchain',
+                    company: 'IP Chain',
+                    role: 'Backend Developer',
+                    period: 'Jun 2019 — Mar 2021',
+                    duration: '1 yr 10 mos',
+                    summary: 'Led migration from Monolith to Microservices and modernized DevOps pipelines.',
+                    stack: ['Go', 'Python', 'Torch', 'Docker', 'CI/CD'],
+                    achievements: [
+                        'Migrated legacy monolith to microservices.',
+                        'Reduced deployment time from ~10 mins to <strong>5-10 seconds</strong>.',
+                        'Integrated Neural Networks (Torch) for video similarity search.'
+                    ]
+                },
+                {
+                    id: 'insight',
+                    company: 'Insight Agency',
+                    role: 'Lead Developer',
+                    period: 'Apr 2017 — Apr 2019',
+                    duration: '2 yrs 1 mo',
+                    summary: 'Technical leadership for high-traffic web portals.',
+                    stack: ['Node.js', 'TypeScript', 'PHP', 'PostgreSQL'],
+                    achievements: [
+                        'Managed team of 5 developers.',
+                        'Improved velocity by <strong>30%</strong> via Agile adoption.',
+                        'Served <strong>50,000 DAU</strong> on high-load portals.'
+                    ]
+                }
+            ],
+            techData: {
+                labels: ['Go', 'TypeScript', 'Python', 'SQL', 'Ruby', 'Bash'],
+                data: [5.5, 3, 3, 8, 2, 4] // Estimated years based on resume
+            }
+        };
+
+        // --- CHART INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initSkillsChart();
+            initImpactCharts();
+            renderTimeline();
+            selectRole(0); // Select Bitcraft by default
+        });
+
+        function initSkillsChart() {
+            const ctx = document.getElementById('skillsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: resumeData.techData.labels,
+                    datasets: [{
+                        label: 'Years of Experience',
+                        data: resumeData.techData.data,
+                        backgroundColor: '#4f46e5',
+                        borderRadius: 4,
+                        barThickness: 24
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { display: false } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function initImpactCharts() {
+            // Chart 1: Deployment Time
+            const ctx1 = document.getElementById('impactChart1').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Before', 'After'],
+                    datasets: [{
+                        label: 'Deployment Seconds (Log Scale)',
+                        data: [600, 10], // 600s vs 10s
+                        backgroundColor: ['#94a3b8', '#10b981'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { type: 'logarithmic', grid: { display: false } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Chart 2: Test Coverage
+            const ctx2 = document.getElementById('impactChart2').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Covered', 'Uncovered'],
+                    datasets: [{
+                        data: [90, 10],
+                        backgroundColor: ['#4f46e5', '#e2e8f0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // --- TIMELINE LOGIC ---
+        function renderTimeline() {
+            const list = document.getElementById('roleList');
+            list.innerHTML = '';
+            
+            resumeData.roles.forEach((role, index) => {
+                const item = document.createElement('div');
+                item.className = `role-card p-4 mb-2 cursor-pointer rounded-lg bg-white border border-slate-100`;
+                item.dataset.index = index;
+                item.onclick = () => selectRole(index);
+                item.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="font-bold text-slate-800">${role.company}</div>
+                        <div class="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">${role.duration}</div>
+                    </div>
+                    <div class="text-sm text-indigo-600 mt-1">${role.role}</div>
+                    <div class="text-xs text-slate-400 mt-1">${role.period}</div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function selectRole(index) {
+            // Update active styling
+            document.querySelectorAll('.role-card').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.role-card[data-index="${index}"]`).classList.add('active');
+
+            // Render details
+            const role = resumeData.roles[index];
+            const details = document.getElementById('roleDetails');
+            
+            // Generate Tech Stack HTML
+            const stackHtml = role.stack.map(s => 
+                `<span class="px-2 py-1 bg-slate-800 text-white text-xs rounded font-mono">${s}</span>`
+            ).join(' ');
+
+            // Generate Achievements HTML
+            const achievementsHtml = role.achievements.map(a => 
+                `<li class="flex items-start gap-2 text-slate-700 mb-2">
+                    <span class="text-indigo-500 mt-1.5 text-xs">●</span>
+                    <span class="flex-1">${a}</span>
+                </li>`
+            ).join('');
+
+            details.innerHTML = `
+                <div class="fade-in">
+                    <div class="border-b border-slate-100 pb-4 mb-4 flex justify-between items-end">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-900">${role.company}</h2>
+                            <h3 class="text-lg text-indigo-600 font-medium">${role.role}</h3>
+                        </div>
+                        <div class="text-right text-sm text-slate-500 font-medium">
+                            ${role.period}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Context & Challenge</h4>
+                        <p class="text-slate-600 leading-relaxed">${role.summary}</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Tech Stack</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${stackHtml}
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50 rounded-xl p-5">
+                        <h4 class="text-xs font-bold text-indigo-800 uppercase tracking-widest mb-3">Key Achievements</h4>
+                        <ul class="text-sm">
+                            ${achievementsHtml}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
