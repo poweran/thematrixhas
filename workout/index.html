@@ -269,15 +269,16 @@
 
     <div id="stats" class="card"></div>
 
-    <div class="controls">
+    <div class="controls" style="align-items: center; flex-wrap: wrap;">
       <button class="primary" onclick="saveData()">Сохранить</button>
       <button onclick="resetData()">Сброс</button>
-      <button onclick="toggleZapper()" id="zapperBtn" style="position:relative;">
-        <span id="zapperIcon" style="opacity:0.5">⚡</span> Zapper
-        <div id="zapperStatus"
-          style="display:none; position:absolute; top:-4px; right:-4px; width:8px; height:8px; background:#ef4444; border-radius:50%; box-shadow: 0 0 10px #ef4444;">
-        </div>
-      </button>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button onclick="toggleZapper()" id="zapperBtn" style="position:relative;">
+          <span id="zapperIcon" style="opacity:0.5">⚡</span> Zapper
+        </button>
+        <canvas id="zapperScope" width="100" height="38"
+          style="display:none; background:#020617; border-radius:8px; border:1px solid var(--border);"></canvas>
+      </div>
     </div>
 
   </div>
@@ -560,6 +561,9 @@
     const zapper = {
       active: false,
       nodes: [],
+      analyser: null,
+      dataArray: null,
+      animationId: null,
 
       toggle() {
         if (this.active) this.stop();
@@ -571,8 +575,20 @@
         const ctx = initAudio();
         this.nodes = [];
 
-        // 1. 30kHz Square Wave with Positive Offset
-        // No limits applied as requested
+        // Output & Analyser Setup
+        const masterGain = ctx.createGain();
+        masterGain.gain.value = 1.0;
+        masterGain.connect(ctx.destination);
+        this.nodes.push(masterGain);
+
+        this.analyser = ctx.createAnalyser();
+        this.analyser.fftSize = 256;
+        masterGain.connect(this.analyser);
+
+        const bufferLength = this.analyser.frequencyBinCount;
+        this.dataArray = new Uint8Array(bufferLength);
+
+        // 1. 30kHz Square Wave
         const mainOsc = ctx.createOscillator();
         mainOsc.type = 'square';
         mainOsc.frequency.value = 30000;
@@ -582,42 +598,38 @@
         else { offset.frequency.value = 0; offset.setPeriodicWave(ctx.createPeriodicWave(new Float32Array([1, 1]), new Float32Array([0, 0]))); }
 
         const combiner = ctx.createGain();
-        combiner.gain.value = 0.5; // Normalizing to avoid clipping (0..2 -> 0..1)
+        combiner.gain.value = 0.5;
 
         mainOsc.connect(combiner);
         offset.connect(combiner);
-        combiner.connect(ctx.destination);
+        combiner.connect(masterGain); // Connect to master instead of destination for scope
 
         mainOsc.start();
         offset.start();
         this.nodes.push(mainOsc, offset, combiner);
 
         // 2. High Frequencies Sweep
-        // Direct generation of requested frequencies without software clamping
         const ranges = [[77000, 400000], [350000, 500000], [500000, 900000]];
-
         ranges.forEach(([min, max]) => {
           const sweepOsc = ctx.createOscillator();
           sweepOsc.type = 'square';
-          // Start mid-range
           sweepOsc.frequency.value = (min + max) / 2;
 
-          // Sweep across the full requested range
           const lfo = ctx.createOscillator();
           lfo.type = 'triangle';
-          lfo.frequency.value = 0.2; // Slow sweep
+          lfo.frequency.value = 0.2;
 
           const lfoGain = ctx.createGain();
-          lfoGain.gain.value = (max - min) / 2; // Amplitude of frequency change
+          lfoGain.gain.value = (max - min) / 2;
 
           lfo.connect(lfoGain);
           lfoGain.connect(sweepOsc.frequency);
 
           const vol = ctx.createGain();
-          vol.gain.value = 0.1; // Audible (if hardware allowed) mix
+          vol.gain.value = 0.1;
 
           sweepOsc.connect(vol);
-          vol.connect(ctx.destination);
+          vol.connect(masterGain); // Connect to master
 
           sweepOsc.start();
           lfo.start();
@@ -625,36 +637,77 @@
         });
 
         this.active = true;
+        this.drawScope();
       },
 
       stop() {
+        if (this.animationId) cancelAnimationFrame(this.animationId);
         this.nodes.forEach(n => {
           try { n.stop(); } catch (e) { }
           n.disconnect();
         });
+        if (this.analyser) this.analyser.disconnect();
         this.nodes = [];
         this.active = false;
+
+        // Clear canvas
+        const canvas = document.getElementById('zapperScope');
+        const cCtx = canvas.getContext('2d');
+        cCtx.clearRect(0, 0, canvas.width, canvas.height);
+      },
+
+      drawScope() {
+        if (!this.active) return;
+        this.animationId = requestAnimationFrame(() => this.drawScope());
+
+        this.analyser.getByteTimeDomainData(this.dataArray);
+
+        const canvas = document.getElementById('zapperScope');
+        const cCtx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        cCtx.fillStyle = '#020617';
+        cCtx.fillRect(0, 0, width, height);
+
+        cCtx.lineWidth = 2;
+        cCtx.strokeStyle = '#22c55e';
+        cCtx.beginPath();
+
+        const sliceWidth = width * 1.0 / this.dataArray.length;
+        let x = 0;
+
+        for (let i = 0; i < this.dataArray.length; i++) {
+          const v = this.dataArray[i] / 128.0;
+          const y = v * height / 2;
+
+          if (i === 0) cCtx.moveTo(x, y);
+          else cCtx.lineTo(x, y);
+
+          x += sliceWidth;
+        }
+
+        cCtx.lineTo(canvas.width, canvas.height / 2);
+        cCtx.stroke();
       },
 
       updateUI() {
         const btn = document.getElementById('zapperBtn');
         const icon = document.getElementById('zapperIcon');
-        const status = document.getElementById('zapperStatus');
+        const canvas = document.getElementById('zapperScope');
 
         if (this.active) {
           icon.style.opacity = '1';
           icon.style.filter = 'drop-shadow(0 0 5px #38bdf8)';
-          status.style.display = 'block';
-          status.style.background = '#22c55e';
-          status.style.boxShadow = '0 0 10px #22c55e';
           btn.style.borderColor = 'var(--accent)';
           btn.style.color = 'var(--accent)';
+          canvas.style.display = 'block';
         } else {
           icon.style.opacity = '0.5';
           icon.style.filter = 'none';
-          status.style.display = 'none';
           btn.style.borderColor = 'var(--border)';
           btn.style.color = 'var(--text)';
+          canvas.style.display = 'none';
         }
       }
     };
