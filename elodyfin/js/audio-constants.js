@@ -30,10 +30,16 @@ export function getScaleNote(scaleDegree, octave) {
     return getFreq(chromaticIndex, octave + octaveShift);
 }
 
-export function getChordFreqs(rootDegree, octave) {
-    return [
+export function getChordFreqs(rootDegree, octave, extensions = 0) {
+    const freqs = [
         getScaleNote(rootDegree, octave),
         getScaleNote(rootDegree + 2, octave),
         getScaleNote(rootDegree + 4, octave)
     ];
+    // Add 7th (root + 6 scale steps)
+    if (extensions >= 1) freqs.push(getScaleNote(rootDegree + 6, octave));
+    // Add 9th (root + 8 scale steps -> root + 1 note in next octave)
+    if (extensions >= 2) freqs.push(getScaleNote(rootDegree + 8, octave));
+
+    return freqs;
 }

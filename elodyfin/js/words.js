@@ -1,131 +1,93 @@
+// Math Token Generators
+// Structure: Returns [ [token, token...], [token, token...] ] mimicking lines/syllables
+
 function span(cls, text) {
     return `<span class='${cls}'>${text}</span>`;
 }
 
-// MATH MODES: Formulas that drive the visuals
-export const MATH_MODES = [
-    {
-        name: "SPIRAL",
-        config: {
-            warp: 10.0,
-            speed: 60,
-            bass: 0.2,
-            colors: { c1: 0x00ffff, c2: 0xff00ff }
-        },
-        verses: [
-            [
-                [span('m-var', 'float'), span('m-var', 'w'), span('m-op', '='), span('m-var', 'z'), span('m-op', '*'), span('m-num', '0.01')],
-                [span('m-var', 'x'), span('m-op', '='), span('m-op', 'fast_sin'), span('m-sep', '('), span('m-var', 'w'), span('m-sep', ')')],
-                [span('m-var', 'y'), span('m-op', '='), span('m-op', 'fast_cos'), span('m-sep', '('), span('m-var', 'w'), span('m-sep', ')')]
-            ]
-        ]
-    },
-    {
-        name: "VELOCITY",
-        config: {
-            warp: 0.5,
-            speed: 250,
-            bass: 0.1,
-            colors: { c1: 0xff3333, c2: 0xffff00 }
-        },
-        verses: [
-            [
-                [span('m-var', 'pos.z'), span('m-op', '+='), span('m-var', 'u_speed'), span('m-op', '*'), span('m-var', 'dt')],
-                [span('m-var', 'v'), span('m-op', '='), span('m-op', 'clamp'), span('m-sep', '('), span('m-var', 'accel'), span('m-sep', ')')],
-                [span('m-var', 'return'), span('m-sep', ' '), span('m-var', 'v_fast')]
-            ]
-        ]
-    },
-    {
-        name: "PULSE",
-        config: {
-            warp: 1.0,
-            speed: 20,
-            bass: 3.0,
-            colors: { c1: 0x00ff00, c2: 0x0000ff }
-        },
-        verses: [
-            [
-                [span('m-var', 'p'), span('m-op', '='), span('m-var', 'bass'), span('m-op', '*'), span('m-num', '0.8')],
-                [span('m-var', 'scale'), span('m-op', '='), span('m-op', 'mix'), span('m-sep', '('), span('m-num', '1.0'), span('m-sep', ','), span('m-var', 'p'), span('m-sep', ')')],
-                [span('m-var', 'out'), span('m-op', '+='), span('m-var', 'scale')]
-            ]
-        ]
-    },
-    {
-        name: "QUANTUM",
-        config: {
-            warp: 20.0,
-            speed: 5,
-            bass: 0.5,
-            colors: { c1: 0xffffff, c2: 0x555555 }
-        },
-        verses: [
-            [
-                [span('m-var', 'h'), span('m-op', '='), span('m-op', 'fast_hash'), span('m-sep', '('), span('m-var', 'id'), span('m-sep', ')')],
-                [span('m-var', 'offset'), span('m-op', '='), span('m-var', 'h'), span('m-op', '>>'), span('m-num', '1')],
-                [span('m-var', 'pos'), span('m-op', '^='), span('m-var', 'offset')]
-            ]
-        ]
+// 1. SEQUENCE GENERATOR (Fibonacci/Primes)
+function genSequence(type) {
+    let seq = [];
+    if (type === 'fib') {
+        let a = 1, b = 1;
+        seq.push(span('m-num', a));
+        seq.push(span('m-num', b));
+        for (let i = 0; i < 6; i++) {
+            let next = a + b;
+            seq.push(span('m-num', next));
+            a = b; b = next;
+        }
+    } else { // Primes
+        const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23];
+        seq = primes.map(p => span('m-num', p));
     }
-];
 
-let lastModeIdx = -1;
+    // Format as 1 token per line for vertical stack, or chunks?
+    // Let's make it a single "verse" of 4 lines
+    return [
+        seq.slice(0, 2),
+        seq.slice(2, 4),
+        seq.slice(4, 6),
+        seq.slice(6, 8)
+    ];
+}
 
-export function getRandomMode(evolutionLevel = 1) {
+// 2. EQUATION GENERATOR
+function genEquation() {
+    // Riemann / Euler
+    return [
+        [span('m-var', 'e'), span('m-op', '^'), span('m-sep', '('), span('m-const', 'i'), span('m-op', '·'), span('m-const', 'π'), span('m-sep', ')')],
+        [span('m-op', '+'), span('m-num', '1')],
+        [span('m-op', '='), span('m-num', '0')],
+        [span('m-def', '// Euler')]
+    ];
+}
+
+// 3. CHAOS GENERATOR (Hex/Binary Stream)
+function genChaos() {
+    const lines = [];
+    for (let i = 0; i < 4; i++) {
+        const line = [];
+        for (let j = 0; j < 4; j++) {
+            if (Math.random() > 0.5) {
+                // Hex
+                const hex = Math.floor(Math.random() * 255).toString(16).toUpperCase().padStart(2, '0');
+                line.push(span('m-hex', '0x' + hex));
+            } else {
+                // Binary
+                const bin = Math.floor(Math.random() * 255).toString(2).padStart(8, '0');
+                line.push(span('m-bin', bin.substring(0, 4)));
+            }
+        }
+        lines.push(line);
+    }
+    return lines;
+}
+
+// 4. CALCULUS STREAM
+function genCalculus() {
+    return [
+        [span('m-op', '∫'), span('m-var', 'f(x)'), span('m-var', 'dx')],
+        [span('m-op', '='), span('m-var', 'lim'), span('m-sep', '→'), span('m-const', '∞')],
+        [span('m-op', '∑'), span('m-var', 'i'), span('m-op', '='), span('m-num', '0')],
+        [span('m-var', 'Δx'), span('m-op', '·'), span('m-var', 'y')]
+    ];
+}
+
+let lastType = -1;
+
+export function getRandomVerse() {
+    const types = [genSequence, genEquation, genChaos, genCalculus];
     let idx;
     do {
-        idx = Math.floor(Math.random() * MATH_MODES.length);
-    } while (idx === lastModeIdx);
+        idx = Math.floor(Math.random() * types.length);
+    } while (idx === lastType);
+    lastType = idx;
 
-    lastModeIdx = idx;
-
-    const baseMode = MATH_MODES[idx];
-
-    // 1. SCALE CONFIG
-    const scale = 1.0 + (evolutionLevel - 1) * 0.5;
-
-    const evolvedConfig = {
-        ...baseMode.config,
-        warp: baseMode.config.warp * scale,
-        speed: baseMode.config.speed * scale,
-        bass: baseMode.config.bass * (1.0 + (evolutionLevel - 1) * 0.2)
-    };
-
-    // 2. EVOLVE FORMULAS
-    let evolvedVerses = JSON.parse(JSON.stringify(baseMode.verses)); // Deep clone
-
-    // LEVEL 1: SIMPLE MODE (Truncate to 2 lines)
-    if (evolutionLevel === 1) {
-        evolvedVerses.forEach((verse, vIdx) => {
-            // Keep only the first 2 lines (Definition + Main Equation)
-            evolvedVerses[vIdx] = verse.slice(0, 2);
-        });
+    const generator = types[idx];
+    // Pass args if needed (e.g. sequence type)
+    if (generator === genSequence) {
+        return generator(Math.random() > 0.5 ? 'fib' : 'primes');
     }
-
-    // LEVEL 4+: COMPLEXITY (Mutation)
-    if (evolutionLevel >= 4) {
-        // Inject Epsilon or Higher Dims
-        evolvedVerses[0].forEach(line => {
-            if (line.length > 2 && Math.random() > 0.5) {
-                line.push(span('m-op', '+'));
-                line.push(span('m-max', 'ε'));
-            }
-        });
-    }
-
-    // LEVEL 6+: CHAOS (Glitch)
-    if (evolutionLevel >= 6) {
-        evolvedVerses[0].forEach(line => {
-            if (Math.random() > 0.7) {
-                line.push(span('m-hex', '0x' + Math.floor(Math.random() * 255).toString(16).toUpperCase()));
-            }
-        });
-    }
-
-    return {
-        name: baseMode.name,
-        config: evolvedConfig,
-        verses: evolvedVerses
-    };
+    return generator();
 }

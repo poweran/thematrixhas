@@ -40,98 +40,51 @@
 
 /* Yellow */
 
-/* Math Syntax Highlighting */
-.m-num {
-    color: #00ffff;
-    text-shadow: 0 0 10px #00ffff;
-}
 
-/* Cyan Numbers */
-.m-var {
-    color: #ff00ff;
-    text-shadow: 0 0 10px #ff00ff;
-    font-style: italic;
-}
-
-/* Magenta Vars */
-.m-op {
-    color: #00ff00;
-    text-shadow: 0 0 10px #00ff00;
-}
-
-/* Green Operators */
-.m-max {
-    color: #ff3333;
-    text-shadow: 0 0 15px #ff0000;
-    font-weight: 900;
-}
-
-/* Red Constants */
-.m-sep {
-    color: #ffffff;
-    opacity: 0.7;
-}
-
-.m-hex {
-    color: #ffff00;
-    font-family: monospace;
-}
-
-/* Yellow Hex */
-.m-bin {
-    color: #aaaaaa;
-    font-family: monospace;
-    font-size: 0.8em;
-}
-
-/* Grey Binary */
-.m-def {
-    color: #444444;
-    font-size: 0.6em;
-}
-
-/* Comments */
-
-/* Metric Display */
-.rhyme-metric {
-    font-size: 0.8rem;
-    color: #888;
-    margin-top: 5px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    opacity: 0.8;
-}
 
 .emotional-word {
     position: relative;
+    /* Stack naturally */
+    /* No absolute positioning or transform needed for layout */
+
     font-size: 1.5rem;
+    /* Much smaller */
     font-weight: 700;
     color: rgba(255, 255, 255, 0.9);
     text-transform: uppercase;
     letter-spacing: 5px;
+    /* Reduced spacing */
+    text-shadow: 0 0 50px rgba(255, 0, 255, 0.8), 0 0 100px rgba(0, 255, 255, 0.6);
     white-space: nowrap;
+    /* Prevent wrapping */
+    /* REMOVED generic animation on container. Controlled by JS/Classes now */
     opacity: 1;
-    /* Removed expensive 100px text-shadow */
 }
 
 /* Syllable Animation: Pop in and STAY */
 .emotional-syllable {
     display: inline-block;
     opacity: 0;
-    animation: syl-pop 0.1s ease-out forwards;
-    /* Faster, simpler */
+    animation: syl-pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Line Exit Animation: Triggered when done */
+.line-finished {
+    animation: line-fade-out 1.0s ease-out 1.5s forwards;
+    /* Wait 1.5s then fade */
 }
 
 @keyframes syl-pop {
     0% {
         opacity: 0;
-        transform: scale(1.5);
-        /* Removed filter: blur(5px) -> Too expensive */
+        transform: scale(2.0);
+        filter: blur(5px);
     }
 
     100% {
         opacity: 1;
         transform: scale(1.0);
+        filter: blur(0px);
     }
 }
 

@@ -90,83 +90,8 @@ h1 {
 }
 
 /* HUD */
-.hud-top {
-    position: absolute;
-    top: 30px;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    z-index: 10;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 1s;
-}
-
-.phase-text {
-    color: #fff;
-    font-size: 2.5rem;
-    font-weight: 900;
-    letter-spacing: 5px;
-    text-shadow: 0 0 20px #ff00ff;
-    transition: color 0.5s;
-}
-
-.sub-phase {
-    font-size: 1rem;
-    color: #00ffff;
-    letter-spacing: 3px;
-    margin-top: 5px;
-}
-
-.progress-bar-container {
-    width: 400px;
-    height: 6px;
-    background: #222;
-    margin: 15px auto;
-    border: 1px solid #444;
-    transform: skewX(-20deg);
-}
-
-.progress-bar {
-    width: 0%;
-    height: 100%;
-    background: linear-gradient(90deg, #00ffff, #ff00ff);
-    box-shadow: 0 0 15px #00ffff;
-    transition: width 0.1s linear;
-}
-
-.hud-bottom {
-    position: absolute;
-    bottom: 30px;
-    left: 40px;
-    z-index: 10;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 1s;
-    color: #888;
-    font-size: 0.8rem;
-    line-height: 1.6;
-}
-
-.val {
-    color: #fff;
-    font-weight: bold;
-    text-shadow: 0 0 5px #fff;
-}
-
-.save-icon {
-    position: absolute;
-    bottom: 30px;
-    right: 40px;
-    color: #00ff00;
-    font-size: 0.8rem;
-    opacity: 0;
-    transition: opacity 0.5s;
-    z-index: 10;
-    pointer-events: none;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
+/* HUD Removed */
+/* .hud-top, .phase-text, .sub-phase, .progress-bar-container, .hud-bottom, .save-icon styles removed */
 
 .flash {
     position: absolute;
@@ -177,7 +102,8 @@ h1 {
     background: white;
     opacity: 0;
     pointer-events: none;
-    z-index: 200;
+    z-index: 5;
+    mix-blend-mode: overlay;
     transition: opacity 0.1s;
 }
 

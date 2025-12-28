@@ -46,10 +46,15 @@ export function initAudio() {
     masterFilter.type = 'lowpass';
     masterFilter.frequency.value = 200;
     masterFilter.Q.value = 1;
+    // Fix channel count glitch
+    masterFilter.channelCount = 2;
+    masterFilter.channelCountMode = 'explicit';
 
     compressor = ac.createDynamicsCompressor();
     compressor.threshold.value = -10;
     compressor.ratio.value = 12;
+    compressor.channelCount = 2;
+    compressor.channelCountMode = 'explicit';
 
     const len = ac.sampleRate * 3;
     const buf = ac.createBuffer(2, len, ac.sampleRate);
@@ -180,13 +185,85 @@ function playNoiseRise(t, dur) {
 }
 
 // --- LOGIC ---
-function generateMelody() {
-    const safeNotes = [0, 2, 4, 7, 1];
-    motif = [];
-    for (let i = 0; i < 4; i++) {
-        motif.push(safeNotes[Math.floor(Math.random() * safeNotes.length)]);
+
+
+// --- ALGORITHMIC HELPERS ---
+function getEuclideanPattern(steps, pulses) {
+    const pattern = new Array(steps).fill(0);
+    const bucket = steps;
+    let current = 0;
+    for (let i = 0; i < pulses; i++) {
+        current += bucket;
+        // Evenly distribute pulses
+        const idx = Math.floor((i * steps) / pulses);
+        pattern[idx] = 1;
     }
+    return pattern;
 }
+
+function generateRandomPattern(steps, density) {
+    const p = [];
+    for (let i = 0; i < steps; i++) {
+        p.push(Math.random() < density ? 1 : 0);
+    }
+    return p;
+}
+
+// Evolution State
+let bassPattern = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]; // Default 4/4
+let arpPattern = [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]; // Default 8ths
+
+// Simple "Designed" Evolution
+function generateMelody() {
+    const cycle = gameData.cycle;
+    // Length grows: 4 -> 8 -> 16
+    let targetLen = 4;
+    if (cycle >= 3) targetLen = 8;
+    if (cycle >= 6) targetLen = 16;
+
+    if (motif.length !== targetLen) {
+        motif = new Array(targetLen).fill(0);
+    }
+
+    // Dynamic Motif Generation
+    // Each time this is called (per phase/cycle), we mutate
+    for (let i = 0; i < motif.length; i++) {
+        // Seed based on position + cycle + randomness
+        const seed = (i * 3) + cycle + Math.floor(Math.random() * 5);
+        motif[i] = seed % 7;
+
+        // Occasional large jumps
+        if (Math.random() > 0.8) motif[i] += 4;
+        motif[i] = motif[i] % 12; // Keep within octave-ish range
+    }
+    console.log(`[Audio] Cycle ${cycle}: Melody Regenerated`);
+
+    // Also regenerate Rhythms
+    generateRhythms();
+}
+
+function generateRhythms() {
+    // BASS: 16 steps. Pulses depend on intensity (Phase/Cycle)
+    // Intro: Sparse (3-4 pulses), Build: Med (5-8), Climax: High (8-12)
+    const p = PHASES[currentPhaseIdx];
+    let pulses = 4;
+    if (p.name === "BUILD") pulses = 6 + Math.floor(Math.random() * 3);
+    if (p.name === "CLIMAX") pulses = 8 + Math.floor(Math.random() * 5);
+
+    // Shift pulses slightly based on cycle
+    pulses += (gameData.cycle % 3);
+    pulses = Math.min(pulses, 16);
+
+    bassPattern = getEuclideanPattern(16, pulses);
+
+    // ARP: Complex patterns
+    // Random density
+    const arpDensity = 0.3 + (gameData.cycle * 0.05);
+    arpPattern = generateRandomPattern(16, Math.min(arpDensity, 0.9));
+
+    console.log(`[Audio] Rhythms Regenerated. Bass Pulses: ${pulses}`);
+}
+
 
 function updateProgression() {
     const currentP = PHASES[currentPhaseIdx];
@@ -196,11 +273,16 @@ function updateProgression() {
         if (currentPhaseIdx >= PHASES.length) {
             currentPhaseIdx = 0;
             gameData.cycle++;
-            gameData.rootNoteIndex = (gameData.rootNoteIndex + 2) % 12;
+            gameData.rootNoteIndex = (gameData.rootNoteIndex + 7) % 12; // Circle of fifths
             saveGame();
-            generateMelody();
+            gameData.rootNoteIndex = (gameData.rootNoteIndex + 7) % 12; // Twist
+            saveGame();
         }
         phaseStartMeasure = measure;
+
+        // REGENERATE MUSIC EVERY PHASE CHANGE
+        // This keeps it fresh constantly
+        generateMelody();
 
         // Dispatch Events
         window.dispatchEvent(new CustomEvent('ns-flash'));
@@ -213,7 +295,6 @@ function updateProgression() {
         if (PHASES[currentPhaseIdx].name === "CLIMAX") {
             playNoiseRise(ac.currentTime, 2.0);
         }
-        saveGame();
     }
 
     const p = PHASES[currentPhaseIdx];
@@ -238,6 +319,7 @@ export function updateAudioParams() {
     }
 }
 
+
 function processStep(s, t) {
     const p = PHASES[currentPhaseIdx];
 
@@ -248,35 +330,79 @@ function processStep(s, t) {
 
     const rootDeg = PROGRESSION[currentChordIdx].degree;
 
-    if (s % 4 === 0) {
-        // Dispatch with timestamp for precise visual sync
+    if (s % 4 === 0) { // Still dispatch beat event for visuals (though text is disabled)
         window.dispatchEvent(new CustomEvent('ns-beat-scheduled', { detail: { time: t } }));
     }
 
-    if (p.kick && s % 4 === 0) playKick(t, 1.0);
+    // --- DYNAMIC EVOLUTION LOGIC ---
 
+    // KICK: Foundation (4-on-floor + variations)
+    // Always play on beats 0, 4, 8, 12 in House/Techno usually, but let's mix it.
+    let kickTrig = (s % 4 === 0);
+
+    // Add off-beat kicks in higher energy states
+    if (p.name === "CLIMAX" && gameData.cycle > 2) {
+        if (s % 8 === 7) kickTrig = true; // fast double kick
+    }
+
+    if (p.kick && kickTrig) playKick(t, 1.0);
+
+    // BASS: Euclidean Pattern
     if (p.bass) {
-        const bassFreq = getScaleNote(rootDeg, 1);
-        if (s % 4 === 2) playBass(t, bassFreq);
-        if (isBoosting && s % 4 !== 0) playBass(t, bassFreq);
+        // Pattern lookup
+        let isHit = bassPattern[s];
+
+        // Simple syncopation: always duck the kick if desired, OR lock to it.
+        // Let's just play the pattern. 
+        if (isHit || (isBoosting && s % 2 === 0)) {
+            const bassFreq = getScaleNote(rootDeg, 1);
+            playBass(t, bassFreq);
+        }
     }
 
-    if (p.arp && s % 2 === 0) {
-        const motifNote = motif[(s / 2) % motif.length];
-        const note = getScaleNote(rootDeg + motifNote, 3);
-        const pan = (s % 4 === 0) ? -0.5 : 0.5;
-        playPluck(t, note, pan);
+    // ARP: Dynamic Pattern + Melody
+    if (p.arp) {
+        // Use arpPattern
+        if (arpPattern[s]) {
+            // Pick note from melody or chord?
+            // Combined: Arp walks through chord tones OR plays motif
+            // Let's mix: Cycle through motif
+            const motifIdx = (measure * 16 + s) % motif.length;
+            const motifNote = motif[motifIdx];
+
+            // Octave jumps
+            let octave = 3;
+            if (s % 3 === 0) octave = 4;
+
+            const note = getScaleNote(rootDeg + motifNote, octave);
+
+            // Panning movement
+            const pan = Math.sin(t * 2) * 0.4;
+            playPluck(t, note, pan);
+        }
     }
 
+    // PADS: Ambient Texture
     if (p.pad && s === 0 && measure % 2 === 0) {
-        const chordFreqs = getChordFreqs(rootDeg, 3);
+        let extensions = 0;
+        // Evolve harmony complexity
+        if (gameData.cycle > 2) extensions = 1;
+        if (gameData.cycle > 5) extensions = 2;
+
+        // Random inversion
+        const inversion = Math.floor(Math.random() * 3); // 0, 1, 2
+
+        // Note: getChordFreqs might not support inversion arg, assume it just returns base. 
+        // We can manually shift frequencies if needed, but let's stick to standard for now.
+        const chordFreqs = getChordFreqs(rootDeg, 3, extensions);
+
         playChordStab(t, chordFreqs);
     }
 }
 
 function schedule() {
     if (!isPlaying) return;
-    const tempo = 138 + (gameData.cycle * 2);
+    const tempo = 138 + (gameData.cycle * 1.5); // Slightly slower accel
     const secPer16th = 60 / tempo / 4;
     const lookahead = 0.1;
 
@@ -288,7 +414,6 @@ function schedule() {
             current16th = 0;
             measure++;
             updateProgression();
-            if (measure % 4 === 0) saveGame();
         }
     }
     setTimeout(schedule, 25);

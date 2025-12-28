@@ -11,6 +11,8 @@ const V_SHADER = `
     uniform float uSpeed;
     uniform float uWarp;     
     uniform float uBass;
+    uniform float uMid;
+    uniform float uHigh;
 
     attribute float aSize;
     attribute float aMix; 
@@ -25,7 +27,21 @@ const V_SHADER = `
         float zPos = mod(pos.z + uTime * uSpeed + aOffset, 1200.0) - 1000.0;
         pos.z = zPos;
 
-        float angle = pos.z * 0.002 * uWarp;
+        // Normalize Z depth (-1000 to 200) to 0..1 range
+        float depthFactor = clamp((zPos + 1000.0) / 1200.0, 0.0, 1.0);
+        
+        // Non-linear rotation curve: distant objects (low depthFactor) rotate slower
+        float rotScale = pow(depthFactor, 3.0);
+
+        // (Redundant block removed)
+
+        float pulse = 1.0 + uBass * 0.8 * smoothstep(-500.0, 200.0, zPos);
+        
+        // Mid-range warp jitter
+        float twist = uWarp * (1.0 + uMid * 0.5);
+        
+        // Apply twist
+        float angle = (pos.z * 0.002 + uTime * 0.1) * rotScale * twist;
         float s = sin(angle);
         float c = cos(angle);
         float nx = pos.x * c - pos.y * s;
@@ -33,11 +49,11 @@ const V_SHADER = `
         pos.x = nx;
         pos.y = ny;
 
-        float pulse = 1.0 + uBass * 0.3 * smoothstep(-800.0, -100.0, zPos);
         pos.xy *= pulse;
 
         vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-        gl_PointSize = aSize * (500.0 / -mvPosition.z) * (1.0 + uBass * 0.5);
+        // Highs affect particle size brightness/glitter
+        gl_PointSize = aSize * (500.0 / -mvPosition.z) * (1.0 + uBass * 0.5 + uHigh * 2.0);
         gl_Position = projectionMatrix * mvPosition;
 
         vAlpha = smoothstep(-1100.0, -900.0, zPos) * (1.0 - smoothstep(0.0, 200.0, zPos));
@@ -67,6 +83,7 @@ const F_SHADER = `
 
 let scene, camera, renderer, tunnelSystem, clock;
 let uniforms;
+let dataArray;
 
 export function initVisuals() {
     const container = document.getElementById('canvas-container');
@@ -89,8 +106,18 @@ export function initVisuals() {
     const sizes = [];
     const offsets = [];
 
+    const numArms = 3;
+    const armSpread = 1.0; // How wide the arms are
+
     for (let i = 0; i < count; i++) {
-        const angle = Math.random() * Math.PI * 2;
+        // Create spiral arms
+        const armIndex = i % numArms;
+        const baseAngle = (armIndex / numArms) * Math.PI * 2;
+        // Random offset within the arm (gaussian-ish preference for center of arm would be nice but uniform is okay)
+        // Let's use a simpler uniform spread for now
+        const angleOffset = (Math.random() - 0.5) * armSpread;
+        const angle = baseAngle + angleOffset;
+
         const r = 30 + Math.random() * 60;
         const x = Math.cos(angle) * r;
         const y = Math.sin(angle) * r;
@@ -114,6 +141,8 @@ export function initVisuals() {
         uSpeed: { value: 50 },
         uWarp: { value: 1.0 },
         uBass: { value: 0 },
+        uMid: { value: 0 },
+        uHigh: { value: 0 },
         uColor1: { value: new THREE.Color(0x00ffff) },
         uColor2: { value: new THREE.Color(0xff00ff) }
     };
@@ -136,34 +165,17 @@ export function initVisuals() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Handle Color Phasing (Phase-based)
+    // Handle Color Phasing
     window.addEventListener('ns-phase', (e) => {
-        // ... phase handling can stay or be overridden by math
-    });
+        const pName = e.detail.name;
+        const palette = PALETTES[pName] || PALETTES["INTRO"];
 
-    // HANDLE MATH-DRIVEN VISUALS
-    window.addEventListener('ns-visual-config', (e) => {
-        const cfg = e.detail;
-
-        // Tween Uniforms (Smooth transition to new formula state)
-        // We update the "Target" variables that animate() uses, 
-        // OR we can tween the uniforms directly if we change animate() logic.
-        // Let's modify the globals that animate() uses as base inputs.
-
-        // We'll attach these targets to the uniforms object for storage
-        uniforms.targetWarp = cfg.warp;
-        uniforms.targetSpeed = cfg.speed;
-        uniforms.targetBass = cfg.bass;
-
-        // Tween Colors
         new TWEEN.Tween(uniforms.uColor1.value)
-            .to(new THREE.Color(cfg.colors.c1), 200) // Snappier 200ms
-            .easing(TWEEN.Easing.Quadratic.Out)
+            .to(new THREE.Color(palette.c1), 1000)
             .start();
 
         new TWEEN.Tween(uniforms.uColor2.value)
-            .to(new THREE.Color(cfg.colors.c2), 200)
-            .easing(TWEEN.Easing.Quadratic.Out)
+            .to(new THREE.Color(palette.c2), 1000)
             .start();
     });
 }
@@ -174,39 +186,46 @@ export function animate() {
     const time = clock.getElapsedTime();
     TWEEN.update(performance.now());
 
-    const uni = tunnelSystem.material.uniforms;
-
-    // Defaults if config not set yet
-    const tSpeed = (uni.targetSpeed !== undefined) ? uni.targetSpeed : (50 + gameData.cycle * 10);
-    const tWarp = (uni.targetWarp !== undefined) ? uni.targetWarp : 1.0;
-    const tBassSens = (uni.targetBass !== undefined) ? uni.targetBass : 1.0;
-
-    let targetSpeed = tSpeed;
-    let targetWarp = tWarp;
-
-    // Boost override
+    let targetSpeed = 50 + (gameData.cycle * 10);
+    let targetWarp = 1.0 + (gameData.cycle * 0.5);
     const boosting = getBoost();
+
     if (boosting) {
         targetSpeed *= 4;
         targetWarp += 5.0;
     }
 
+    const uni = tunnelSystem.material.uniforms;
     uni.uTime.value = time;
-    // Smooth interpolation to target
     uni.uSpeed.value += (targetSpeed - uni.uSpeed.value) * 0.05;
     uni.uWarp.value += (targetWarp - uni.uWarp.value) * 0.05;
 
     if (analyser) {
-        const data = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(data);
-        const bass = data[4] / 255.0;
+        if (!dataArray || dataArray.length !== analyser.frequencyBinCount) {
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+        }
+        analyser.getByteFrequencyData(dataArray);
 
-        // Use Math-driven bass sensitivity
-        const bassReaction = bass * tBassSens;
+        // Extract bands
+        let b = 0, m = 0, h = 0;
+        // Bins 0-2 (Bass)
+        for (let i = 0; i < 3; i++) b += dataArray[i];
+        // Bins 3-12 (Mid)
+        for (let i = 3; i < 12; i++) m += dataArray[i];
+        // Bins 13-32 (High)
+        for (let i = 12; i < 32; i++) h += dataArray[i];
 
-        uni.uBass.value += (bassReaction - uni.uBass.value) * 0.3;
+        b /= 3; m /= 9; h /= 20;
 
-        if (bass > 0.7) {
+        const bassVal = b / 255.0;
+        const midVal = m / 255.0;
+        const highVal = h / 255.0;
+
+        uni.uBass.value += (bassVal - uni.uBass.value) * 0.2;
+        uni.uMid.value += (midVal - uni.uMid.value) * 0.2;
+        uni.uHigh.value += (highVal - uni.uHigh.value) * 0.2;
+
+        if (bassVal > 0.6) {
             camera.position.x = (Math.random() - 0.5) * 0.5;
             camera.position.y = (Math.random() - 0.5) * 0.5;
         }
