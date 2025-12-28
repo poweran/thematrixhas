@@ -276,7 +276,7 @@
         <button onclick="toggleZapper()" id="zapperBtn" style="position:relative;">
           <span id="zapperIcon" style="opacity:0.5">⚡</span> Zapper
         </button>
-        <canvas id="zapperScope" width="160" height="50"
+        <canvas id="zapperScope" width="140" height="38"
           style="display:none; background:#020617; border-radius:8px; border:1px solid var(--border);"></canvas>
       </div>
     </div>
@@ -668,76 +668,51 @@
         cCtx.fillStyle = '#020617';
         cCtx.fillRect(0, 0, width, height);
 
+        // Base Line (0V)
+        const baseLine = height - 5;
+        const waveTop = 13;
+
         // Grid: Center Line (Ground/Zero)
         cCtx.lineWidth = 1;
         cCtx.strokeStyle = '#1f2937';
         cCtx.beginPath();
-        cCtx.moveTo(0, height - 5); // Near bottom
-        cCtx.lineTo(width, height - 5);
+        cCtx.moveTo(0, baseLine);
+        cCtx.lineTo(width, baseLine);
         cCtx.stroke();
 
-        // Label Zero
-        cCtx.fillStyle = '#4b5563';
-        cCtx.font = '9px monospace';
-        cCtx.fillText('0V', 2, height - 7);
-
-        // Draw Simulated Square Wave with Positive Offset
-        // Logic: Signal is 30kHz Square + Offset. Meaning it goes from 0 to MAX.
-        // It never crosses below zero.
-
+        // Draw Simulated Waveform
         cCtx.lineWidth = 2;
         cCtx.strokeStyle = '#22c55e';
         cCtx.beginPath();
         cCtx.shadowBlur = 4;
         cCtx.shadowColor = 'rgba(34, 197, 94, 0.5)';
 
-        const frequency = 4; // visual cycles across screen
-        const amplitude = (height - 20) / 2;
-        const offset = height - 10; // Bottom base
-        const now = Date.now() / 100; // Speed
+        // Low = offset (near 0V). High = offset - amplitude * 2 (Max V).
+        let y = isHigh ? (offset - amplitude * 1.8) : offset;
 
-        cCtx.moveTo(0, height / 2); // Start somewhere
+        // Add slight noise
+        y += noise;
 
-        let x = 0;
-        let lastY = offset;
-
-        // Draw a clean square wave
-        for (x = 0; x < width; x++) {
-          // Create square shape: sin(x) > 0 ? 1 : 0
-          const t = x * 0.1 + now; // Time base
-          // Add some noise to make it look "measured"
-          const noise = (Math.random() - 0.5) * 2;
-
-          // Square wave logic: High or Low
-          const isHigh = Math.sin(x * (Math.PI * 2 * frequency) / width - (now * 5)) > 0;
-
-          // Current Y position
-          // Low = offset (near 0V). High = offset - amplitude * 2 (Max V).
-          let y = isHigh ? (offset - amplitude * 1.8) : offset;
-
-          // Add slight noise
-          y += noise;
-
-          if (x === 0) cCtx.moveTo(x, y);
-          else {
-            // Draw vertical lines for square wave edges
-            if (Math.abs(y - lastY) > 5) {
-              cCtx.lineTo(x, y);
-            } else {
-              cCtx.lineTo(x, y);
-            }
+        if (x === 0) cCtx.moveTo(x, y);
+        else {
+          // Draw vertical lines for square wave edges
+          if (Math.abs(y - lastY) > 5) {
+            cCtx.lineTo(x, y);
+          } else {
+            cCtx.lineTo(x, y);
           }
-          lastY = y;
         }
+        lastY = y;
+      }
 
         cCtx.stroke();
-        cCtx.shadowBlur = 0;
+      cCtx.shadowBlur = 0;
 
-        // visual Guides
-        cCtx.fillStyle = '#38bdf8';
-        cCtx.font = '10px monospace';
-        cCtx.fillText('SQ + OFFSET', 4, 12);
-      },
+      // visual Guides
+      cCtx.fillStyle = '#38bdf8';
+      cCtx.font = '10px monospace';
+      cCtx.fillText('SQ + OFFSET', 4, 12);
+    },
 
       updateUI() {
         const btn = document.getElementById('zapperBtn');
