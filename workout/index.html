@@ -272,6 +272,12 @@
     <div class="controls">
       <button class="primary" onclick="saveData()">Сохранить</button>
       <button onclick="resetData()">Сброс</button>
+      <button onclick="toggleZapper()" id="zapperBtn" style="position:relative;">
+        <span id="zapperIcon" style="opacity:0.5">⚡</span> Zapper
+        <div id="zapperStatus"
+          style="display:none; position:absolute; top:-4px; right:-4px; width:8px; height:8px; background:#ef4444; border-radius:50%; box-shadow: 0 0 10px #ef4444;">
+        </div>
+      </button>
     </div>
 
   </div>
@@ -526,26 +532,138 @@
       }, 1000);
     }
 
-    // Audio Context
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(freq, duration, type, vol = 1) {
+    // Audio Context & Zapper Logic
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
+      return audioCtx;
+    }
+
+    function playSound(freq, duration, type, vol = 1) {
+      const ctx = initAudio();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
       osc.type = type;
       osc.frequency.value = freq;
       osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      gain.connect(ctx.destination);
       osc.start();
-      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-      osc.stop(audioCtx.currentTime + duration);
+      gain.gain.setValueAtTime(vol, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+      osc.stop(ctx.currentTime + duration);
+    }
+
+    const zapper = {
+      active: false,
+      nodes: [],
+
+      toggle() {
+        if (this.active) this.stop();
+        else this.start();
+        this.updateUI();
+      },
+
+      start() {
+        const ctx = initAudio();
+        this.nodes = [];
+
+        // 1. 30kHz Square Wave with Positive Offset
+        // Hardware Limit Warning: Most speakers/DACs filter >20kHz. 
+        // 30kHz at 44.1kHz SR will alias to ~14.1kHz.
+        const mainOsc = ctx.createOscillator();
+        mainOsc.type = 'square';
+        mainOsc.frequency.value = 30000;
+
+        const offset = ctx.createConstantSource ? ctx.createConstantSource() : ctx.createOscillator();
+        if (offset.offset) offset.offset.value = 1; // ConstantSource
+        else { offset.frequency.value = 0; offset.setPeriodicWave(ctx.createPeriodicWave(new Float32Array([1, 1]), new Float32Array([0, 0]))); } // Fallback
+
+        const combiner = ctx.createGain();
+        combiner.gain.value = 0.1; // Low volume for safety against heating/aliasing artifacts
+
+        mainOsc.connect(combiner);
+        offset.connect(combiner);
+        combiner.connect(ctx.destination);
+
+        mainOsc.start();
+        offset.start();
+        this.nodes.push(mainOsc, offset, combiner);
+
+        // 2. Resonant Sweeps (Simulated High Frequencies)
+        // Note: Web Audio clamps frequency to Nyquist (SampleRate / 2). 
+        // 400kHz-900kHz is impossible in standard context. We simulate the *logic*.
+        const ranges = [[77000, 400000], [350000, 500000], [500000, 900000]];
+
+        ranges.forEach(([min, max]) => {
+          const sweepOsc = ctx.createOscillator();
+          sweepOsc.type = 'square';
+          sweepOsc.frequency.value = Math.min(min, ctx.sampleRate / 2); // Clamp to physically possible
+
+          // LFO to modulate freq to simulate "activity" in that band (if it were possible)
+          const lfo = ctx.createOscillator();
+          lfo.frequency.value = 0.1 + Math.random(); // Slow modulation
+          const lfoGain = ctx.createGain();
+          lfoGain.gain.value = 1000;
+
+          lfo.connect(lfoGain);
+          lfoGain.connect(sweepOsc.frequency);
+
+          const vol = ctx.createGain();
+          vol.gain.value = 0.001; // Extremely faint, purely symbolic/informational signal
+
+          sweepOsc.connect(vol);
+          vol.connect(ctx.destination);
+
+          sweepOsc.start();
+          lfo.start();
+          this.nodes.push(sweepOsc, lfo, lfoGain, vol);
+        });
+
+        this.active = true;
+      },
+
+      stop() {
+        this.nodes.forEach(n => {
+          try { n.stop(); } catch (e) { }
+          n.disconnect();
+        });
+        this.nodes = [];
+        this.active = false;
+      },
+
+      updateUI() {
+        const btn = document.getElementById('zapperBtn');
+        const icon = document.getElementById('zapperIcon');
+        const status = document.getElementById('zapperStatus');
+
+        if (this.active) {
+          icon.style.opacity = '1';
+          icon.style.filter = 'drop-shadow(0 0 5px #38bdf8)';
+          status.style.display = 'block';
+          status.style.background = '#22c55e';
+          status.style.boxShadow = '0 0 10px #22c55e';
+          btn.style.borderColor = 'var(--accent)';
+          btn.style.color = 'var(--accent)';
+        } else {
+          icon.style.opacity = '0.5';
+          icon.style.filter = 'none';
+          status.style.display = 'none';
+          btn.style.borderColor = 'var(--border)';
+          btn.style.color = 'var(--text)';
+        }
+      }
+    };
+
+    function toggleZapper() {
+      zapper.toggle();
     }
 
     function stopTimer() {
       timerRunning = false;
-      document.getElementById('timerToggleBtn').innerText = 'Start';
-      document.getElementById('timerToggleBtn').classList.remove('active');
       if (timerInterval) clearInterval(timerInterval);
     }
 
