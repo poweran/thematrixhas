@@ -198,6 +198,54 @@
       font-weight: 600;
       margin-top: 4px;
     }
+
+    /* Timer Styles */
+    .timer-container {
+      background: var(--card-2);
+      margin-bottom: 20px;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+    }
+
+    .timer-display {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 100px;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .timer-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: .2s;
+      font-weight: 500;
+    }
+
+    .timer-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .timer-btn.active {
+      background: var(--accent);
+      color: #0b1220;
+      border-color: var(--accent);
+    }
   </style>
 </head>
 
@@ -234,6 +282,17 @@
       <h2 id="modalTitle" style="margin-top:0; font-size:24px; margin-bottom:16px;"></h2>
       <img id="modalImg"
         style="width:100%; border-radius:12px; border:1px solid var(--border); margin-bottom:20px; aspect-ratio:16/9; object-fit:cover;" />
+
+      <!-- Timer Interface -->
+      <div class="timer-container">
+        <div id="timerDisplay" class="timer-display">00:00</div>
+        <div class="timer-controls">
+          <button class="timer-btn" onclick="addTime(30)">+30s</button>
+          <button class="timer-btn" onclick="toggleTimer()" id="timerToggleBtn">Start</button>
+          <button class="timer-btn" onclick="resetTimer()">Reset</button>
+        </div>
+      </div>
+
       <div id="modalDesc" style="color:var(--text); line-height:1.6; font-size:15px;"></div>
     </div>
   </div>
@@ -359,10 +418,97 @@
       document.getElementById('modalImg').src = muscleImages[muscle];
       document.getElementById('modalDesc').innerHTML = muscleDescriptions[muscle] || '';
       document.getElementById('modal').style.display = 'block';
+      resetTimer(); // Reset timer when opening modal
     }
 
     function closeModal() {
       document.getElementById('modal').style.display = 'none';
+      stopTimer(); // Ensure timer stops when closing
+    }
+
+    // Timer Logic
+    let timerInterval = null;
+    let timerTime = 0;
+    let timerRunning = false;
+    let timerIsCountdown = false;
+
+    function formatTime(t) {
+      const m = Math.floor(Math.abs(t) / 60).toString().padStart(2, '0');
+      const s = (Math.abs(t) % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('timerDisplay').innerText = formatTime(timerTime);
+    }
+
+    function toggleTimer() {
+      if (timerRunning) {
+        stopTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      if (timerRunning) return;
+      timerRunning = true;
+      document.getElementById('timerToggleBtn').innerText = 'Pause';
+      document.getElementById('timerToggleBtn').classList.add('active');
+
+      timerInterval = setInterval(() => {
+        if (timerIsCountdown) {
+          timerTime--;
+          if (timerTime <= 0) {
+            // Timer finished
+            timerTime = 0;
+            stopTimer();
+            // Optional: Play sound or vibrate here
+          }
+        } else {
+          timerTime++;
+        }
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      timerRunning = false;
+      document.getElementById('timerToggleBtn').innerText = 'Start';
+      document.getElementById('timerToggleBtn').classList.remove('active');
+      if (timerInterval) clearInterval(timerInterval);
+    }
+
+    function resetTimer() {
+      stopTimer();
+      timerTime = 0;
+      timerIsCountdown = false;
+      updateTimerDisplay();
+    }
+
+    function addTime(seconds) {
+      // If we add time, we assume the user wants a countdown (e.g. for rest)
+      if (!timerIsCountdown && timerTime === 0) {
+        timerIsCountdown = true;
+      }
+
+      // If was stopwatch (counting up) and we add time, switching to countdown might be confusing if we don't reset.
+      // But typically "add 30s" implies "I want a timer for 30s".
+      // Let's simpler logic: always add to current time constant.
+
+      if (!timerIsCountdown && timerTime > 0) {
+        // If we were counting up, and user clicks +30s, do we convert to countdown?
+        // Or just add 30s to the elapsed time?
+        // Usually in workout app, +30s button is for REST timer.
+        // So let's force countdown mode.
+        timerIsCountdown = true;
+      }
+
+      // If switching from stopwatch 0 to countdown, it's fine.
+      timerIsCountdown = true;
+      timerTime += seconds;
+      updateTimerDisplay();
+      if (!timerRunning) startTimer();
     }
 
     function renderStats() {
