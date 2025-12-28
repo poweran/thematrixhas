@@ -246,6 +246,10 @@
       color: #0b1220;
       border-color: var(--accent);
     }
+
+    #modalImg {
+      background-color: #fff;
+    }
   </style>
 </head>
 
@@ -341,6 +345,15 @@
       'Спина': 'images/Спина.svg',
       'Кор': 'images/Кор.svg'
     };
+
+    const optimalTimes = {
+      'Ноги': 90,   // Тяжелое базовое - долгий отдых или подход
+      'Икры': 45,   // Изоляция - короче
+      'Грудь': 60,  // Среднее
+      'Спина': 60,  // Среднее
+      'Кор': 30     // Интенсивное
+    };
+
     const trainings = ['A', 'B'];
     const sets = [1, 2, 3, 4];
 
@@ -418,7 +431,10 @@
       document.getElementById('modalImg').src = muscleImages[muscle];
       document.getElementById('modalDesc').innerHTML = muscleDescriptions[muscle] || '';
       document.getElementById('modal').style.display = 'block';
-      resetTimer(); // Reset timer when opening modal
+
+      // Set optimal time for this muscle
+      currentBaseTime = optimalTimes[muscle] || 60;
+      resetTimer();
     }
 
     function closeModal() {
@@ -429,8 +445,9 @@
     // Timer Logic
     let timerInterval = null;
     let timerTime = 0;
+    let currentBaseTime = 60;
     let timerRunning = false;
-    let timerIsCountdown = false;
+    let timerIsCountdown = true;
 
     function formatTime(t) {
       const m = Math.floor(Math.abs(t) / 60).toString().padStart(2, '0');
@@ -452,6 +469,8 @@
 
     function startTimer() {
       if (timerRunning) return;
+      if (timerTime <= 0 && timerIsCountdown) return;
+
       timerRunning = true;
       document.getElementById('timerToggleBtn').innerText = 'Pause';
       document.getElementById('timerToggleBtn').classList.add('active');
@@ -481,8 +500,8 @@
 
     function resetTimer() {
       stopTimer();
-      timerTime = 0;
-      timerIsCountdown = false;
+      timerTime = currentBaseTime;
+      timerIsCountdown = true;
       updateTimerDisplay();
     }
 
