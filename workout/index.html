@@ -297,6 +297,11 @@
         </div>
       </div>
 
+      <div id="sideAlert"
+        style="display:none; background:rgba(56, 189, 248, 0.1); border:1px solid var(--accent); color:var(--accent); padding:10px; border-radius:8px; margin-bottom:16px; font-weight:500; text-align:center;">
+        ⚠️ Не забудьте выполнить на вторую сторону!
+      </div>
+
       <div id="modalDesc" style="color:var(--text); line-height:1.6; font-size:15px;"></div>
     </div>
   </div>
@@ -346,12 +351,12 @@
       'Кор': 'images/Кор.svg'
     };
 
-    const optimalTimes = {
-      'Ноги': 90,   // Тяжелое базовое - долгий отдых или подход
-      'Икры': 45,   // Изоляция - короче
-      'Грудь': 60,  // Среднее
-      'Спина': 60,  // Среднее
-      'Кор': 30     // Интенсивное
+    const exerciseConfig = {
+      'Ноги': { time: 90, unilateral: true },
+      'Икры': { time: 45, unilateral: true },
+      'Грудь': { time: 60, unilateral: false },
+      'Спина': { time: 60, unilateral: false },
+      'Кор': { time: 30, unilateral: false }
     };
 
     const trainings = ['A', 'B'];
@@ -427,13 +432,27 @@
     }
 
     function openModal(muscle) {
+      currentMuscle = muscle;
       document.getElementById('modalTitle').innerText = muscle;
       document.getElementById('modalImg').src = muscleImages[muscle];
       document.getElementById('modalDesc').innerHTML = muscleDescriptions[muscle] || '';
       document.getElementById('modal').style.display = 'block';
 
-      // Set optimal time for this muscle
-      currentBaseTime = optimalTimes[muscle] || 60;
+      // Data
+      const config = exerciseConfig[muscle] || { time: 60, unilateral: false };
+      currentBaseTime = config.time;
+
+      // Side Reminder
+      const alertBox = document.getElementById('sideAlert');
+      if (config.unilateral) {
+        alertBox.style.display = 'block';
+        alertBox.innerText = '⚠️ Упражнение выполняется на каждую сторону поочередно';
+        alertBox.style.borderColor = 'var(--accent)';
+        alertBox.style.color = 'var(--accent)';
+      } else {
+        alertBox.style.display = 'none';
+      }
+
       resetTimer();
     }
 
@@ -477,18 +496,50 @@
 
       timerInterval = setInterval(() => {
         if (timerIsCountdown) {
+          // Sound effects
+          if (timerTime > 4) {
+            playSound(1200, 0.02, 'sine', 0.03); // Light tick
+          } else if (timerTime > 0) {
+            playSound(600, 0.05, 'sine', 0.5); // Countdown beeps
+          }
+
           timerTime--;
+
           if (timerTime <= 0) {
-            // Timer finished
             timerTime = 0;
+            playSound(800, 0.4, 'square', 0.5); // Finish sound
             stopTimer();
-            // Optional: Play sound or vibrate here
+
+            // Unilateral check
+            const config = exerciseConfig[currentMuscle];
+            if (config && config.unilateral) {
+              const alertBox = document.getElementById('sideAlert');
+              alertBox.innerText = '🔄 ПЕРЕМЕНА СТОРОН! ТЕПЕРЬ ДРУГАЯ НОГА';
+              alertBox.style.borderColor = '#fbbf24'; // Warning color (yellow/amber)
+              alertBox.style.color = '#fbbf24';
+            }
           }
         } else {
           timerTime++;
         }
         updateTimerDisplay();
       }, 1000);
+    }
+
+    // Audio Context
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(freq, duration, type, vol = 1) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+      osc.stop(audioCtx.currentTime + duration);
     }
 
     function stopTimer() {
