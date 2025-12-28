@@ -660,8 +660,8 @@
         if (!this.active) return;
         this.animationId = requestAnimationFrame(() => this.drawScope());
 
-        // Use Frequency Data (FFT) for "Spectrum" view
-        this.analyser.getByteFrequencyData(this.dataArray);
+        // Time Domain to see the Waveform & Offset
+        this.analyser.getByteTimeDomainData(this.dataArray);
 
         const canvas = document.getElementById('zapperScope');
         const cCtx = canvas.getContext('2d');
@@ -671,27 +671,50 @@
         cCtx.fillStyle = '#020617';
         cCtx.fillRect(0, 0, width, height);
 
-        // Draw Frequency Bars
-        const barWidth = (width / this.dataArray.length) * 2.5;
-        let barHeight;
+        // Grid: Center Line (Zero if no offset)
+        cCtx.lineWidth = 1;
+        cCtx.strokeStyle = '#1f2937';
+        cCtx.beginPath();
+        cCtx.moveTo(0, height / 2);
+        cCtx.lineTo(width, height / 2);
+        cCtx.stroke();
+
+        // Grid: Upper bounds (Visual guide for Positive Offset)
+        cCtx.setLineDash([2, 2]);
+        cCtx.strokeStyle = '#374151';
+        cCtx.beginPath();
+        cCtx.moveTo(0, height / 4); // Roughly where +1 offset logic peaks might be
+        cCtx.lineTo(width, height / 4);
+        cCtx.stroke();
+        cCtx.setLineDash([]);
+
+        // Draw Waveform
+        cCtx.lineWidth = 2;
+        cCtx.strokeStyle = '#22c55e';
+        cCtx.beginPath();
+
+        const sliceWidth = width * 1.0 / this.dataArray.length;
         let x = 0;
 
         for (let i = 0; i < this.dataArray.length; i++) {
-          barHeight = this.dataArray[i] / 2; // Scale down a bit
+          const v = this.dataArray[i] / 128.0; // 128 is 0. 255 is +1.
+          const y = height - (v * height / 2); // Flip y so high values are up
 
-          // Color based on intensity
-          cCtx.fillStyle = `rgb(${barHeight + 100}, 189, 248)`;
-          cCtx.fillRect(x, height - barHeight, barWidth, barHeight);
+          if (i === 0) cCtx.moveTo(x, y);
+          else cCtx.lineTo(x, y);
 
-          x += barWidth + 1;
+          x += sliceWidth;
         }
 
-        // Draw Text Labels (What is generating)
+        cCtx.lineTo(width, height / 2);
+        cCtx.stroke();
+
+        // Draw Text Labels
         cCtx.fillStyle = '#38bdf8';
         cCtx.font = '10px monospace';
-        cCtx.fillText('GEN: 30kHz [SQ]', 4, 12);
+        cCtx.fillText('SQ WAVE + OFFSET', 4, 12);
         cCtx.fillStyle = '#9ca3af';
-        cCtx.fillText('SWEEP: 77-900kHz', 4, 24);
+        cCtx.fillText('30kHz active', 4, height - 4);
       },
 
       updateUI() {
