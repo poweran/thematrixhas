@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workout Log</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111827;
+      --card-2: #020617;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --done: #22c55e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #0f172a, var(--bg));
+      color: var(--text);
+      padding: 24px;
+    }
+
+    .container { max-width: 1200px; margin: auto; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    h1 { font-size: 22px; margin: 0; }
+    .subtitle { color: var(--muted); font-size: 13px; }
+
+    .card {
+      background: linear-gradient(180deg, #020617, #020617) padding-box,
+                  linear-gradient(180deg, #1f2937, #020617) border-box;
+      border: 1px solid transparent;
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.45);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: var(--card);
+      z-index: 2;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 10px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    tbody tr:hover { background: rgba(56,189,248,.04); }
+
+    td.group {
+      text-align: left;
+      font-weight: 600;
+      padding-left: 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      color: var(--accent);
+    }
+
+    td.group:hover { text-decoration: underline; }
+
+    .cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    input {
+      width: 46px;
+      height: 32px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    input:focus { outline: none; border-color: var(--accent); }
+
+    button.set {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: .15s;
+      font-weight: 600;
+    }
+
+    button.set.done {
+      background: var(--done);
+      border-color: var(--done);
+      color: #052e16;
+    }
+
+    button.set:hover { border-color: var(--accent); color: var(--accent); }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .controls button {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .controls button.primary {
+      background: linear-gradient(180deg, #38bdf8, #0ea5e9);
+      color: #002233;
+      border: none;
+    }
+
+    #stats h2 { margin: 0 0 12px 0; font-size: 16px; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .stat .label { font-size: 12px; color: var(--muted); }
+    .stat .value { font-size: 22px; font-weight: 600; margin-top: 4px; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div>
+    <h1>Workout Log</h1>
+    <div class="subtitle">2 тренировки · 4 подхода · подтверждение кнопкой</div>
+  </div>
+</header>
+
+<div class="card">
+  <table id="log"></table>
+</div>
+
+<div id="stats" class="card"></div>
+
+<div class="controls">
+  <button class="primary" onclick="saveData()">Сохранить</button>
+  <button onclick="resetData()">Сброс</button>
+</div>
+
+</div>
+
+<!-- Modal -->
+<div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000;">
+  <div style="max-width:520px; margin:8% auto; background:var(--card); border-radius:18px; padding:16px; position:relative;">
+    <button onclick="closeModal()" style="position:absolute; right:12px; top:12px; background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer;">✕</button>
+    <h2 id="modalTitle" style="margin-top:0"></h2>
+    <img id="modalImg" style="width:100%; border-radius:14px; border:1px solid var(--border);" />
+    <div class="subtitle" style="margin-top:8px">Базовые упражнения без оборудования</div>
+  </div>
+</div>
+
+<script>
+const muscles = ['Ноги','Икры','Грудь','Спина','Кор'];
+
+const muscleImages = {
+  'Ноги': 'assets/images/Ноги.svg',
+  'Икры': 'assets/images/Икры.svg',
+  'Грудь': 'assets/images/Грудь.svg',
+  'Спина': 'assets/images/Спина.svg',
+  'Кор': 'assets/images/Кор.svg'
+};
+const trainings = ['A','B'];
+const sets = [1,2,3,4];
+
+const STORAGE_KEY = 'home_workout_table_v1';
+const STATS_KEY = 'home_workout_stats_v1';
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+const keyOf = (m,t,s) => `${m}_${t}_${s}`;
+
+function render(){
+  const table = document.getElementById('log');
+  table.innerHTML = '';
+
+  const thead = document.createElement('thead');
+  thead.innerHTML = `<tr><th>Мышцы</th>${trainings.map(t => sets.map(s => `<th>${t}${s}</th>`).join('')).join('')}</tr>`;
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+
+  muscles.forEach(m => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="group" onclick="openModal('${m}')">${m}</td>`;
+
+    trainings.forEach(t => sets.forEach(s => {
+      const key = keyOf(m,t,s);
+      const cell = state[key] || { reps:'', done:false };
+      const td = document.createElement('td');
+      td.innerHTML = `
+        <div class="cell">
+          <input type="number" value="${cell.reps}" onchange="setReps('${key}',this.value)">
+          <button class="set ${cell.done?'done':''}" onclick="toggle('${key}',this)">✓</button>
+        </div>`;
+      tr.appendChild(td);
+    }));
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+}
+
+function setReps(key,val){
+  state[key] = state[key] || { reps:'', done:false };
+  state[key].reps = val;
+}
+
+function toggle(key,btn){
+  state[key] = state[key] || { reps:'', done:false };
+  state[key].done = !state[key].done;
+  btn.classList.toggle('done');
+
+  if(state[key].done){
+    const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
+    stats.push({ key, reps:Number(state[key].reps)||0, ts:Date.now() });
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+    renderStats();
+  }
+}
+
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function resetData(){
+  if(!confirm('Сбросить все данные?')) return;
+  localStorage.clear();
+  state = {};
+  render();
+  renderStats();
+}
+
+function openModal(muscle){
+  document.getElementById('modalTitle').innerText = muscle;
+  document.getElementById('modalImg').src = muscleImages[muscle];
+  document.getElementById('modal').style.display = 'block';
+}
+
+function closeModal(){
+  document.getElementById('modal').style.display = 'none';
+}
+
+function renderStats(){
+  const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
+  const box = document.getElementById('stats');
+
+  if(!stats.length){ box.innerHTML = '<span class="subtitle">Статистика пуста</span>'; return; }
+
+  const sum = {};
+  stats.forEach(e => {
+    const m = e.key.split('_')[0];
+    sum[m] = sum[m] || { sets:0, reps:0 };
+    sum[m].sets++; sum[m].reps += e.reps;
+  });
+
+  box.innerHTML = `
+    <h2>Аналитика</h2>
+    <div class="stats-grid">
+      ${Object.entries(sum).map(([m,v])=>`
+        <div class="stat">
+          <div class="label">${m}</div>
+          <div class="value">${v.sets} · ${v.reps}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+render();
+renderStats();
+</script>
+</body>
+</html>
