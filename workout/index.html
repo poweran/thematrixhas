@@ -572,18 +572,17 @@
         this.nodes = [];
 
         // 1. 30kHz Square Wave with Positive Offset
-        // Hardware Limit Warning: Most speakers/DACs filter >20kHz. 
-        // 30kHz at 44.1kHz SR will alias to ~14.1kHz.
+        // No limits applied as requested
         const mainOsc = ctx.createOscillator();
         mainOsc.type = 'square';
         mainOsc.frequency.value = 30000;
 
         const offset = ctx.createConstantSource ? ctx.createConstantSource() : ctx.createOscillator();
-        if (offset.offset) offset.offset.value = 1; // ConstantSource
-        else { offset.frequency.value = 0; offset.setPeriodicWave(ctx.createPeriodicWave(new Float32Array([1, 1]), new Float32Array([0, 0]))); } // Fallback
+        if (offset.offset) offset.offset.value = 1;
+        else { offset.frequency.value = 0; offset.setPeriodicWave(ctx.createPeriodicWave(new Float32Array([1, 1]), new Float32Array([0, 0]))); }
 
         const combiner = ctx.createGain();
-        combiner.gain.value = 0.1; // Low volume for safety against heating/aliasing artifacts
+        combiner.gain.value = 0.5; // Normalizing to avoid clipping (0..2 -> 0..1)
 
         mainOsc.connect(combiner);
         offset.connect(combiner);
@@ -593,27 +592,29 @@
         offset.start();
         this.nodes.push(mainOsc, offset, combiner);
 
-        // 2. Resonant Sweeps (Simulated High Frequencies)
-        // Note: Web Audio clamps frequency to Nyquist (SampleRate / 2). 
-        // 400kHz-900kHz is impossible in standard context. We simulate the *logic*.
+        // 2. High Frequencies Sweep
+        // Direct generation of requested frequencies without software clamping
         const ranges = [[77000, 400000], [350000, 500000], [500000, 900000]];
 
         ranges.forEach(([min, max]) => {
           const sweepOsc = ctx.createOscillator();
           sweepOsc.type = 'square';
-          sweepOsc.frequency.value = Math.min(min, ctx.sampleRate / 2); // Clamp to physically possible
+          // Start mid-range
+          sweepOsc.frequency.value = (min + max) / 2;
 
-          // LFO to modulate freq to simulate "activity" in that band (if it were possible)
+          // Sweep across the full requested range
           const lfo = ctx.createOscillator();
-          lfo.frequency.value = 0.1 + Math.random(); // Slow modulation
+          lfo.type = 'triangle';
+          lfo.frequency.value = 0.2; // Slow sweep
+
           const lfoGain = ctx.createGain();
-          lfoGain.gain.value = 1000;
+          lfoGain.gain.value = (max - min) / 2; // Amplitude of frequency change
 
           lfo.connect(lfoGain);
           lfoGain.connect(sweepOsc.frequency);
 
           const vol = ctx.createGain();
-          vol.gain.value = 0.001; // Extremely faint, purely symbolic/informational signal
+          vol.gain.value = 0.1; // Audible (if hardware allowed) mix
 
           sweepOsc.connect(vol);
           vol.connect(ctx.destination);
