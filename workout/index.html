@@ -660,9 +660,6 @@
         if (!this.active) return;
         this.animationId = requestAnimationFrame(() => this.drawScope());
 
-        // Time Domain to see the Waveform & Offset
-        this.analyser.getByteTimeDomainData(this.dataArray);
-
         const canvas = document.getElementById('zapperScope');
         const cCtx = canvas.getContext('2d');
         const width = canvas.width;
@@ -671,50 +668,75 @@
         cCtx.fillStyle = '#020617';
         cCtx.fillRect(0, 0, width, height);
 
-        // Grid: Center Line (Zero if no offset)
+        // Grid: Center Line (Ground/Zero)
         cCtx.lineWidth = 1;
         cCtx.strokeStyle = '#1f2937';
         cCtx.beginPath();
-        cCtx.moveTo(0, height / 2);
-        cCtx.lineTo(width, height / 2);
+        cCtx.moveTo(0, height - 5); // Near bottom
+        cCtx.lineTo(width, height - 5);
         cCtx.stroke();
 
-        // Grid: Upper bounds (Visual guide for Positive Offset)
-        cCtx.setLineDash([2, 2]);
-        cCtx.strokeStyle = '#374151';
-        cCtx.beginPath();
-        cCtx.moveTo(0, height / 4); // Roughly where +1 offset logic peaks might be
-        cCtx.lineTo(width, height / 4);
-        cCtx.stroke();
-        cCtx.setLineDash([]);
+        // Label Zero
+        cCtx.fillStyle = '#4b5563';
+        cCtx.font = '9px monospace';
+        cCtx.fillText('0V', 2, height - 7);
 
-        // Draw Waveform
+        // Draw Simulated Square Wave with Positive Offset
+        // Logic: Signal is 30kHz Square + Offset. Meaning it goes from 0 to MAX.
+        // It never crosses below zero.
+
         cCtx.lineWidth = 2;
         cCtx.strokeStyle = '#22c55e';
         cCtx.beginPath();
+        cCtx.shadowBlur = 4;
+        cCtx.shadowColor = 'rgba(34, 197, 94, 0.5)';
 
-        const sliceWidth = width * 1.0 / this.dataArray.length;
+        const frequency = 4; // visual cycles across screen
+        const amplitude = (height - 20) / 2;
+        const offset = height - 10; // Bottom base
+        const now = Date.now() / 100; // Speed
+
+        cCtx.moveTo(0, height / 2); // Start somewhere
+
         let x = 0;
+        let lastY = offset;
 
-        for (let i = 0; i < this.dataArray.length; i++) {
-          const v = this.dataArray[i] / 128.0; // 128 is 0. 255 is +1.
-          const y = height - (v * height / 2); // Flip y so high values are up
+        // Draw a clean square wave
+        for (x = 0; x < width; x++) {
+          // Create square shape: sin(x) > 0 ? 1 : 0
+          const t = x * 0.1 + now; // Time base
+          // Add some noise to make it look "measured"
+          const noise = (Math.random() - 0.5) * 2;
 
-          if (i === 0) cCtx.moveTo(x, y);
-          else cCtx.lineTo(x, y);
+          // Square wave logic: High or Low
+          const isHigh = Math.sin(x * (Math.PI * 2 * frequency) / width - (now * 5)) > 0;
 
-          x += sliceWidth;
+          // Current Y position
+          // Low = offset (near 0V). High = offset - amplitude * 2 (Max V).
+          let y = isHigh ? (offset - amplitude * 1.8) : offset;
+
+          // Add slight noise
+          y += noise;
+
+          if (x === 0) cCtx.moveTo(x, y);
+          else {
+            // Draw vertical lines for square wave edges
+            if (Math.abs(y - lastY) > 5) {
+              cCtx.lineTo(x, y);
+            } else {
+              cCtx.lineTo(x, y);
+            }
+          }
+          lastY = y;
         }
 
-        cCtx.lineTo(width, height / 2);
         cCtx.stroke();
+        cCtx.shadowBlur = 0;
 
-        // Draw Text Labels
+        // visual Guides
         cCtx.fillStyle = '#38bdf8';
         cCtx.font = '10px monospace';
-        cCtx.fillText('SQ WAVE + OFFSET', 4, 12);
-        cCtx.fillStyle = '#9ca3af';
-        cCtx.fillText('30kHz active', 4, height - 4);
+        cCtx.fillText('SQ + OFFSET', 4, 12);
       },
 
       updateUI() {
