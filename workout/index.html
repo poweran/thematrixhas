@@ -276,7 +276,7 @@
         <button onclick="toggleZapper()" id="zapperBtn" style="position:relative;">
           <span id="zapperIcon" style="opacity:0.5">⚡</span> Zapper
         </button>
-        <canvas id="zapperScope" width="100" height="38"
+        <canvas id="zapperScope" width="160" height="50"
           style="display:none; background:#020617; border-radius:8px; border:1px solid var(--border);"></canvas>
       </div>
     </div>
@@ -660,7 +660,8 @@
         if (!this.active) return;
         this.animationId = requestAnimationFrame(() => this.drawScope());
 
-        this.analyser.getByteTimeDomainData(this.dataArray);
+        // Use Frequency Data (FFT) for "Spectrum" view
+        this.analyser.getByteFrequencyData(this.dataArray);
 
         const canvas = document.getElementById('zapperScope');
         const cCtx = canvas.getContext('2d');
@@ -670,25 +671,27 @@
         cCtx.fillStyle = '#020617';
         cCtx.fillRect(0, 0, width, height);
 
-        cCtx.lineWidth = 2;
-        cCtx.strokeStyle = '#22c55e';
-        cCtx.beginPath();
-
-        const sliceWidth = width * 1.0 / this.dataArray.length;
+        // Draw Frequency Bars
+        const barWidth = (width / this.dataArray.length) * 2.5;
+        let barHeight;
         let x = 0;
 
         for (let i = 0; i < this.dataArray.length; i++) {
-          const v = this.dataArray[i] / 128.0;
-          const y = v * height / 2;
+          barHeight = this.dataArray[i] / 2; // Scale down a bit
 
-          if (i === 0) cCtx.moveTo(x, y);
-          else cCtx.lineTo(x, y);
+          // Color based on intensity
+          cCtx.fillStyle = `rgb(${barHeight + 100}, 189, 248)`;
+          cCtx.fillRect(x, height - barHeight, barWidth, barHeight);
 
-          x += sliceWidth;
+          x += barWidth + 1;
         }
 
-        cCtx.lineTo(canvas.width, canvas.height / 2);
-        cCtx.stroke();
+        // Draw Text Labels (What is generating)
+        cCtx.fillStyle = '#38bdf8';
+        cCtx.font = '10px monospace';
+        cCtx.fillText('GEN: 30kHz [SQ]', 4, 12);
+        cCtx.fillStyle = '#9ca3af';
+        cCtx.fillText('SWEEP: 77-900kHz', 4, 24);
       },
 
       updateUI() {
