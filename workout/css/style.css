@@ -7,6 +7,7 @@
   --muted: #9ca3af;
   --accent: #38bdf8;
   --done: #22c55e;
+  --col-bg: #162032;
 }
 
 * {
@@ -136,6 +137,13 @@ tbody td {
 
 tbody tr:hover {
   background: rgba(56, 189, 248, .04);
+}
+
+th[data-col],
+td.set-cell {
+  background: var(--col-bg);
+  border-right: 1px solid var(--bg);
+  border-left: 1px solid var(--bg);
 }
 
 td.group {
@@ -361,13 +369,13 @@ button.primary:active {
 
 /* Active Column Highlight */
 .active-col-header {
-  background: rgba(56, 189, 248, 0.1) !important;
+  background: linear-gradient(rgba(56, 189, 248, 0.1), rgba(56, 189, 248, 0.1)), var(--col-bg) !important;
   color: var(--accent) !important;
   border-bottom: 2px solid var(--accent) !important;
 }
 
 .active-col-cell {
-  background: rgba(56, 189, 248, 0.03);
+  background: linear-gradient(rgba(56, 189, 248, 0.05), rgba(56, 189, 248, 0.05)), var(--col-bg);
 }
 
 .active-col-cell input {
