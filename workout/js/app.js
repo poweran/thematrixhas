@@ -14,6 +14,16 @@ const STATS_KEY = 'home_workout_stats_v1';
 let currentWeekOffset = 0;
 let state = {};
 
+// Version Info
+try {
+    const vDiv = document.getElementById('appVersion');
+    if (vDiv) {
+        const date = new Date(document.lastModified);
+        const fmt = date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        vDiv.innerText = 'v.' + fmt;
+    }
+} catch (e) { }
+
 function getWeekId(offset = 0) {
     const d = new Date();
     // Adjust to Monday of the target week

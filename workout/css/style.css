@@ -642,6 +642,8 @@ thead tr:nth-child(1) th {
   td,
   tr {
     display: block;
+    min-width: 0;
+    width: 100%;
   }
 
   thead {
