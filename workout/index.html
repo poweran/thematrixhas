@@ -575,6 +575,7 @@
       start() {
         const ctx = initAudio();
         this.nodes = [];
+        this.audioStartTime = ctx.currentTime;
 
         // Output & Analyser Setup
         const masterGain = ctx.createGain();
@@ -603,22 +604,22 @@
 
         mainOsc.connect(combiner);
         offset.connect(combiner);
-        combiner.connect(masterGain); // Connect to master instead of destination for scope
+        combiner.connect(masterGain);
 
         mainOsc.start();
         offset.start();
         this.nodes.push(mainOsc, offset, combiner);
 
         // 2. High Frequencies Sweep
-        const ranges = [[77000, 400000], [350000, 500000], [500000, 900000]];
-        ranges.forEach(([min, max]) => {
+        this.sweepRanges = [[77000, 400000], [350000, 500000], [500000, 900000]];
+        this.sweepRanges.forEach(([min, max]) => {
           const sweepOsc = ctx.createOscillator();
           sweepOsc.type = 'square';
           sweepOsc.frequency.value = (min + max) / 2;
 
           const lfo = ctx.createOscillator();
           lfo.type = 'triangle';
-          lfo.frequency.value = 0.2;
+          lfo.frequency.value = 0.2; // 5s period
 
           const lfoGain = ctx.createGain();
           lfoGain.gain.value = (max - min) / 2;
@@ -630,7 +631,7 @@
           vol.gain.value = 0.1;
 
           sweepOsc.connect(vol);
-          vol.connect(masterGain); // Connect to master
+          vol.connect(masterGain);
 
           sweepOsc.start();
           lfo.start();
@@ -666,78 +667,104 @@
         const width = canvas.width;
         const height = canvas.height;
 
+        // Get Audio Time for Sync
+        const ctx = this.nodes[0] ? this.nodes[0].context : null;
+        if (!ctx) return;
+        const elapsed = ctx.currentTime - this.audioStartTime;
+
         cCtx.fillStyle = '#020617';
         cCtx.fillRect(0, 0, width, height);
 
-        // Grid: Center Line (Ground/Zero)
+        // Grid / Zero
         cCtx.lineWidth = 1;
         cCtx.strokeStyle = '#1f2937';
         cCtx.beginPath();
-        cCtx.moveTo(0, height - 5); // Near bottom
-        cCtx.lineTo(width, height - 5);
+        cCtx.moveTo(0, height / 2);
+        cCtx.lineTo(width, height / 2);
         cCtx.stroke();
 
-        // Label Zero
-        cCtx.fillStyle = '#4b5563';
-        cCtx.font = '9px monospace';
-        cCtx.fillText('0V', 2, height - 7);
+        // Calculate Frequencies matching LFO (Triangle, 0.2Hz)
+        // Triangle LFO Waveform reference: zero -> pos peak -> zero -> neg peak -> zero
+        // WebAudio triangle LFO starts at 0 going positive.
+        // Period = 1/0.2 = 5s.
+        // Normalized LFO value (-1 to 1) at time t:
+        // phase = (t * 0.2 * 4) % 4; // 4 segments: 0-1, 1-0, 0--1, -1-0? No.
+        // Easier: value = (2/PI) * asin(sin(2*PI * f * t)); This is triangle wave formula -1 to 1.
+        const lfoVal = (2 / Math.PI) * Math.asin(Math.sin(2 * Math.PI * 0.2 * elapsed));
 
-        // Draw Simulated Square Wave with Positive Offset
-        // Logic: Signal is 30kHz Square + Offset. Meaning it goes from 0 to MAX.
-        // It never crosses below zero.
+        const freqs = [30000];
+        this.sweepRanges.forEach(([min, max]) => {
+          const center = (min + max) / 2;
+          const range = (max - min) / 2;
+          freqs.push(center + range * lfoVal);
+        });
 
-        cCtx.lineWidth = 2;
-        cCtx.strokeStyle = '#22c55e';
+        // Draw Frequencies Text
+        cCtx.font = '10px monospace';
+        cCtx.fillStyle = '#38bdf8';
+        cCtx.textAlign = 'left';
+
+        // 30kHz
+        cCtx.fillText('30 kHz', 4, 10);
+        // Sw1
+        cCtx.fillText((freqs[1] / 1000).toFixed(0) + ' kHz', 4, 22);
+
+        cCtx.textAlign = 'right';
+        // Sw2
+        cCtx.fillText((freqs[2] / 1000).toFixed(0) + ' kHz', width - 4, 10);
+        // Sw3
+        cCtx.fillText((freqs[3] / 1000).toFixed(0) + ' kHz', width - 4, 22);
+
+
+        // Draw Composite Waveform
+        // Since we can't see 30kHz-1MHz on 44kHz sample rate, we simulate the visualization
+        // by scaling the time base down to visible frequencies, but keeping relative ratios (ish).
+        // Base visual freq: 30kHz -> represented as 3Hz visual wave?
+
         cCtx.beginPath();
+        cCtx.lineWidth = 1.5;
+        cCtx.strokeStyle = '#22c55e';
         cCtx.shadowBlur = 4;
         cCtx.shadowColor = 'rgba(34, 197, 94, 0.5)';
 
-        const frequency = 4; // visual cycles across screen
-        const amplitude = (height - 20) / 2;
-        const offset = height - 10; // Bottom base
-        const now = Date.now() / 100; // Speed
+        const timeScale = elapsed * 10;
 
-        cCtx.moveTo(0, height / 2); // Start somewhere
+        for (let x = 0; x < width; x++) {
+          let y = 0;
+          // Normalized X
+          const t = x / width;
 
-        let x = 0;
-        let lastY = offset;
+          // 1. 30kHz Square Base (Visualized as a stable square wave)
+          // We'll give it a fixed visual frequency, e.g., 4 cycles across screen
+          const basePhase = (t * 4 - timeScale) * Math.PI * 2;
+          y += Math.sign(Math.sin(basePhase)) * 0.4;
 
-        // Draw a clean square wave
-        for (x = 0; x < width; x++) {
-          // Create square shape: sin(x) > 0 ? 1 : 0
-          const t = x * 0.1 + now; // Time base
-          // Add some noise to make it look "measured"
-          const noise = (Math.random() - 0.5) * 2;
+          // 2. Add Sweeps (Visualized as higher freq sines/noise)
+          // Scale visual freq by actual freq ratio relative to 30k
+          // 30k = 1. 300k = 10.
 
-          // Square wave logic: High or Low
-          const isHigh = Math.sin(x * (Math.PI * 2 * frequency) / width - (now * 5)) > 0;
+          // To prevent chaos, we clamp visual multiplier or it just becomes fill.
+          // Let's just add 3 "high freq" components that vary with the calculated freqs
+          // scaled down heavily.
 
-          // Current Y position
-          // Low = offset (near 0V). High = offset - amplitude * 2 (Max V).
-          let y = isHigh ? (offset - amplitude * 1.8) : offset;
-
-          // Add slight noise
-          y += noise;
-
-          if (x === 0) cCtx.moveTo(x, y);
-          else {
-            // Draw vertical lines for square wave edges
-            if (Math.abs(y - lastY) > 5) {
-              cCtx.lineTo(x, y);
-            } else {
-              cCtx.lineTo(x, y);
-            }
+          for (let i = 1; i < 4; i++) {
+            // Ratio relative to 30k
+            const ratio = freqs[i] / 30000;
+            // Visual freq
+            const vf = 4 * ratio;
+            const amp = 0.15; // lower amplitude for sweeps
+            y += Math.sin((t * vf - timeScale * ratio) * Math.PI * 2) * amp;
           }
-          lastY = y;
-        }
 
+          // Map -1..1 to Height
+          // Canvas Height is small (40px). 
+          const plotY = (height / 2) - (y * (height / 2.5));
+
+          if (x === 0) cCtx.moveTo(x, plotY);
+          else cCtx.lineTo(x, plotY);
+        }
         cCtx.stroke();
         cCtx.shadowBlur = 0;
-
-        // visual Guides
-        cCtx.fillStyle = '#38bdf8';
-        cCtx.font = '10px monospace';
-        cCtx.fillText('SQ + OFFSET', 4, 12);
       },
 
       updateUI() {
