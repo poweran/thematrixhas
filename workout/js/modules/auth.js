@@ -36,7 +36,7 @@ export const auth = {
             parent.innerHTML = ''; // Clear previous content (e.g. user info)
             window.google.accounts.id.renderButton(
                 parent,
-                { theme: "filled_black", size: "medium", shape: "rectangular" }
+                { theme: "filled_black", size: "medium", shape: "rectangular", text: "signin" }
             );
         }
     },
