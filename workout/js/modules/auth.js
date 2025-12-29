@@ -41,14 +41,14 @@ export const auth = {
     renderButton() {
         const parent = document.getElementById('google-auth-container');
         if (parent) {
-            parent.innerHTML = ''; // Clear previous content
+            parent.innerHTML = '';
 
-            // Check for embedded browsers which often break Google Auth
             const ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
-            // DEBUG: Show UA on screen
-            parent.innerHTML = `<div style="font-size:10px; color:#fbbf24; word-break:break-all; margin-bottom:5px;">UA: ${ua}</div>`;
 
-            const isEmbedded = (ua.includes("telegram")) || (ua.includes("instagram")) || (ua.includes("tiktok")) || (ua.includes("fban") || ua.includes("fbav")); // FBAN/FBAV is Facebook app
+            // Temporary Debug Alert
+            alert("UA: " + ua);
+
+            const isEmbedded = (ua.includes("telegram")) || (ua.includes("instagram")) || (ua.includes("tiktok")) || (ua.includes("fban") || ua.includes("fbav"));
 
             if (isEmbedded) {
                 parent.innerHTML = `
@@ -57,7 +57,7 @@ export const auth = {
                         <strong style="color: #fff;">Откройте в Chrome/Safari</strong> ↗
                     </div>
                 `;
-                return;
+                return; // Stop execution here, do NOT try to render google button
             }
 
             window.google.accounts.id.renderButton(
