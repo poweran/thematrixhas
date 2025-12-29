@@ -154,6 +154,7 @@ function render() {
             const cell = state[key] || { reps: '', done: false };
             const td = document.createElement('td');
             td.dataset.col = colKey;
+            td.dataset.label = `${t}${s}`;
             if (isActive) td.classList.add('active-col-cell');
 
             const disabledAttr = cell.done ? 'disabled' : '';
