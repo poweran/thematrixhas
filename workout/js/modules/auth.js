@@ -41,7 +41,22 @@ export const auth = {
     renderButton() {
         const parent = document.getElementById('google-auth-container');
         if (parent) {
-            parent.innerHTML = ''; // Clear previous content (e.g. user info)
+            parent.innerHTML = ''; // Clear previous content
+
+            // Check for embedded browsers (Telegram/Instagram/TikTok) which break Google Auth
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            const isEmbedded = (ua.indexOf("Telegram") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
+
+            if (isEmbedded) {
+                parent.innerHTML = `
+                    <div style="font-size: 11px; line-height: 1.2; color: #fbbf24; text-align: right; max-width: 140px;">
+                        Google вход не работает внутри Telegram.<br>
+                        <strong style="color: #fff;">Откройте в Chrome/Safari</strong> ↗
+                    </div>
+                `;
+                return;
+            }
+
             window.google.accounts.id.renderButton(
                 parent,
                 { theme: "filled_black", size: "medium", shape: "rectangular", text: "signin" }
