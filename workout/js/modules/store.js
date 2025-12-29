@@ -110,25 +110,23 @@ export const store = {
 
     getStats() {
         const stats = [];
+        console.log('Store: Calculating stats from cache. Weeks:', Object.keys(this.weeksCache));
+
         // Iterate all weeks
         Object.entries(this.weeksCache).forEach(([weekId, weekData]) => {
             if (!weekData) return;
-            // Parse weekId (e.g., "2024-W01") to date is tricky without utils, 
-            // but we can rely on our knowledge that we store WeekOffset relative to NOW? 
-            // No, WeekId is absolute. We need to convert WeekId to timestamp.
-            // Let's approximate or use utils if available.
-            // Actually, `getWeekDays` needs an offset.
-            // We can parse generic week ID: "Year-WNumber".
 
-            // Simplified: we just need a valid date for the "Day Index".
-            // Let's assume week starts on Monday.
-
+            // Expected format: "2024-W52"
             const [yearStr, weekStr] = weekId.split('-W');
             const year = parseInt(yearStr);
             const week = parseInt(weekStr);
 
-            // Get date of Monday of that week
-            // Simple algo:
+            if (isNaN(year) || isNaN(week)) {
+                console.warn('Store: Invalid weekId format', weekId);
+                return;
+            }
+
+            // Get date of Monday of that week (ISO 8601)
             const simple = new Date(year, 0, 1 + (week - 1) * 7);
             const dayOfWeek = simple.getDay();
             const ISOweekStart = simple;
@@ -139,18 +137,25 @@ export const store = {
 
             // Iterate cells
             Object.entries(weekData).forEach(([k, cell]) => {
-                if (cell && (cell.done || cell.reps > 0)) {
+                if (cell && (cell.done || (cell.reps !== "" && cell.reps > 0))) {
                     // key format: "Muscle_DayIndex_SetIndex" -> "Chest_0_1"
+                    // Or new format if Muscle contains underscores? Assuming Muscle has no underscores or taking part 0
                     const parts = k.split('_');
                     if (parts.length >= 3) {
+                        // Muscle is parts[0]
+                        // DayIndex is parts[1]
                         const dayIndex = parseInt(parts[1]);
+
                         // Calculate specific date
                         const d = new Date(ISOweekStart);
                         d.setDate(d.getDate() + dayIndex);
 
+                        const repsVal = parseFloat(cell.reps) || 0;
+                        // console.log(`Stats: Found entry ${k}: ${repsVal} min on ${d.toISOString()}`);
+
                         stats.push({
                             key: k,
-                            reps: parseFloat(cell.reps) || 0,
+                            reps: repsVal,
                             ts: d.getTime()
                         });
                     }
@@ -158,6 +163,7 @@ export const store = {
             });
         });
 
+        console.log('Store: Stats calculated. Total entries:', stats.length);
         // Sort by time
         return stats.sort((a, b) => a.ts - b.ts);
     },
