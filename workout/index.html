@@ -37,25 +37,42 @@
     header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
+      align-items: flex-end;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
     }
 
     h1 {
-      font-size: 22px;
-      margin: 0;
+      display: none;
     }
 
     .subtitle {
-      color: var(--muted);
-      font-size: 13px;
+      display: none;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .logo-text span {
+      color: var(--accent);
     }
 
     .card {
-      background: linear-gradient(180deg, #020617, #020617) padding-box,
-        linear-gradient(180deg, #1f2937, #020617) border-box;
-      border: 1px solid transparent;
-      border-radius: 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0;
       box-shadow: 0 20px 40px rgba(0, 0, 0, .45);
       padding: 16px;
       margin-bottom: 24px;
@@ -63,7 +80,7 @@
 
     table {
       width: 100%;
-      border-collapse: separate;
+      border-collapse: collapse;
       border-spacing: 0;
       font-size: 13px;
     }
@@ -104,17 +121,18 @@
 
     .cell {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 8px;
     }
 
     input {
-      width: 46px;
+      width: 60px;
       height: 32px;
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 0;
       color: var(--text);
       text-align: center;
       font-size: 13px;
@@ -128,7 +146,7 @@
     button.set {
       width: 28px;
       height: 28px;
-      border-radius: 50%;
+      border-radius: 0;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--muted);
@@ -156,7 +174,7 @@
 
     .controls button {
       padding: 10px 16px;
-      border-radius: 12px;
+      border-radius: 0;
       border: 1px solid var(--border);
       background: var(--card);
       color: var(--text);
@@ -184,7 +202,7 @@
     .stat {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 0;
       padding: 12px;
     }
 
@@ -203,7 +221,7 @@
     .timer-container {
       background: var(--card-2);
       margin-bottom: 20px;
-      border-radius: 12px;
+      border-radius: 0;
       padding: 16px;
       display: flex;
       align-items: center;
@@ -229,7 +247,7 @@
       border: 1px solid var(--border);
       color: var(--text);
       padding: 8px 12px;
-      border-radius: 8px;
+      border-radius: 0;
       cursor: pointer;
       font-size: 14px;
       transition: .2s;
@@ -247,31 +265,46 @@
       border-color: var(--accent);
     }
 
+    #modalImg {
+      background-color: #000;
+    }
+
     .tabs {
       display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
+      background: var(--card);
+      padding: 0;
+      border: 1px solid var(--border);
+      width: fit-content;
+      margin-bottom: 24px;
     }
 
     .tab-btn {
       background: transparent;
       border: none;
-      border-bottom: 2px solid transparent;
+      border-right: 1px solid var(--border);
       color: var(--muted);
-      font-size: 16px;
-      font-weight: 600;
-      padding: 8px 12px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 12px 24px;
       cursor: pointer;
-      transition: .2s;
+      transition: all .2s;
+      font-weight: 600;
+    }
+
+    .tab-btn:last-child {
+      border-right: none;
     }
 
     .tab-btn:hover {
       color: var(--text);
+      background: rgba(255, 255, 255, 0.02);
     }
 
     .tab-btn.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
+      color: #020617;
+      background: var(--accent);
+      border-color: var(--accent);
     }
 
     /* Active Column Highlight */
@@ -298,17 +331,20 @@
   <div class="container">
 
     <header>
-      <div>
-        <h1>Workout Log</h1>
-        <div class="subtitle">2 тренировки · 4 подхода · подтверждение кнопкой</div>
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="6" width="28" height="20" stroke="#38bdf8" stroke-width="2" />
+          <path d="M7 16H25" stroke="#38bdf8" stroke-width="2" />
+          <path d="M16 6V26" stroke="#38bdf8" stroke-width="2" />
+          <circle cx="16" cy="16" r="4" fill="#0b1220" stroke="#38bdf8" stroke-width="2" />
+        </svg>
+        <div class="logo-text">WORKOUT<span>LOG</span></div>
       </div>
     </header>
 
-    </header>
-
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('workout')">Дневник</button>
-      <button class="tab-btn" onclick="switchTab('analytics')">Аналитика</button>
+      <button class="tab-btn active" onclick="switchTab('workout')" data-tab="workout">Дневник</button>
+      <button class="tab-btn" onclick="switchTab('analytics')" data-tab="analytics">Аналитика</button>
     </div>
 
     <!-- WORKOUT VIEW -->
@@ -326,7 +362,7 @@
             <span id="zapperIcon" style="opacity:0.5">⚡</span> Zapper
           </button>
           <canvas id="zapperScope" width="160" height="40"
-            style="display:none; height:40px; background:#020617; border-radius:8px; border:1px solid var(--border);"></canvas>
+            style="display:none; height:40px; background:#020617; border-radius:0; border:1px solid var(--border);"></canvas>
         </div>
       </div>
     </div>
@@ -374,12 +410,12 @@
   <div id="modal" onclick="if(event.target===this)closeModal()"
     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:1000; overflow-y:auto;">
     <div
-      style="max-width:550px; margin:4% auto; background:var(--card); border-radius:18px; padding:24px; position:relative; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
+      style="max-width:550px; margin:4% auto; background:var(--card); border-radius:0; padding:24px; position:relative; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid var(--border);">
       <button onclick="closeModal()"
         style="position:absolute; right:16px; top:16px; background:none; border:none; color:var(--muted); font-size:24px; cursor:pointer; padding:4px; line-height:1; z-index:10;">✕</button>
       <h2 id="modalTitle" style="margin-top:0; font-size:24px; margin-bottom:16px;"></h2>
       <img id="modalImg"
-        style="width:100%; border-radius:12px; border:1px solid var(--border); margin-bottom:20px; aspect-ratio:16/9; object-fit:cover;" />
+        style="width:100%; border-radius:0; border:1px solid var(--border); margin-bottom:20px; aspect-ratio:16/9; object-fit:cover;" />
 
       <!-- Timer Interface -->
       <div class="timer-container">
@@ -392,7 +428,7 @@
       </div>
 
       <div id="sideAlert"
-        style="display:none; background:rgba(56, 189, 248, 0.1); border:1px solid var(--accent); color:var(--accent); padding:10px; border-radius:8px; margin-bottom:16px; font-weight:500; text-align:center;">
+        style="display:none; background:rgba(56, 189, 248, 0.1); border:1px solid var(--accent); color:var(--accent); padding:10px; border-radius:0; margin-bottom:16px; font-weight:500; text-align:center;">
         ⚠️ Не забудьте выполнить на вторую сторону!
       </div>
 
@@ -515,10 +551,13 @@
           td.dataset.col = colKey;
           if (isActive) td.classList.add('active-col-cell');
 
+          const disabledAttr = cell.done ? 'disabled' : '';
           td.innerHTML = `
         <div class="cell">
           <input type="number" 
                  value="${cell.reps}" 
+                 min="0" max="999"
+                 ${disabledAttr}
                  onchange="setReps('${key}',this.value)">
           <button class="set ${cell.done ? 'done' : ''}" onclick="toggle('${key}',this)">✓</button>
         </div>`;
@@ -532,15 +571,22 @@
     }
 
     function setReps(key, val) {
+      let num = parseFloat(val);
+      if (num < 0) num = 0;
+      if (num > 999) num = 999;
       state[key] = state[key] || { reps: '', done: false };
-      state[key].reps = val;
+      state[key].reps = isNaN(num) ? '' : num;
       saveData();
+      if (val != state[key].reps) render(); // Re-render to show corrected value if needed
     }
 
     function toggle(key, btn) {
       state[key] = state[key] || { reps: '', done: false };
       state[key].done = !state[key].done;
       btn.classList.toggle('done');
+
+      const input = btn.previousElementSibling;
+      if (input) input.disabled = state[key].done;
 
       if (state[key].done) {
         const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
@@ -1030,11 +1076,9 @@
 
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      // Find the button that was clicked or corresponds to the tab
-      const clickedButton = event.target.closest('.tab-btn') || document.querySelector(`.tab-btn[data-tab="${tab}"]`);
-      if (clickedButton) {
-        clickedButton.classList.add('active');
-      }
+
+      const targetBtn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+      if (targetBtn) targetBtn.classList.add('active');
 
       document.getElementById('view-workout').style.display = tab === 'workout' ? 'block' : 'none';
       document.getElementById('view-analytics').style.display = tab === 'analytics' ? 'block' : 'none';
@@ -1078,10 +1122,13 @@
       });
 
       // 2. High Level KPIs
-      // Count unique sets (Key + Date)
+      // Count unique columns (Sets) per day, instead of disjoint exercises
       const uniqueSets = new Set(stats.map(s => {
+        const parts = s.key.split('_');
+        // key is Muscle_Training_Set. Safe to grab indices 1 and 2 as Muscles have no underscores.
+        const colKey = `${parts[1]}_${parts[2]}`;
         const d = new Date(s.ts).toISOString().split('T')[0];
-        return `${s.key}_${d}`;
+        return `${colKey}_${d}`;
       }));
 
       document.getElementById('stat-workouts').innerText = dates.size;
@@ -1180,41 +1227,46 @@
       // Kept empty to prevent errors if called
     }
 
-    function autoFillCurrentSet(muscle, value) {
-      let activeCol = state._activeCol;
+    function ensureActiveColumn() {
+      if (state._activeCol) return state._activeCol;
 
-      // If no active column, find the first completely empty one
-      if (!activeCol) {
-        for (let t of trainings) {
-          for (let s of sets) {
-            const colKey = `${t}_${s}`;
-            // Check if this column has ANY data for ANY muscle
-            const hasData = muscles.some(m => {
-              const k = keyOf(m, t, s);
-              return state[k] && (state[k].reps || state[k].done);
-            });
+      // Find first column that is empty (no data entered)
+      for (let t of trainings) {
+        for (let s of sets) {
+          const colKey = `${t}_${s}`;
+          // Check if this column has ANY data for ANY muscle
+          const hasData = muscles.some(m => {
+            const k = keyOf(m, t, s);
+            return state[k] && (state[k].reps || state[k].done);
+          });
 
-            if (!hasData) {
-              activeCol = colKey;
-              state._activeCol = activeCol;
-              break;
-            }
+          if (!hasData) {
+            state._activeCol = colKey;
+            saveData();
+            return colKey;
           }
-          if (activeCol) break;
         }
       }
 
-      // If still no active col (all full), default to the last one or handle error
-      if (!activeCol) activeCol = 'B_4'; // Fallback
+      // If all columns have data, but no active col is set (e.g. finished workout),
+      // we can default to 'A_1' to start over, or stay null. 
+      // But user wants a highlight. Let's restart at A_1.
+      state._activeCol = 'A_1';
+      saveData();
+      return 'A_1';
+    }
 
+    function autoFillCurrentSet(muscle, value) {
+      // Ensure we have a target column
+      ensureActiveColumn();
+
+      const activeCol = state._activeCol;
       const [t, s] = activeCol.split('_');
       const key = keyOf(muscle, t, s);
 
       const cell = state[key] || { reps: '', done: false };
 
       // Logic: Add to current value
-      const validChars = /[^0-9.]/g;
-      // If user typed "15kg", we probably shouldn't blindly add. But context is seconds.
       // Assuming naive number addition for timer integration.
       const currentVal = parseFloat(cell.reps) || 0;
       // If cell was empty, currentVal is 0.
@@ -1226,6 +1278,8 @@
       render();
     }
 
+    // Initial setup
+    ensureActiveColumn();
     render();
     // Initial tab setup
     switchTab('workout');
