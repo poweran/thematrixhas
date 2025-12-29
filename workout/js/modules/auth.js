@@ -2,8 +2,11 @@ export const auth = {
     user: null,
 
     init() {
-        // Проверяем доступность объекта google c интервалом,
-        // так как скрипт может загрузиться чуть позже основной логики
+        const storedUser = localStorage.getItem('auth_user');
+        if (storedUser) {
+            this.user = JSON.parse(storedUser);
+        }
+
         const checkGoogle = setInterval(() => {
             if (window.google) {
                 clearInterval(checkGoogle);
@@ -13,7 +16,6 @@ export const auth = {
     },
 
     initializeGoogle() {
-        // ВНИМАНИЕ: Пользователь должен заменить YOUR_CLIENT_ID на свой реальный Client ID из Google Cloud Console
         const CLIENT_ID = "875544173752-fgbpus92lb8atr07bv6vq705dp5c56st.apps.googleusercontent.com";
 
         window.google.accounts.id.initialize({
@@ -21,8 +23,9 @@ export const auth = {
             callback: this.handleCredentialResponse.bind(this)
         });
 
-        // Рендерим кнопку, если пользователь не авторизован
-        if (!this.user) {
+        if (this.user) {
+            this.renderUserInfo();
+        } else {
             this.renderButton();
         }
     },
@@ -30,6 +33,7 @@ export const auth = {
     renderButton() {
         const parent = document.getElementById('google-auth-container');
         if (parent) {
+            parent.innerHTML = ''; // Clear previous content (e.g. user info)
             window.google.accounts.id.renderButton(
                 parent,
                 { theme: "filled_black", size: "medium", shape: "rectangular" }
@@ -40,8 +44,15 @@ export const auth = {
     handleCredentialResponse(response) {
         const payload = this.decodeJwt(response.credential);
         this.user = payload;
-        console.log("User logged in:", this.user.name);
+        localStorage.setItem('auth_user', JSON.stringify(this.user));
         this.renderUserInfo();
+    },
+
+    logout() {
+        this.user = null;
+        localStorage.removeItem('auth_user');
+        window.google.accounts.id.disableAutoSelect(); // Prevent auto-relogin
+        this.renderButton();
     },
 
     decodeJwt(token) {
@@ -63,10 +74,15 @@ export const auth = {
         if (!parent || !this.user) return;
 
         parent.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text);">
-                <img src="${this.user.picture}" style="width: 24px; height: 24px; border-radius: 50%;">
-                <span>${this.user.given_name}</span>
+            <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <img src="${this.user.picture}" style="width: 28px; height: 28px; border-radius: 50%;">
+                    <span>${this.user.given_name}</span>
+                </div>
+                <button id="auth-logout-btn" style="background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 0; transition: .2s;">Выйти</button>
             </div>
         `;
+
+        document.getElementById('auth-logout-btn').onclick = () => this.logout();
     }
 };
