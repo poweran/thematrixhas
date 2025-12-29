@@ -101,6 +101,8 @@ export const sync = {
                     this.pushToCloud(true);
                 }
             }
+        }, (error) => {
+            console.error("Sync: Listener Error:", error);
         });
     },
 
@@ -114,18 +116,12 @@ export const sync = {
     async pushToCloud(force = false) {
         if (!currentUser || !db) return;
 
-        // Basic Debounce or Loop prevention involves checking timestamps or deep equality, 
-        // but since onSnapshot triggers locally on write, we need to be careful.
-        // The safest way with simple logic: setDoc doesn't fire onSnapshot with 'Server' status immediately?
-        // Actually, onSnapshot fires for local writes immediately with hasPendingWrites=true.
-        // We ignored hasPendingWrites above? No.
-
-        // If we are pushing, it's a local write.
         const weekId = getWeekId(store.currentWeekOffset);
         const docRef = doc(db, "users", currentUser.uid, "weeks", weekId);
 
         try {
             await setDoc(docRef, store.state, { merge: true });
+            console.log('Sync: Pushed to cloud successfully');
         } catch (e) {
             console.error("Sync Push Error:", e);
         }
