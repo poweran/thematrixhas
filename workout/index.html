@@ -128,7 +128,7 @@
     }
 
     input {
-      width: 60px;
+      width: 40px;
       height: 32px;
       background: var(--card);
       border: 1px solid var(--border);
@@ -182,10 +182,30 @@
       font-weight: 500;
     }
 
-    .controls button.primary {
+    button.primary {
+      padding: 12px 32px;
+      border-radius: 0;
+      border: none;
       background: linear-gradient(180deg, #38bdf8, #0ea5e9);
       color: #002233;
-      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 15px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    button.primary:hover {
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    button.primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
     }
 
     #stats h2 {
@@ -323,6 +343,192 @@
       background: rgba(56, 189, 248, 0.1);
       box-shadow: 0 0 10px rgba(56, 189, 248, 0.1);
     }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--card);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 12px 24px;
+      z-index: 2000;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toast::before {
+      content: '✓';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: rgba(56, 189, 248, 0.2);
+      border-radius: 50%;
+      font-size: 12px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.error {
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+
+    .toast.error::before {
+      content: '✕';
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* Settings UI */
+    .settings-group {
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-group:last-child {
+      border-bottom: none;
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .setting-label {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .setting-desc {
+      font-size: 13px;
+      color: var(--muted);
+      max-width: 80%;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      background: var(--card-2);
+      border: 1px solid var(--border);
+    }
+
+    .stepper button {
+      width: 36px;
+      height: 36px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: .2s;
+    }
+
+    .stepper button:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .stepper input {
+      width: 50px;
+      height: 36px;
+      background: transparent;
+      border: none;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 16px;
+      padding: 0;
+    }
+
+    /* Disable number input arrows */
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* Day Group Headers */
+    .day-header {
+      text-align: center;
+      padding: 8px 4px;
+      /* Reduced side padding */
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-weight: 500;
+      vertical-align: bottom;
+    }
+
+    .day-header.current {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .brace-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 0 6px;
+      /* Prevent touching edges */
+      position: relative;
+    }
+
+    .brace-label {
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+
+    .brace-path {
+      width: 100%;
+      height: 8px;
+      /* Fixed height for consistency */
+      fill: none;
+      stroke-width: 1.5;
+      stroke: var(--muted);
+      /* Default gray */
+      transition: all 0.2s;
+    }
+
+    .day-header.current .brace-path {
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+
+    /* Sticky headers fix for 2 rows */
+    thead tr:nth-child(2) th {
+      position: sticky;
+      top: 45px;
+      /* Height of first row approx */
+      z-index: 2;
+      background: var(--card);
+      box-shadow: 0 1px 0 var(--border);
+      /* mimic border-bottom */
+    }
+
+    thead tr:nth-child(1) th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      /* Above row 2 */
+      background: var(--card);
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -345,6 +551,7 @@
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('workout')" data-tab="workout">Дневник</button>
       <button class="tab-btn" onclick="switchTab('analytics')" data-tab="analytics">Аналитика</button>
+      <button class="tab-btn" onclick="switchTab('settings')" data-tab="settings">Настройки</button>
     </div>
 
     <!-- WORKOUT VIEW -->
@@ -355,7 +562,7 @@
 
       <div class="controls" style="align-items: center; flex-wrap: wrap;">
         <button class="primary" onclick="finishSet()">Закончить подход</button>
-        <button onclick="resetData()">Сброс</button>
+
         <div style="display:flex; align-items:center; gap:8px;">
           <button onclick="toggleZapper()" id="zapperBtn"
             style="position:relative; height:40px; display:flex; align-items:center; gap:6px;">
@@ -404,6 +611,44 @@
       <div id="stats" class="card" style="margin-top:24px;"></div>
     </div>
 
+    <!-- SETTINGS VIEW -->
+    <div id="view-settings" style="display:none;">
+      <div class="card" style="max-width: 600px; margin: 0 auto;">
+
+        <div class="settings-group">
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Дни тренировок</div>
+              <div class="setting-desc">Количество тренировочных дней в одной неделе (A, B, C...)</div>
+            </div>
+            <div class="stepper">
+              <button onclick="adjustSetting('setting-days', -1)">−</button>
+              <input type="number" id="setting-days" readonly value="2">
+              <button onclick="adjustSetting('setting-days', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Подходы</div>
+              <div class="setting-desc">Количество подходов для каждого упражнения</div>
+            </div>
+            <div class="stepper">
+              <button onclick="adjustSetting('setting-sets', -1)">−</button>
+              <input type="number" id="setting-sets" readonly value="4">
+              <button onclick="adjustSetting('setting-sets', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content: flex-end; margin-top: 32px;">
+          <button class="primary" onclick="saveSettings()">Применить изменения</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Modal -->
@@ -426,6 +671,11 @@
           <button class="timer-btn" onclick="resetTimer()">Reset</button>
         </div>
       </div>
+
+      <button id="fixResultBtn" onclick="confirmResult()"
+        style="display:none; width:100%; margin-bottom:16px; padding:12px; font-size:16px; background:var(--done); color:#052e16; border:none; border-radius:0; font-weight:600; cursor:pointer;">
+        Зафиксировать результат
+      </button>
 
       <div id="sideAlert"
         style="display:none; background:rgba(56, 189, 248, 0.1); border:1px solid var(--accent); color:var(--accent); padding:10px; border-radius:0; margin-bottom:16px; font-weight:500; text-align:center;">
@@ -511,8 +761,12 @@
       'Кор': { time: 30, unilateral: false }
     };
 
-    const trainings = ['A', 'B'];
-    const sets = [1, 2, 3, 4];
+    const CONFIG_KEY = 'home_workout_config_v1';
+    let config = JSON.parse(localStorage.getItem(CONFIG_KEY)) || { days: 2, sets: 4 };
+
+    const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let trainings = ALPHABET.slice(0, config.days).split('');
+    let sets = Array.from({ length: config.sets }, (_, i) => i + 1);
 
     const STORAGE_KEY = 'home_workout_table_v1';
     const STATS_KEY = 'home_workout_stats_v1';
@@ -525,14 +779,54 @@
       const table = document.getElementById('log');
       table.innerHTML = '';
 
+      const dates = getWeekDays(config.days);
+
       const thead = document.createElement('thead');
+
+      // Row 1: Dates / Groups
+      let row1 = '<tr><th></th>';
+      trainings.forEach((t, i) => {
+        const d = dates[i];
+        const isToday = isDateToday(d);
+        const dateStr = d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+        const dayName = capitalize(d.toLocaleDateString('ru-RU', { weekday: 'long' }));
+
+        // Always show brace, label depends on active state
+        const labelText = isToday ? `${dayName} ${dateStr}` : `${dateStr}`;
+
+        row1 += `
+          <th colspan="${sets.length}" class="day-header ${isToday ? 'current' : ''}">
+            <div class="brace-wrapper">
+              <span class="brace-label">${labelText}</span>
+              <svg class="brace-path" viewBox="0 0 100 10" preserveAspectRatio="none">
+                 <path d="M0,10 Q40,10 50,2 Q60,10 100,10" />
+              </svg>
+            </div>
+          </th>`;
+      });
+      row1 += '</tr>';
+
+      // Row 2: Columns
+      let row2 = '<tr><th style="top:45px">Мышцы</th>'; // Adjust sticky top if needed, assuming default header height
+      // Actually with two rows sticky might be tricky. Let's try standard sticky.
+      // We need to adjust 'top' for the second row if we want both sticky.
+      // For now let's just keep standard structure in tbody or make 'th' sticky. 
+      // Existing CSS: thead th { top: 0; sticky... }
+      // If we have 2 rows, first row is top:0, second row needs top: heightOfFirstRow.
+      // Let's approximate height or let JS handle it?
+      // CSS is simple `top: 0`. It will stack if we are lucky or overlap. 
+      // `position: sticky` on multiple rows works in modern browsers by stacking? No, often they overlap.
+      // Let's set styled top for second row.
+
       const headerHtml = trainings.map(t => sets.map(s => {
         const key = `${t}_${s}`;
         const isActive = state._activeCol === key;
-        return `<th data-col="${key}" class="${isActive ? 'active-col-header' : ''}">${t}${s}</th>`;
-      }).join('')).join('');
+        return `<th data-col="${key}" class="${isActive ? 'active-col-header' : ''}" style="top:40px;">${t}${s}</th>`;
+      }).join('')).join(''); // 40px is approx height of row 1
 
-      thead.innerHTML = `<tr><th>Мышцы</th>${headerHtml}</tr>`;
+      row2 += headerHtml + '</tr>';
+
+      thead.innerHTML = row1 + row2;
       table.appendChild(thead);
 
       const tbody = document.createElement('tbody');
@@ -558,6 +852,7 @@
                  value="${cell.reps}" 
                  min="0" max="999"
                  ${disabledAttr}
+                 onfocus="checkAutoFinish('${colKey}')"
                  onchange="setReps('${key}',this.value)">
           <button class="set ${cell.done ? 'done' : ''}" onclick="toggle('${key}',this)">✓</button>
         </div>`;
@@ -571,22 +866,40 @@
     }
 
     function setReps(key, val) {
+      const colKey = key.split('_').slice(1).join('_');
+      const switched = checkAutoFinish(colKey);
+
       let num = parseFloat(val);
       if (num < 0) num = 0;
       if (num > 999) num = 999;
       state[key] = state[key] || { reps: '', done: false };
       state[key].reps = isNaN(num) ? '' : num;
       saveData();
-      if (val != state[key].reps) render(); // Re-render to show corrected value if needed
+
+      if (switched || val != state[key].reps) render();
     }
 
     function toggle(key, btn) {
-      state[key] = state[key] || { reps: '', done: false };
-      state[key].done = !state[key].done;
-      btn.classList.toggle('done');
+      const colKey = key.split('_').slice(1).join('_');
+      const switched = checkAutoFinish(colKey);
 
-      const input = btn.previousElementSibling;
-      if (input) input.disabled = state[key].done;
+      state[key] = state[key] || { reps: '', done: false };
+
+      if (!state[key].done && (state[key].reps === '' || state[key].reps === null)) {
+        showToast('Укажите количество минут', true);
+        if (switched) render(); // Ensure UI is consistent if we switched but failed validation
+        return;
+      }
+
+      state[key].done = !state[key].done;
+
+      if (switched) {
+        render();
+      } else {
+        btn.classList.toggle('done');
+        const input = btn.previousElementSibling;
+        if (input) input.disabled = state[key].done;
+      }
 
       if (state[key].done) {
         const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
@@ -601,6 +914,23 @@
       }
 
       saveData();
+    }
+
+    function checkAutoFinish(targetCol) {
+      if (!state._activeCol || state._activeCol === targetCol) return false;
+
+      const hasDone = muscles.some(m => {
+        const k = `${m}_${state._activeCol}`;
+        return state[k] && state[k].done;
+      });
+
+      if (hasDone) {
+        if (confirm('Закончить текущий подход?')) {
+          finishSet();
+          return true;
+        }
+      }
+      return false;
     }
 
     function saveData() {
@@ -642,13 +972,7 @@
       }
     }
 
-    function resetData() {
-      if (!confirm('Сбросить текущий прогресс? (История аналитики сохранится)')) return;
-      localStorage.removeItem(STORAGE_KEY);
-      state = {};
-      render();
-      renderHighLevelAnalytics();
-    }
+
 
     let currentMuscle = ''; // Ensure variable exists
     let isSecondSide = false;
@@ -675,7 +999,6 @@
       } else {
         alertBox.style.display = 'none';
       }
-
       resetTimer();
     }
 
@@ -765,13 +1088,21 @@
               }
             }
 
-            autoFillCurrentSet(currentMuscle, currentBaseTime);
+            // Show manual fix button instead of auto-fill
+            document.getElementById('fixResultBtn').style.display = 'block';
+            // autoFillCurrentSet(currentMuscle, currentBaseTime);
           }
         } else {
           timerTime++;
         }
         updateTimerDisplay();
       }, 1000);
+    }
+
+    function confirmResult() {
+      autoFillCurrentSet(currentMuscle, currentBaseTime, true);
+      document.getElementById('fixResultBtn').style.display = 'none';
+      closeModal();
     }
 
     // Audio Context & Zapper Logic
@@ -1046,6 +1377,7 @@
       stopTimer();
       timerTime = currentBaseTime;
       timerIsCountdown = true;
+      document.getElementById('fixResultBtn').style.display = 'none';
       updateTimerDisplay();
     }
 
@@ -1082,6 +1414,12 @@
 
       document.getElementById('view-workout').style.display = tab === 'workout' ? 'block' : 'none';
       document.getElementById('view-analytics').style.display = tab === 'analytics' ? 'block' : 'none';
+      document.getElementById('view-settings').style.display = tab === 'settings' ? 'block' : 'none';
+
+      if (tab === 'settings') {
+        document.getElementById('setting-days').value = config.days;
+        document.getElementById('setting-sets').value = config.sets;
+      }
 
       if (tab === 'analytics') {
         renderHighLevelAnalytics();
@@ -1096,8 +1434,8 @@
         document.getElementById('stat-sets').innerText = '0';
         document.getElementById('stat-time').innerText = '0m';
         // Clear charts if no data
-        if (window.histChart) window.histChart.destroy();
-        if (window.distChart) window.distChart.destroy();
+        if (window.histChart && typeof window.histChart.destroy === 'function') window.histChart.destroy();
+        if (window.distChart && typeof window.distChart.destroy === 'function') window.distChart.destroy();
         document.getElementById('stats').innerHTML = '<span class="subtitle">Нет данных</span>';
         return;
       }
@@ -1144,7 +1482,7 @@
       const dayData = sortedDays.map(d => Math.round(dailyVol[d] / 60)); // Minutes
 
       const ctxHist = document.getElementById('historyChart').getContext('2d');
-      if (window.histChart) window.histChart.destroy();
+      if (window.histChart && typeof window.histChart.destroy === 'function') window.histChart.destroy();
       window.histChart = new Chart(ctxHist, {
         type: 'line',
         data: {
@@ -1174,7 +1512,7 @@
       const muscleData = Object.values(muscleVol).map(s => Math.round(s / 60));
 
       const ctxDist = document.getElementById('distChart').getContext('2d');
-      if (window.distChart) window.distChart.destroy();
+      if (window.distChart && typeof window.distChart.destroy === 'function') window.distChart.destroy();
       window.distChart = new Chart(ctxDist, {
         type: 'doughnut',
         data: {
@@ -1256,7 +1594,7 @@
       return 'A_1';
     }
 
-    function autoFillCurrentSet(muscle, value) {
+    function autoFillCurrentSet(muscle, value, markDone = false) {
       // Ensure we have a target column
       ensureActiveColumn();
 
@@ -1272,6 +1610,21 @@
       // If cell was empty, currentVal is 0.
 
       cell.reps = currentVal + value;
+
+      if (markDone) {
+        cell.done = true;
+
+        // Add to stats
+        const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
+        stats.push({ key, reps: Number(cell.reps) || 0, ts: Date.now() });
+        localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+        renderStats();
+
+        if (document.getElementById('view-analytics').style.display !== 'none') {
+          renderHighLevelAnalytics();
+        }
+      }
+
       state[key] = cell; // Ensure assigned
 
       saveData();
@@ -1283,6 +1636,93 @@
     render();
     // Initial tab setup
     switchTab('workout');
+
+    function adjustSetting(id, delta) {
+      const input = document.getElementById(id);
+      let val = parseInt(input.value) + delta;
+      if (val < 1) val = 1;
+      if (val > 20) val = 20;
+      input.value = val;
+    }
+
+    function saveSettings() {
+      const d = parseInt(document.getElementById('setting-days').value);
+      const s = parseInt(document.getElementById('setting-sets').value);
+
+      if (config.days === d && config.sets === s) {
+        showToast('Изменений нет');
+        return;
+      }
+
+      config.days = d;
+      config.sets = s;
+      localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+
+      // Update globals
+      trainings = ALPHABET.slice(0, config.days).split('');
+      sets = Array.from({ length: config.sets }, (_, i) => i + 1);
+
+      render();
+      showToast('Настройки сохранены');
+    }
+
+    function getWeekDays(count) {
+      // 1: Mon
+      // 2: Mon, Thu
+      // 3: Mon, Wed, Fri
+      // 4: Mon, Tue, Thu, Fri
+      // 5: Mon..Fri
+      // 6: Mon..Sat
+      // 7: Mon..Sun
+
+      const now = new Date();
+      // Get Monday of current week
+      const d = new Date(now);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+      const monday = new Date(d.setDate(diff));
+
+      const offsets = [];
+      if (count === 1) offsets.push(0);
+      else if (count === 2) offsets.push(0, 3); // Mon, Thu
+      else if (count === 3) offsets.push(0, 2, 4); // Mon, Wed, Fri
+      else if (count === 4) offsets.push(0, 1, 3, 4);
+      else {
+        // Sequential
+        for (let i = 0; i < count; i++) offsets.push(i);
+      }
+
+      return offsets.map(o => {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + o);
+        return date;
+      });
+    }
+
+    function isDateToday(date) {
+      const now = new Date();
+      return date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear();
+    }
+
+    function capitalize(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function showToast(msg, isError = false) {
+      let toast = document.createElement('div');
+      toast.className = isError ? 'toast error' : 'toast';
+      toast.innerText = msg;
+      document.body.appendChild(toast);
+      // Trigger reflow
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
   </script>
 </body>
 
