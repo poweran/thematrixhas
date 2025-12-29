@@ -4,7 +4,7 @@ import { getWeekId } from './utils.js';
 export const store = {
     config: { days: 2, sets: 4 },
     state: {},
-    statsState: [],
+    weeksCache: {},
     currentWeekOffset: 0,
     currentWeekOffset: 0,
     listeners: [],
@@ -65,41 +65,101 @@ export const store = {
 
     saveData(skipNotify = false) {
         const weekId = getWeekId(this.currentWeekOffset);
+
+        // Update Cache
+        this.weeksCache[weekId] = { ...this.state };
+
         const key = `${STORAGE_KEY_BASE}_${weekId}`;
         localStorage.setItem(key, JSON.stringify(this.state));
 
-        // Sync to legacy key ONLY if it's the current week
+        // Persist cache locally for offline analytics (optional, but good for speed)
+        // For now, let's rely on standard storage keys we already use. 
+        // We technically only stash the CURRENT week in localStorage deeply in 'state'.
+        // To allow full offline analytics, we probably should treat localStorage as a cache for other weeks too.
+        // But let's stick to the current pattern: Sync module populates weeksCache from cloud.
+
         if (this.currentWeekOffset === 0) {
             localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(this.state));
         }
 
         if (!skipNotify) {
             this.notify('local');
+            this.notify('external_stats'); // Trigger re-calc of stats locally immediately
         }
     },
 
-    // Stats Management
-    loadStats() {
-        const stats = localStorage.getItem(STATS_KEY);
-        this.statsState = stats ? JSON.parse(stats) : [];
-        return this.statsState;
-    },
-
-    setStats(newStats) {
-        this.statsState = newStats || [];
-        localStorage.setItem(STATS_KEY, JSON.stringify(this.statsState));
+    // Stats Management (Derived)
+    updateWeeksCache(weekId, data) {
+        this.weeksCache[weekId] = data;
         this.notify('external_stats');
     },
 
     addStat(key, reps) {
-        this.statsState.push({ key, reps, ts: Date.now() });
-        localStorage.setItem(STATS_KEY, JSON.stringify(this.statsState));
-        this.notify('local_stats');
-        return this.statsState;
+        // No-op for legacy calls. We rely on saveData() updating the state.
+        // The analytics will re-derive from state.
+        return [];
+    },
+
+    loadStats() {
+        // No-op
+    },
+
+    setStats() {
+        // No-op
     },
 
     getStats() {
-        return this.statsState;
+        const stats = [];
+        // Iterate all weeks
+        Object.entries(this.weeksCache).forEach(([weekId, weekData]) => {
+            if (!weekData) return;
+            // Parse weekId (e.g., "2024-W01") to date is tricky without utils, 
+            // but we can rely on our knowledge that we store WeekOffset relative to NOW? 
+            // No, WeekId is absolute. We need to convert WeekId to timestamp.
+            // Let's approximate or use utils if available.
+            // Actually, `getWeekDays` needs an offset.
+            // We can parse generic week ID: "Year-WNumber".
+
+            // Simplified: we just need a valid date for the "Day Index".
+            // Let's assume week starts on Monday.
+
+            const [yearStr, weekStr] = weekId.split('-W');
+            const year = parseInt(yearStr);
+            const week = parseInt(weekStr);
+
+            // Get date of Monday of that week
+            // Simple algo:
+            const simple = new Date(year, 0, 1 + (week - 1) * 7);
+            const dayOfWeek = simple.getDay();
+            const ISOweekStart = simple;
+            if (dayOfWeek <= 4)
+                ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+            else
+                ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+
+            // Iterate cells
+            Object.entries(weekData).forEach(([k, cell]) => {
+                if (cell && (cell.done || cell.reps > 0)) {
+                    // key format: "Muscle_DayIndex_SetIndex" -> "Chest_0_1"
+                    const parts = k.split('_');
+                    if (parts.length >= 3) {
+                        const dayIndex = parseInt(parts[1]);
+                        // Calculate specific date
+                        const d = new Date(ISOweekStart);
+                        d.setDate(d.getDate() + dayIndex);
+
+                        stats.push({
+                            key: k,
+                            reps: parseFloat(cell.reps) || 0,
+                            ts: d.getTime()
+                        });
+                    }
+                }
+            });
+        });
+
+        // Sort by time
+        return stats.sort((a, b) => a.ts - b.ts);
     },
 
     // Helpers

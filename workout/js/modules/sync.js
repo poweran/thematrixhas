@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithCredential, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, setDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { store } from './store.js';
 import { getWeekId } from './utils.js';
 
@@ -73,43 +73,49 @@ export const sync = {
 
     async startSync() {
         if (!currentUser || !db) return;
+        console.log('Sync: Starting listener...', currentUser.uid);
 
-        const weekId = getWeekId(store.currentWeekOffset);
-        const docRef = doc(db, "users", currentUser.uid, "weeks", weekId);
-        const statsRef = doc(db, "users", currentUser.uid, "data", "stats");
+        // 1. Listen to ALL weeks for analytics and current state
+        const weeksColl = collection(db, "users", currentUser.uid, "weeks");
 
-        // 1. Week Data Listener
-        unsubscribeDoc = onSnapshot(docRef, (docSnap) => {
-            const source = docSnap.metadata.hasPendingWrites ? "Local" : "Server";
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                if (JSON.stringify(store.state) !== JSON.stringify(data)) {
-                    console.log(`Sync: Applying update from cloud (week)`);
-                    store.setState(data);
+        unsubscribeDoc = onSnapshot(weeksColl, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                const weekId = change.doc.id;
+                const data = change.doc.data();
+
+                // Update Cache
+                store.updateWeeksCache(weekId, data);
+
+                // If this is the CURRENT week being viewed, update state
+                const currentWeekId = getWeekId(store.currentWeekOffset);
+                if (weekId === currentWeekId && change.type === "modified") {
+                    // Check if it's external
+                    if (JSON.stringify(store.state) !== JSON.stringify(data)) {
+                        console.log(`Sync: Updating current week state from cloud`);
+                        store.setState(data);
+                    }
                 }
-            } else {
-                if (Object.keys(store.state).length > 0) {
+
+                // Initial load of current week
+                if (weekId === currentWeekId && change.type === "added") {
+                    if (JSON.stringify(store.state) !== JSON.stringify(data)) {
+                        store.setState(data);
+                    }
+                }
+            });
+
+            // Check if current week is missing in cloud
+            const currentWeekId = getWeekId(store.currentWeekOffset);
+            // This is tricky with collection listener, we don't know if "added" loop finished.
+            // But we can check store.weeksCache[currentWeekId]
+            setTimeout(() => {
+                if (!store.weeksCache[currentWeekId] && Object.keys(store.state).length > 0) {
                     this.pushToCloud(true);
                 }
-            }
-        });
+            }, 1000);
 
-        // 2. Stats Data Listener
-        // Note: We use a separate unsubscribe variable for stats ideally, but for simplicity let's misuse the same logic or just fire and forget if simplistic. 
-        // Correct way: store multiple unsubscribes.
-        this.unsubscribeStats = onSnapshot(statsRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const cloudStats = data.list || [];
-                if (JSON.stringify(store.getStats()) !== JSON.stringify(cloudStats)) {
-                    console.log('Sync: Applying stats from cloud');
-                    store.setStats(cloudStats);
-                }
-            } else {
-                if (store.getStats().length > 0) {
-                    this.pushStatsToCloud();
-                }
-            }
+        }, (error) => {
+            console.error("Sync: Collection Listener Error:", error);
         });
     },
 
@@ -117,10 +123,6 @@ export const sync = {
         if (unsubscribeDoc) {
             unsubscribeDoc();
             unsubscribeDoc = null;
-        }
-        if (this.unsubscribeStats) {
-            this.unsubscribeStats();
-            this.unsubscribeStats = null;
         }
     },
 
@@ -139,13 +141,6 @@ export const sync = {
     },
 
     async pushStatsToCloud() {
-        if (!currentUser || !db) return;
-        const statsRef = doc(db, "users", currentUser.uid, "data", "stats");
-        try {
-            await setDoc(statsRef, { list: store.getStats() }, { merge: true });
-            console.log('Sync: Pushed stats data');
-        } catch (e) {
-            console.error("Sync Stats Push Error:", e);
-        }
+        // No-op. Stats are derived from weeks now.
     }
 };
