@@ -23,8 +23,13 @@ export const auth = {
         window.google.accounts.id.initialize({
             client_id: CLIENT_ID,
             callback: this.handleCredentialResponse.bind(this),
-            use_fedcm_for_prompt: false
+            use_fedcm_for_prompt: false,
+            auto_select: false,
+            cancel_on_tap_outside: true
         });
+
+        // Log initialization success (GIS doesn't strictly have an init callback, but we proceed)
+        console.log("GIS Initialized with Client ID ends in:", CLIENT_ID.slice(-10));
 
         if (this.user) {
             this.renderUserInfo();
