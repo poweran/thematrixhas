@@ -287,6 +287,16 @@ function handleSwipe() {
     }
 }
 
+function updateHighlights() {
+    const activeKey = state._activeCol;
+    document.querySelectorAll('th[data-col]').forEach(th => {
+        th.classList.toggle('active-col-header', th.dataset.col === activeKey);
+    });
+    document.querySelectorAll('td[data-col]').forEach(td => {
+        td.classList.toggle('active-col-cell', td.dataset.col === activeKey);
+    });
+}
+
 function focusNext(currentInput) {
     const currentTabIndex = parseInt(currentInput.getAttribute('tabindex'));
     let nextIndex = currentTabIndex + 1;
@@ -346,6 +356,7 @@ function setReps(key, input) {
     if (status === 'SWITCHED') {
         render();
     } else {
+        updateHighlights();
         // Local DOM update
         if (state[key].done) {
             input.disabled = true;
@@ -381,6 +392,7 @@ function toggle(key, btn) {
     if (status === 'SWITCHED') {
         render();
     } else {
+        updateHighlights();
         btn.classList.toggle('done');
         const input = btn.previousElementSibling;
         if (input) input.disabled = state[key].done;
@@ -424,7 +436,35 @@ function handleEnter(event, input) {
     }
 }
 
+let isCheckInProgress = false;
+
+function refocusActiveColumn() {
+    if (!state._activeCol) return;
+    const inputs = document.querySelectorAll(`td[data-col="${state._activeCol}"] input`);
+    let found = false;
+    for (let i = 0; i < muscles.length; i++) {
+        const k = `${muscles[i]}_${state._activeCol}`;
+        if (!state[k] || !state[k].done) {
+            if (inputs[i]) {
+                inputs[i].focus();
+                found = true;
+                break;
+            }
+        }
+    }
+    if (!found && inputs.length > 0) {
+        inputs[inputs.length - 1].focus();
+    }
+}
+
 function checkAutoFinish(targetCol) {
+    if (isCheckInProgress) {
+        if (state._activeCol && state._activeCol !== targetCol) {
+            refocusActiveColumn();
+        }
+        return 'CANCELLED';
+    }
+
     if (!state._activeCol || state._activeCol === targetCol) return false;
 
     const hasData = muscles.some(m => {
@@ -434,27 +474,15 @@ function checkAutoFinish(targetCol) {
     });
 
     if (hasData) {
+        isCheckInProgress = true;
+
         if (confirm('Закончить текущий подход?')) {
             finishSet();
+            setTimeout(() => { isCheckInProgress = false; }, 100);
             return 'SWITCHED';
         } else {
-            // User said NO: Redirect focus to the next incomplete muscle in the active column
-            const inputs = document.querySelectorAll(`td[data-col="${state._activeCol}"] input`);
-            let found = false;
-            for (let i = 0; i < muscles.length; i++) {
-                const k = `${muscles[i]}_${state._activeCol}`;
-                if (!state[k] || !state[k].done) {
-                    if (inputs[i]) {
-                        inputs[i].focus();
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            if (!found && inputs.length > 0) {
-                // If all done, focus the last one
-                inputs[inputs.length - 1].focus();
-            }
+            refocusActiveColumn();
+            setTimeout(() => { isCheckInProgress = false; }, 300);
             return 'CANCELLED';
         }
     }
