@@ -20,7 +20,8 @@ export const auth = {
 
         window.google.accounts.id.initialize({
             client_id: CLIENT_ID,
-            callback: this.handleCredentialResponse.bind(this)
+            callback: this.handleCredentialResponse.bind(this),
+            use_fedcm_for_prompt: false
         });
 
         if (this.user) {
@@ -74,12 +75,12 @@ export const auth = {
         if (!parent || !this.user) return;
 
         parent.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text);">
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #fff; background: #555658; height: 32px; border-radius: 3px; padding: 0 10px 0 6px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <img src="${this.user.picture}" style="width: 28px; height: 28px; border-radius: 50%;">
-                    <span>${this.user.given_name}</span>
+                    <img src="${this.user.picture}" style="width: 20px; height: 20px; border-radius: 50%;">
+                    <span style="font-weight: 500;">${this.user.given_name}</span>
                 </div>
-                <button id="auth-logout-btn" style="background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 0; transition: .2s;">Выйти</button>
+                <button id="auth-logout-btn" style="background: transparent; border: none; border-left: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8); padding: 0 0 0 10px; font-size: 11px; cursor: pointer; height: 16px; line-height: 16px; transition: .2s;">Выйти</button>
             </div>
         `;
 
