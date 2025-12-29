@@ -275,12 +275,13 @@ function toggle(key, btn) {
 function checkAutoFinish(targetCol) {
     if (!state._activeCol || state._activeCol === targetCol) return false;
 
-    const hasDone = muscles.some(m => {
+    const hasData = muscles.some(m => {
         const k = `${m}_${state._activeCol}`;
-        return state[k] && state[k].done;
+        const s = state[k];
+        return s && (s.done || (s.reps !== '' && s.reps != null));
     });
 
-    if (hasDone) {
+    if (hasData) {
         if (confirm('Закончить текущий подход?')) {
             finishSet();
             return 'SWITCHED';
