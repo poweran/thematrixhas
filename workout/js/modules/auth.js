@@ -32,7 +32,7 @@ export const auth = {
         if (parent) {
             window.google.accounts.id.renderButton(
                 parent,
-                { theme: "outline", size: "medium", shape: "pill" }
+                { theme: "filled_black", size: "medium", shape: "rectangular" }
             );
         }
     },
