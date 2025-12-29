@@ -43,9 +43,9 @@ export const auth = {
         if (parent) {
             parent.innerHTML = ''; // Clear previous content
 
-            // Check for embedded browsers (Telegram/Instagram/TikTok) which break Google Auth
-            const ua = navigator.userAgent || navigator.vendor || window.opera;
-            const isEmbedded = (ua.indexOf("Telegram") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
+            // Check for embedded browsers which often break Google Auth
+            const ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
+            const isEmbedded = (ua.includes("telegram")) || (ua.includes("instagram")) || (ua.includes("tiktok")) || (ua.includes("fban") || ua.includes("fbav")); // FBAN/FBAV is Facebook app
 
             if (isEmbedded) {
                 parent.innerHTML = `
