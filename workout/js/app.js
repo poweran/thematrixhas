@@ -177,8 +177,8 @@ function render() {
               tabindex="${tabIndex}"
               enterkeyhint="done"
               onfocus="checkAutoFinish('${colKey}')"
-              onchange="setReps('${key}',this.value)"
-              onkeydown="handleEnter(event, '${key}', this)">
+              onchange="setReps('${key}', this)"
+              onkeydown="handleEnter(event, this)">
       <button class="set ${cell.done ? 'done' : ''}" onclick="toggle('${key}',this)">✓</button>
     </div>`;
             tr.appendChild(td);
@@ -207,28 +207,59 @@ function focusNext(currentInput) {
     }
 }
 
-function setReps(key, val) {
+function setReps(key, input) {
+    const val = input.value;
     const colKey = key.split('_').slice(1).join('_');
     const status = checkAutoFinish(colKey);
 
     if (status === 'CANCELLED') {
-        const input = document.querySelector(`input[onchange*="${key}"]`) || document.activeElement;
-        render();
+        input.value = state[key]?.reps || '';
         return;
     }
 
     let num = parseFloat(val);
     if (num < 0) num = 0;
     if (num > 999) num = 999;
-    state[key] = state[key] || { reps: '', done: false };
-    state[key].reps = isNaN(num) ? '' : num;
 
-    // Ensure active column follows the user if they are allowed to edit
+    // Auto-done logic
+    const isValid = !isNaN(num) && val !== '';
+
+    state[key] = state[key] || { reps: '', done: false };
+    state[key].reps = isValid ? num : '';
+
     state._activeCol = colKey;
+
+    if (isValid) {
+        if (!state[key].done) {
+            state[key].done = true;
+            const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
+            stats.push({ key, reps: num, ts: Date.now() });
+            localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+
+            if (document.getElementById('view-analytics').style.display !== 'none') {
+                renderHighLevelAnalytics();
+            }
+        }
+    } else {
+        state[key].done = false;
+    }
 
     saveData();
 
-    if (status === 'SWITCHED' || val != state[key].reps) render();
+    if (status === 'SWITCHED') {
+        render();
+    } else {
+        // Local DOM update
+        if (state[key].done) {
+            input.disabled = true;
+            const btn = input.nextElementSibling;
+            if (btn) btn.classList.add('done');
+        } else {
+            input.disabled = false;
+            const btn = input.nextElementSibling;
+            if (btn) btn.classList.remove('done');
+        }
+    }
 }
 
 function toggle(key, btn) {
@@ -273,63 +304,14 @@ function toggle(key, btn) {
     saveData();
 }
 
-function handleEnter(event, key, input) {
-    // Treat Enter (13) and Tab (9) as completion triggers
+function handleEnter(event, input) {
     const isEnter = event.key === 'Enter' || event.keyCode === 13;
     const isTab = event.key === 'Tab' || event.keyCode === 9;
 
     if (!isEnter && !isTab) return;
 
     event.preventDefault();
-
-    const val = input.value;
-    const colKey = key.split('_').slice(1).join('_');
-
-    // 1. Check active column logic
-    const status = checkAutoFinish(colKey);
-    if (status === 'CANCELLED') {
-        render(); // restore UI
-        return;
-    }
-
-    // 2. Update Reps
-    let num = parseFloat(val);
-    if (num < 0) num = 0;
-    if (num > 999) num = 999;
-    state[key] = state[key] || { reps: '', done: false };
-    state[key].reps = isNaN(num) ? '' : num;
-
-    // 3. Mark Done and Validate
-    if (!state[key].done && (state[key].reps === '' || state[key].reps === null)) {
-        showToast('Укажите количество минут', true);
-        render();
-        return;
-    }
-
-    // Ensure active column follows
-    state._activeCol = colKey;
-
-    // Toggle (Enter usually means 'Finish/Confirm', so we set to true if not done, or toggle if done? 
-    // User wants "identically to clicking checkmark", which is toggle.
-    state[key].done = !state[key].done;
-
-    // 4. Statistics side effects
-    if (state[key].done) {
-        const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
-        stats.push({ key, reps: Number(state[key].reps) || 0, ts: Date.now() });
-        localStorage.setItem(STATS_KEY, JSON.stringify(stats));
-    }
-
-    saveData();
-    render();
-
-    if (document.getElementById('view-analytics').style.display !== 'none') {
-        renderHighLevelAnalytics();
-    }
-
-    // 6. Focus Next
-    // We need to find the new input element because render() replaced the DOM
-    // The previous input element is stale but its tabindex attribute is correct.
+    // Move focus. This triggers blur on current input -> triggers onchange -> setReps
     focusNext(input);
 }
 
