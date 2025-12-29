@@ -14,6 +14,7 @@ const STATS_KEY = 'home_workout_stats_v1';
 let currentWeekOffset = 0;
 let mobileDayIndex = 0; // 0 = First training day (A), 1 = B, etc.
 let state = {};
+let lastInputEventTime = 0;
 
 // Version Info
 try {
@@ -368,9 +369,11 @@ function setReps(key, input) {
             if (btn) btn.classList.remove('done');
         }
     }
+    lastInputEventTime = Date.now();
 }
 
 function toggle(key, btn) {
+    if (Date.now() - lastInputEventTime < 300) return;
     const colKey = key.split('_').slice(1).join('_');
     const status = checkAutoFinish(colKey);
 
