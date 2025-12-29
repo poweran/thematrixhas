@@ -110,48 +110,41 @@ export const store = {
 
     getStats() {
         const stats = [];
-        console.log('Store: Calculating stats from cache. Weeks:', Object.keys(this.weeksCache));
+        // console.log('Store: Calculating stats from cache. Weeks:', Object.keys(this.weeksCache));
 
         // Iterate all weeks
         Object.entries(this.weeksCache).forEach(([weekId, weekData]) => {
             if (!weekData) return;
 
-            // Expected format: "2024-W52"
-            const [yearStr, weekStr] = weekId.split('-W');
-            const year = parseInt(yearStr);
-            const week = parseInt(weekStr);
-
-            if (isNaN(year) || isNaN(week)) {
-                console.warn('Store: Invalid weekId format', weekId);
+            // Format is "YYYY-MM-DD" (Monday of the week)
+            // e.g. "2024-12-30"
+            const partsDate = weekId.split('-');
+            if (partsDate.length !== 3) {
+                // console.warn('Store: Invalid weekId format', weekId);
                 return;
             }
 
-            // Get date of Monday of that week (ISO 8601)
-            const simple = new Date(year, 0, 1 + (week - 1) * 7);
-            const dayOfWeek = simple.getDay();
-            const ISOweekStart = simple;
-            if (dayOfWeek <= 4)
-                ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-            else
-                ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+            const year = parseInt(partsDate[0]);
+            const month = parseInt(partsDate[1]) - 1; // JS months are 0-indexed
+            const day = parseInt(partsDate[2]);
+
+            if (isNaN(year) || isNaN(month) || isNaN(day)) return;
+
+            const isoWeekStart = new Date(year, month, day);
 
             // Iterate cells
             Object.entries(weekData).forEach(([k, cell]) => {
                 if (cell && (cell.done || (cell.reps !== "" && cell.reps > 0))) {
                     // key format: "Muscle_DayIndex_SetIndex" -> "Chest_0_1"
-                    // Or new format if Muscle contains underscores? Assuming Muscle has no underscores or taking part 0
                     const parts = k.split('_');
                     if (parts.length >= 3) {
-                        // Muscle is parts[0]
-                        // DayIndex is parts[1]
                         const dayIndex = parseInt(parts[1]);
 
                         // Calculate specific date
-                        const d = new Date(ISOweekStart);
+                        const d = new Date(isoWeekStart);
                         d.setDate(d.getDate() + dayIndex);
 
                         const repsVal = parseFloat(cell.reps) || 0;
-                        // console.log(`Stats: Found entry ${k}: ${repsVal} min on ${d.toISOString()}`);
 
                         stats.push({
                             key: k,
@@ -163,7 +156,7 @@ export const store = {
             });
         });
 
-        console.log('Store: Stats calculated. Total entries:', stats.length);
+        // console.log('Store: Stats calculated. Total entries:', stats.length);
         // Sort by time
         return stats.sort((a, b) => a.ts - b.ts);
     },
