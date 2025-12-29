@@ -18,7 +18,7 @@ export const auth = {
     },
 
     initializeGoogle() {
-        const CLIENT_ID = "1036762452160-or5j8rmm3bm99ogjddkpr4tk49acugjv.apps.googleusercontent.com";
+        const CLIENT_ID = "875544173752-fgbpus92lb8atr07bv6vq705dp5c56st.apps.googleusercontent.com";
 
         window.google.accounts.id.initialize({
             client_id: CLIENT_ID,
