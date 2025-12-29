@@ -311,8 +311,20 @@ function handleEnter(event, input) {
     if (!isEnter && !isTab) return;
 
     event.preventDefault();
-    // Move focus. This triggers blur on current input -> triggers onchange -> setReps
-    focusNext(input);
+
+    // Explicitly call setReps to ensure it runs even if blur is skipped/interrupted
+    const onchangeAttr = input.getAttribute('onchange');
+    const keyMatch = onchangeAttr ? onchangeAttr.match(/setReps\('([^']+)'/) : null;
+
+    if (keyMatch && keyMatch[1]) {
+        const key = keyMatch[1];
+        setReps(key, input);
+        focusNext(input);
+    } else {
+        // Fallback if parsing failed
+        input.blur(); // Force blur to trigger onchange
+        focusNext(input);
+    }
 }
 
 function checkAutoFinish(targetCol) {
