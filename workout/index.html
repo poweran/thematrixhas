@@ -65,6 +65,42 @@
       color: var(--text);
     }
 
+    .week-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      background: var(--card);
+      padding: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .week-nav button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .week-nav button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .week-nav-label {
+      font-weight: 600;
+      font-size: 15px;
+      min-width: 150px;
+      text-align: center;
+    }
+
     .logo-text span {
       color: var(--accent);
     }
@@ -561,6 +597,13 @@
 
     <!-- WORKOUT VIEW -->
     <div id="view-workout">
+
+      <div class="week-nav">
+        <button onclick="changeWeek(-1)">‹</button>
+        <div class="week-nav-label" id="weekNavLabel">Текущая неделя</div>
+        <button onclick="changeWeek(1)">›</button>
+      </div>
+
       <div class="card">
         <table id="log"></table>
       </div>
@@ -638,7 +681,7 @@
           <div class="setting-row">
             <div>
               <div class="setting-label">Подходы</div>
-              <div class="setting-desc">Количество подходов для каждого упражнения</div>
+              <div class="setting-desc">Количество подходов для каждого упражнения за один тренировочный день</div>
             </div>
             <div class="stepper">
               <button onclick="adjustSetting('setting-sets', -1)">−</button>
@@ -773,10 +816,66 @@
     let trainings = ALPHABET.slice(0, config.days).split('');
     let sets = Array.from({ length: config.sets }, (_, i) => i + 1);
 
-    const STORAGE_KEY = 'home_workout_table_v1';
+    const STORAGE_KEY_BASE = 'home_workout_table_v1';
+    // Legacy support
+    const LEGACY_STORAGE_KEY = 'home_workout_table_v1';
+
     const STATS_KEY = 'home_workout_stats_v1';
 
-    let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    let currentWeekOffset = 0;
+    let state = {};
+
+    function getWeekId(offset = 0) {
+      const d = new Date();
+      // Adjust to Monday of the target week
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day == 0 ? -6 : 1) + (offset * 7);
+      const targetMonday = new Date(d.setDate(diff));
+
+      // ISO Week Year formulation is complex, let's use Simple YYYY-Www format
+      // Actually, simple Monday date string is unique enough: YYYY-MM-DD
+      const y = targetMonday.getFullYear();
+      const m = (targetMonday.getMonth() + 1).toString().padStart(2, '0');
+      const dd = targetMonday.getDate().toString().padStart(2, '0');
+
+      return `${y}-${m}-${dd}`;
+    }
+
+    function loadState() {
+      const weekId = getWeekId(currentWeekOffset);
+      const key = `${STORAGE_KEY_BASE}_${weekId}`;
+      const loaded = localStorage.getItem(key);
+
+      if (loaded) {
+        state = JSON.parse(loaded);
+      } else {
+        // Migration Logic: If current week (offset 0) and no new data, check legacy
+        if (currentWeekOffset === 0) {
+          const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+          if (legacy) {
+            console.log('Migrating legacy data to current week...');
+            state = JSON.parse(legacy);
+            // Save immediately to new format
+            saveData();
+          } else {
+            state = {};
+          }
+        } else {
+          state = {};
+        }
+      }
+    }
+
+    function saveData() {
+      const weekId = getWeekId(currentWeekOffset);
+      const key = `${STORAGE_KEY_BASE}_${weekId}`;
+      localStorage.setItem(key, JSON.stringify(state));
+
+      // Sync to legacy key ONLY if it's the current week, to maintain backup/compatibility if needed
+      if (currentWeekOffset === 0) {
+        localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(state));
+      }
+    }
 
     const keyOf = (m, t, s) => `${m}_${t}_${s}`;
 
@@ -784,23 +883,37 @@
       const table = document.getElementById('log');
       table.innerHTML = '';
 
-      const dates = getWeekDays(config.days);
+      updateWeekLabel();
+
+      const dates = getWeekDays(config.days, currentWeekOffset);
 
       const thead = document.createElement('thead');
+
+      const weekStart = getWeekMonday(currentWeekOffset);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
 
       // Row 1: Dates / Groups
       let row1 = '<tr><th></th>';
       trainings.forEach((t, i) => {
-        const d = dates[i];
-        const isToday = isDateToday(d);
-        const dateStr = d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
-        const dayName = capitalize(d.toLocaleDateString('ru-RU', { weekday: 'long' }));
+        const start = dates[i];
+        let end;
+        if (i < dates.length - 1) {
+          const nextStart = dates[i + 1];
+          end = new Date(nextStart);
+          end.setDate(end.getDate() - 1);
+        } else {
+          end = weekEnd;
+        }
 
-        // Always show brace, label depends on active state
-        const labelText = isToday ? `${dayName} ${dateStr}` : `${dateStr}`;
+        const isCurrent = isDateInRange(new Date(), start, end);
+
+        const startStr = start.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+        const endStr = end.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+        const labelText = `${startStr} - ${endStr}`;
 
         row1 += `
-          <th colspan="${sets.length}" class="day-header ${isToday ? 'current' : ''}">
+          <th colspan="${sets.length}" class="day-header ${isCurrent ? 'current' : ''}">
             <div class="brace-wrapper">
               <span class="brace-label">${labelText}</span>
               <svg class="brace-path" viewBox="0 0 100 10" preserveAspectRatio="none">
@@ -939,7 +1052,13 @@
     }
 
     function saveData() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const weekId = getWeekId(currentWeekOffset);
+      const key = `${STORAGE_KEY_BASE}_${weekId}`;
+      localStorage.setItem(key, JSON.stringify(state));
+
+      if (currentWeekOffset === 0) {
+        localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(state));
+      }
     }
 
     function finishSet() {
@@ -1637,6 +1756,8 @@
     }
 
     // Initial setup
+    // Initial setup
+    loadState();
     ensureActiveColumn();
     render();
     // Initial tab setup
@@ -1671,20 +1792,16 @@
       showToast('Настройки сохранены');
     }
 
-    function getWeekDays(count) {
+    function getWeekDays(count, offset = 0) {
       // 1: Mon
       // 2: Mon, Thu
-      // 3: Mon, Wed, Fri
-      // 4: Mon, Tue, Thu, Fri
-      // 5: Mon..Fri
-      // 6: Mon..Sat
-      // 7: Mon..Sun
+      // ...
 
       const now = new Date();
       // Get Monday of current week
       const d = new Date(now);
       const day = d.getDay();
-      const diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+      const diff = d.getDate() - day + (day == 0 ? -6 : 1) + (offset * 7); // Apply offset here
       const monday = new Date(d.setDate(diff));
 
       const offsets = [];
@@ -1693,7 +1810,6 @@
       else if (count === 3) offsets.push(0, 2, 4); // Mon, Wed, Fri
       else if (count === 4) offsets.push(0, 1, 3, 4);
       else {
-        // Sequential
         for (let i = 0; i < count; i++) offsets.push(i);
       }
 
@@ -1704,11 +1820,41 @@
       });
     }
 
-    function isDateToday(date) {
-      const now = new Date();
-      return date.getDate() === now.getDate() &&
-        date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear();
+    function changeWeek(delta) {
+      currentWeekOffset += delta;
+      loadState(); // Reload state for the new week
+      ensureActiveColumn(); // Ensure we have a valid active column (probably A_1 for new week)
+      render();
+    }
+
+    function updateWeekLabel() {
+      const start = getWeekMonday(currentWeekOffset);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+
+      const opts = { month: 'short', day: 'numeric' };
+      let text = `${start.toLocaleDateString('ru-RU', opts)} - ${end.toLocaleDateString('ru-RU', opts)}`;
+
+      if (currentWeekOffset === 0) text += " (Текущая)";
+
+      document.getElementById('weekNavLabel').innerText = text;
+    }
+
+    function getWeekMonday(offset) {
+      const d = new Date();
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day == 0 ? -6 : 1) + (offset * 7);
+      return new Date(d.setDate(diff));
+    }
+
+    function isDateInRange(date, start, end) {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      const s = new Date(start);
+      s.setHours(0, 0, 0, 0);
+      const e = new Date(end);
+      e.setHours(0, 0, 0, 0);
+      return d >= s && d <= e;
     }
 
     function capitalize(s) {
