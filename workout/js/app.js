@@ -12,6 +12,7 @@ const LEGACY_STORAGE_KEY = 'home_workout_table_v1';
 const STATS_KEY = 'home_workout_stats_v1';
 
 let currentWeekOffset = 0;
+let mobileDayIndex = 0; // 0 = First training day (A), 1 = B, etc.
 let state = {};
 
 // Version Info
@@ -86,6 +87,9 @@ function render() {
 
     const dates = getWeekDays(config.days, currentWeekOffset);
 
+    // Mobile Nav Injection (managed in JS to stay dynamic)
+    updateMobileNavControls();
+
     const thead = document.createElement('thead');
 
     const weekStart = getWeekMonday(currentWeekOffset);
@@ -93,7 +97,7 @@ function render() {
     weekEnd.setDate(weekEnd.getDate() + 6);
 
     // Row 1: Dates / Groups
-    let row1 = '<tr><th></th>';
+    let row1 = '<tr><th class="desktop-only"></th>';
     trainings.forEach((t, i) => {
         const start = dates[i];
         let end;
@@ -106,13 +110,13 @@ function render() {
         }
 
         const isCurrent = isDateInRange(new Date(), start, end);
-
         const startStr = start.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
         const endStr = end.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
         const labelText = `${startStr} - ${endStr}`;
 
+        // Add data-day-index
         row1 += `
-      <th colspan="${sets.length}" class="day-header ${isCurrent ? 'current' : ''}">
+      <th colspan="${sets.length}" class="day-header ${isCurrent ? 'current' : ''} desktop-only" data-day-index="${i}">
         <div class="brace-wrapper">
           <span class="brace-label">${labelText}</span>
           <svg class="brace-path" viewBox="0 0 100 10" preserveAspectRatio="none">
@@ -120,26 +124,24 @@ function render() {
           </svg>
         </div>
       </th>`;
+
+        // Auto-detect current day for mobile init
+        if (new Date().toDateString() === start.toDateString() && !window.mobileInitDone) {
+            mobileDayIndex = i;
+            window.mobileInitDone = true;
+        }
     });
     row1 += '</tr>';
 
     // Row 2: Columns
-    let row2 = '<tr><th style="top:45px">Мышцы</th>'; // Adjust sticky top if needed, assuming default header height
-    // Actually with two rows sticky might be tricky. Let's try standard sticky.
-    // We need to adjust 'top' for the second row if we want both sticky.
-    // For now let's just keep standard structure in tbody or make 'th' sticky. 
-    // Existing CSS: thead th { top: 0; sticky... }
-    // If we have 2 rows, first row is top:0, second row needs top: heightOfFirstRow.
-    // Let's approximate height or let JS handle it?
-    // CSS is simple `top: 0`. It will stack if we are lucky or overlap. 
-    // `position: sticky` on multiple rows works in modern browsers by stacking? No, often they overlap.
-    // Let's set styled top for second row.
+    let row2 = '<tr><th class="desktop-only" style="top:45px">Мышцы</th>';
 
-    const headerHtml = trainings.map(t => sets.map(s => {
+    const headerHtml = trainings.map((t, i) => sets.map(s => {
         const key = `${t}_${s}`;
         const isActive = state._activeCol === key;
-        return `<th data-col="${key}" class="${isActive ? 'active-col-header' : ''}" style="top:40px;">${t}${s}</th>`;
-    }).join('')).join(''); // 40px is approx height of row 1
+        // Add data-day-index
+        return `<th data-col="${key}" class="${isActive ? 'active-col-header' : ''} desktop-only" style="top:40px;" data-day-index="${i}">${t}${s}</th>`;
+    }).join('')).join('');
 
     row2 += headerHtml + '</tr>';
 
@@ -156,20 +158,6 @@ function render() {
         tr.innerHTML = `<td class="group" onclick="openModal('${m}')">${m}</td>`;
 
         trainings.forEach((t, tIndex) => {
-            // Mobile Day Header (Hidden on Desktop)
-            const dayDate = dates[tIndex];
-            const dateStr = dayDate.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
-
-            // Check if this day is "current" (today)
-            // Simplified check matching the header logic approximately
-            // Actually header logic used ranges. Simple day check:
-            const isToday = new Date().toDateString() === dayDate.toDateString();
-
-            const headerTd = document.createElement('td');
-            headerTd.className = `mobile-day-header ${isToday ? 'current-day' : ''}`;
-            headerTd.innerHTML = `<span>${t}</span> <span style="opacity:0.5; font-weight:400; margin-left:6px">${dateStr}</span>`;
-            tr.appendChild(headerTd);
-
             sets.forEach((s, sIndex) => {
                 const key = keyOf(m, t, s);
                 const colKey = `${t}_${s}`;
@@ -180,22 +168,24 @@ function render() {
                 const cell = state[key] || { reps: '', done: false };
                 const td = document.createElement('td');
                 td.dataset.col = colKey;
+                // Add data-day-index
+                td.dataset.dayIndex = tIndex;
                 td.className = isActive ? 'active-col-cell set-cell' : 'set-cell';
 
                 const disabledAttr = cell.done ? 'disabled' : '';
                 td.innerHTML = `
-                <div class="cell">
-                  <input type="number" 
-                          value="${cell.reps}" 
-                          min="0" max="999"
-                          ${disabledAttr}
-                          tabindex="${tabIndex}"
-                          enterkeyhint="done"
-                          onfocus="checkAutoFinish('${colKey}')"
-                          onchange="setReps('${key}', this)"
-                          onkeydown="handleEnter(event, this)">
-                  <button class="set ${cell.done ? 'done' : ''}" onclick="toggle('${key}',this)">✓</button>
-                </div>`;
+            <div class="cell">
+            <input type="number" 
+                    value="${cell.reps}" 
+                    min="0" max="999"
+                    ${disabledAttr}
+                    tabindex="${tabIndex}"
+                    enterkeyhint="done"
+                    onfocus="checkAutoFinish('${colKey}')"
+                    onchange="setReps('${key}', this)"
+                    onkeydown="handleEnter(event, this)">
+            <button class="set ${cell.done ? 'done' : ''}" onclick="toggle('${key}',this)">✓</button>
+            </div>`;
                 tr.appendChild(td);
             });
         });
@@ -204,6 +194,97 @@ function render() {
     });
 
     table.appendChild(tbody);
+
+    // Apply Mobile Visibility
+    applyMobileVisibility();
+    initSwipeGestures();
+}
+
+function updateMobileNavControls() {
+    let container = document.getElementById('mobile-nav-controls');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'mobile-nav-controls';
+        container.className = 'mobile-nav-controls';
+        const workoutView = document.getElementById('view-workout');
+        const card = workoutView.querySelector('.card');
+        workoutView.insertBefore(container, card);
+    }
+
+    const dates = getWeekDays(config.days, currentWeekOffset);
+    const currentDate = dates[mobileDayIndex];
+    if (!currentDate) return;
+
+    const dateStr = currentDate.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' });
+    const dayLabel = trainings[mobileDayIndex]; // A, B, C...
+
+    container.innerHTML = `
+        <button onclick="switchMobileDay(-1)" ${mobileDayIndex <= 0 ? 'disabled' : ''}>←</button>
+        <div class="mobile-day-info">
+            <div class="day-letter">День ${dayLabel}</div>
+            <div class="day-date">${dateStr}</div>
+        </div>
+        <button onclick="switchMobileDay(1)" ${mobileDayIndex >= config.days - 1 ? 'disabled' : ''}>→</button>
+    `;
+}
+
+function switchMobileDay(delta) {
+    const newIndex = mobileDayIndex + delta;
+    if (newIndex >= 0 && newIndex < config.days) {
+        mobileDayIndex = newIndex;
+        updateMobileNavControls();
+        applyMobileVisibility();
+    }
+}
+
+function applyMobileVisibility() {
+    const table = document.getElementById('log');
+    if (table) {
+        table.setAttribute('data-active-day', mobileDayIndex);
+    }
+}
+
+// Swipe Support
+let touchStartX = 0;
+let touchEndX = 0;
+
+function initSwipeGestures() {
+    const table = document.getElementById('log');
+    if (!table) return;
+
+    // Remove old listeners to avoid dupes if re-rendering
+    // Actually easier to just attach to a static parent or handle idempotency
+    // Since render clears table innerHTML but not the table element itself, attach to table is fine?
+    // Changing HTML doesn't remove listeners on the element itself if element persisted.
+    // But table content changes.
+    // Let's attach to '.card' or wrapper which is static.
+    const card = document.querySelector('#view-workout .card');
+
+    // Ensure we don't attach multiple times
+    if (card.dataset.swipeInitialized) return;
+
+    card.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    card.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+
+    card.dataset.swipeInitialized = 'true';
+}
+
+function handleSwipe() {
+    const threshold = 50;
+    if (touchEndX < touchStartX - threshold) {
+        // Swiped Left -> Next Day
+        switchMobileDay(1);
+    }
+    if (touchEndX > touchStartX + threshold) {
+        // Swiped Right -> Prev Day
+        switchMobileDay(-1);
+    }
 }
 
 function focusNext(currentInput) {

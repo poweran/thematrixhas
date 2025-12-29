@@ -636,9 +636,57 @@ thead tr:nth-child(1) th {
     box-shadow: none;
     border: none;
     overflow: visible;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
   }
 
-  /* Table Transformation to Stacked Grid */
+  /* Mobile Nav Controls */
+  .mobile-nav-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card);
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+
+  .mobile-nav-controls button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+
+  .mobile-nav-controls button:disabled {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .mobile-day-info {
+    text-align: center;
+  }
+
+  .day-letter {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .day-date {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: capitalize;
+  }
+
+  /* Table Reset for Mobile with Column Filter */
   table,
   thead,
   tbody,
@@ -646,103 +694,96 @@ thead tr:nth-child(1) th {
   td,
   tr {
     display: block;
+    /* Fallback */
+  }
+
+  /* Actual Table Structure Restoration for Mobile */
+  table {
+    display: table;
     width: 100%;
   }
 
   thead {
     display: none;
+    /* Hide standard header on mobile */
   }
 
-  /* Card Container for each Muscle */
-  tbody tr {
-    background: var(--card);
-    border: 1px solid var(--border);
-    margin-bottom: 24px;
-    display: grid;
-    /* Use CSS var from JS, default to 4 */
-    grid-template-columns: repeat(var(--sets-count, 4), 1fr);
-    padding: 16px;
-    gap: 12px;
-    position: relative;
+  tbody {
+    display: table-row-group;
   }
 
-  /* Muscle Name Header */
+  tr {
+    display: table-row;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Muscle Name */
   td.group {
-    grid-column: 1 / -1;
-    text-align: center;
+    display: table-cell;
+    width: 1%;
+    /* Shrink to fit content? No, muscle names vary. */
+    white-space: nowrap;
+    padding: 12px;
+    font-size: 14px;
     background: var(--card-2);
-    border: 1px solid var(--border);
-    margin: -16px -16px 8px -16px;
-    /* Bleed to edges */
-    padding: 14px;
-    font-size: 16px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--accent);
+    vertical-align: middle;
+    border-right: 1px solid var(--border);
     position: static;
-    /* Remove sticky from previous attempt */
+    margin: 0;
     box-shadow: none;
   }
 
-  td.group:hover {
-    text-decoration: none;
-    background: var(--card-2);
+  /* Hide Desktop Only Headers */
+  .desktop-only {
+    display: none !important;
   }
 
-  /* Mobile Day Divider */
-  .mobile-day-header {
-    display: flex;
-    grid-column: 1 / -1;
-    align-items: baseline;
-    gap: 8px;
-    padding-bottom: 8px;
-    margin-top: 8px;
-    margin-bottom: 0;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    font-weight: 700;
-    font-size: 14px;
+  /* Mobile Day Logic: Hide columns that don't match active day */
+  /* Helper to generate N rules if CSS variadic selectors existed, but we rely on data attribs */
+
+  /* We use the attribute on the TABLE to determine which cells to hide */
+  /* Hide all data cells by default, then show match? */
+  /* No, safer to hide non-matches. But CSS can't select based on attribute value match equality between parent and child. */
+  /* We have to rely on the fact that JS sets data-active-day="N". */
+  /* And cells have data-day-index="M". */
+  /* We need hardcoded rules for days 0-7 (reasonable max). */
+
+  table[data-active-day="0"] td[data-day-index]:not([data-day-index="0"]),
+  table[data-active-day="1"] td[data-day-index]:not([data-day-index="1"]),
+  table[data-active-day="2"] td[data-day-index]:not([data-day-index="2"]),
+  table[data-active-day="3"] td[data-day-index]:not([data-day-index="3"]),
+  table[data-active-day="4"] td[data-day-index]:not([data-day-index="4"]),
+  table[data-active-day="5"] td[data-day-index]:not([data-day-index="5"]),
+  table[data-active-day="6"] td[data-day-index]:not([data-day-index="6"]) {
+    display: none;
   }
 
-  .mobile-day-header span:first-child {
-    color: var(--accent);
-    font-size: 18px;
-  }
-
-  .mobile-day-header.current-day span:first-child {
-    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
-  }
-
-  /* Data Cells */
-  td:not(.group):not(.mobile-day-header) {
-    border: none;
-    padding: 0;
-    display: flex;
-    justify-content: center;
+  /* Visible Cells Styling */
+  td[data-day-index] {
+    display: table-cell;
+    padding: 8px 4px;
+    vertical-align: middle;
   }
 
   .cell {
     flex-direction: column;
     gap: 4px;
-    width: 100%;
+    align-items: center;
   }
 
   input {
     width: 100%;
-    height: 44px;
-    text-align: center;
-    font-size: 18px;
-    border-radius: 4px;
-    /* Slight round for mobile inputs */
+    height: 40px;
+    font-size: 16px;
+    min-width: 40px;
   }
 
   button.set {
     width: 100%;
-    height: 32px;
-    border-radius: 4px;
+    height: 28px;
   }
 
-  /* Controls and Settings */
+  /* Controls */
   .controls {
     flex-direction: column;
     gap: 12px;
