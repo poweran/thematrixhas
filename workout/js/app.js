@@ -212,20 +212,7 @@ function setReps(key, val) {
 
     if (status === 'CANCELLED') {
         const input = document.querySelector(`input[onchange*="${key}"]`) || document.activeElement;
-        // If we cancelled, we revert the value in the UI to match state? 
-        // Or we just ignore safely. The focus has moved.
-        // If we really want to be clean, we should revert the input value if the user typed something?
-        // But usually onfocus triggers before typing. So typed value is likely minimal or non-existent in the wrong cell.
-        // Let's just return to stop processing.
-        // However, if the user typed and hit Enter, the value is in the input. 
-        // We might want to render() to reset it?
-        // Let's render to ensure state consistency (restoring the field to empty/prev value).
         render();
-        // But render() kills the focus we just set in checkAutoFinish!
-        // We need to re-apply focus after render.
-        // This is getting complicated.
-        // Simpler: If cancelled, just do nothing. The input has the wrong value but focus is elsewhere. 
-        // When the user eventually touches something else or renders, it corrects.
         return;
     }
 
@@ -234,6 +221,10 @@ function setReps(key, val) {
     if (num > 999) num = 999;
     state[key] = state[key] || { reps: '', done: false };
     state[key].reps = isNaN(num) ? '' : num;
+
+    // Ensure active column follows the user if they are allowed to edit
+    state._activeCol = colKey;
+
     saveData();
 
     if (status === 'SWITCHED' || val != state[key].reps) render();
@@ -254,6 +245,9 @@ function toggle(key, btn) {
     }
 
     state[key].done = !state[key].done;
+
+    // Ensure active column follows the user
+    state._activeCol = colKey;
 
     if (status === 'SWITCHED') {
         render();
