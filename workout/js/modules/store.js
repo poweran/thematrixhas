@@ -145,7 +145,13 @@ export const store = {
                             dayIndex = ALPHABET.indexOf(dayLetter);
                         }
 
-                        if (dayIndex === -1 || isNaN(dayIndex)) return;
+                        // DEBUG LOG
+                        console.log(`Stats: Check Key ${k}: Letter=${dayLetter} Index=${dayIndex} WeekStart=${isoWeekStart.toISOString().split('T')[0]}`);
+
+                        if (dayIndex === -1 || isNaN(dayIndex)) {
+                            console.warn(`Stats: Skipped key ${k} (invalid day index)`);
+                            return;
+                        }
 
                         // Calculate specific date
                         const d = new Date(isoWeekStart);
