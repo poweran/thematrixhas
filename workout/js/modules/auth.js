@@ -15,26 +15,6 @@ export const auth = {
                 this.initializeGoogle();
             }
         }, 100);
-
-        // Fallback: If Google script is blocked or fails to load (e.g. strict Telegram webview)
-        setTimeout(() => {
-            if (!window.google && !this.user) {
-                clearInterval(checkGoogle);
-                this.renderTelegramFallback();
-            }
-        }, 3000);
-    },
-
-    renderTelegramFallback() {
-        const parent = document.getElementById('google-auth-container');
-        if (parent) {
-            parent.innerHTML = `
-                <div style="font-size: 11px; line-height: 1.2; color: #fbbf24; text-align: right; max-width: 140px;">
-                    Вход недоступен.<br>
-                    <strong style="color: #fff;">Откройте в браузере</strong> ↗
-                </div>
-            `;
-        }
     },
 
     initializeGoogle() {
@@ -61,8 +41,7 @@ export const auth = {
     renderButton() {
         const parent = document.getElementById('google-auth-container');
         if (parent) {
-            parent.innerHTML = '';
-
+            parent.innerHTML = ''; // Clear previous content (e.g. user info)
             window.google.accounts.id.renderButton(
                 parent,
                 { theme: "filled_black", size: "medium", shape: "rectangular", text: "signin" }
