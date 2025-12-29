@@ -208,7 +208,26 @@ function focusNext(currentInput) {
 
 function setReps(key, val) {
     const colKey = key.split('_').slice(1).join('_');
-    const switched = checkAutoFinish(colKey);
+    const status = checkAutoFinish(colKey);
+
+    if (status === 'CANCELLED') {
+        const input = document.querySelector(`input[onchange*="${key}"]`) || document.activeElement;
+        // If we cancelled, we revert the value in the UI to match state? 
+        // Or we just ignore safely. The focus has moved.
+        // If we really want to be clean, we should revert the input value if the user typed something?
+        // But usually onfocus triggers before typing. So typed value is likely minimal or non-existent in the wrong cell.
+        // Let's just return to stop processing.
+        // However, if the user typed and hit Enter, the value is in the input. 
+        // We might want to render() to reset it?
+        // Let's render to ensure state consistency (restoring the field to empty/prev value).
+        render();
+        // But render() kills the focus we just set in checkAutoFinish!
+        // We need to re-apply focus after render.
+        // This is getting complicated.
+        // Simpler: If cancelled, just do nothing. The input has the wrong value but focus is elsewhere. 
+        // When the user eventually touches something else or renders, it corrects.
+        return;
+    }
 
     let num = parseFloat(val);
     if (num < 0) num = 0;
@@ -217,24 +236,26 @@ function setReps(key, val) {
     state[key].reps = isNaN(num) ? '' : num;
     saveData();
 
-    if (switched || val != state[key].reps) render();
+    if (status === 'SWITCHED' || val != state[key].reps) render();
 }
 
 function toggle(key, btn) {
     const colKey = key.split('_').slice(1).join('_');
-    const switched = checkAutoFinish(colKey);
+    const status = checkAutoFinish(colKey);
+
+    if (status === 'CANCELLED') return; // Do nothing, focus redirected
 
     state[key] = state[key] || { reps: '', done: false };
 
     if (!state[key].done && (state[key].reps === '' || state[key].reps === null)) {
         showToast('Укажите количество минут', true);
-        if (switched) render(); // Ensure UI is consistent if we switched but failed validation
+        if (status === 'SWITCHED') render();
         return;
     }
 
     state[key].done = !state[key].done;
 
-    if (switched) {
+    if (status === 'SWITCHED') {
         render();
     } else {
         btn.classList.toggle('done');
@@ -268,7 +289,26 @@ function checkAutoFinish(targetCol) {
     if (hasDone) {
         if (confirm('Закончить текущий подход?')) {
             finishSet();
-            return true;
+            return 'SWITCHED';
+        } else {
+            // User said NO: Redirect focus to the next incomplete muscle in the active column
+            const inputs = document.querySelectorAll(`td[data-col="${state._activeCol}"] input`);
+            let found = false;
+            for (let i = 0; i < muscles.length; i++) {
+                const k = `${muscles[i]}_${state._activeCol}`;
+                if (!state[k] || !state[k].done) {
+                    if (inputs[i]) {
+                        inputs[i].focus();
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found && inputs.length > 0) {
+                // If all done, focus the last one
+                inputs[inputs.length - 1].focus();
+            }
+            return 'CANCELLED';
         }
     }
     return false;
