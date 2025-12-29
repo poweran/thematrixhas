@@ -410,6 +410,13 @@ export const ui = {
 
         stats.forEach(s => {
             const d = new Date(s.ts);
+
+            // Safety check for invalid dates
+            if (isNaN(d.getTime())) {
+                console.warn("Analytics: Invalid date timestamp found:", s.ts);
+                return;
+            }
+
             const dateKey = d.toISOString().split('T')[0];
             dates.add(dateKey);
 
