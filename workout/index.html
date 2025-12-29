@@ -250,7 +250,52 @@
     #modalImg {
       background-color: #fff;
     }
+
+    .tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 600;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Active Column Highlight */
+    .active-col-header {
+      background: rgba(56, 189, 248, 0.1) !important;
+      color: var(--accent) !important;
+      border-bottom: 2px solid var(--accent) !important;
+    }
+
+    .active-col-cell {
+      background: rgba(56, 189, 248, 0.03);
+    }
+
+    .active-col-cell input {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(56, 189, 248, 0.1);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.1);
+    }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -263,23 +308,68 @@
       </div>
     </header>
 
-    <div class="card">
-      <table id="log"></table>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('workout')">Дневник</button>
+      <button class="tab-btn" onclick="switchTab('analytics')">Аналитика</button>
     </div>
 
-    <div id="stats" class="card"></div>
-
-    <div class="controls" style="align-items: center; flex-wrap: wrap;">
-      <button class="primary" onclick="saveData()">Сохранить</button>
-      <button onclick="resetData()">Сброс</button>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <button onclick="toggleZapper()" id="zapperBtn"
-          style="position:relative; height:40px; display:flex; align-items:center; gap:6px;">
-          <span id="zapperIcon" style="opacity:0.5">⚡</span> Zapper
-        </button>
-        <canvas id="zapperScope" width="160" height="40"
-          style="display:none; height:40px; background:#020617; border-radius:8px; border:1px solid var(--border);"></canvas>
+    <!-- WORKOUT VIEW -->
+    <div id="view-workout">
+      <div class="card">
+        <table id="log"></table>
       </div>
+
+      <div class="controls" style="align-items: center; flex-wrap: wrap;">
+        <button class="primary" onclick="finishSet()">Закончить подход</button>
+        <button onclick="resetData()">Сброс</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button onclick="toggleZapper()" id="zapperBtn"
+            style="position:relative; height:40px; display:flex; align-items:center; gap:6px;">
+            <span id="zapperIcon" style="opacity:0.5">⚡</span> Zapper
+          </button>
+          <canvas id="zapperScope" width="160" height="40"
+            style="display:none; height:40px; background:#020617; border-radius:8px; border:1px solid var(--border);"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS VIEW -->
+    <div id="view-analytics" style="display:none;">
+
+      <!-- KPI Cards -->
+      <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 24px;">
+        <div class="stat">
+          <div class="label">Всего тренировок</div>
+          <div class="value" id="stat-workouts">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Выполнено подходов</div>
+          <div class="value" id="stat-sets">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Время под нагрузкой</div>
+          <div class="value" id="stat-time">0m</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0">Динамика нагрузки (минут)</h2>
+        <div style="position: relative; height:300px; width:100%">
+          <canvas id="historyChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0">Распределение по группам</h2>
+        <div style="position: relative; height:300px; width:100%">
+          <canvas id="distChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Raw Stats fallback -->
+      <div id="stats" class="card" style="margin-top:24px;"></div>
     </div>
 
   </div>
@@ -325,37 +415,31 @@
         <p><strong>Почему это топ:</strong> Развивает силу, массу, баланс и мобильность тазобедренного сустава одновременно.</p>
       `,
       'Икры': `
-        <h3 style="margin-top:0; color:var(--accent);">Подъемы на носки на возвышенности (Calf Raises on a Step)</h3>
-        <p>Главный секрет — растяжение в нижней точке. На полу его нет.</p>
+        <h3 style="margin-top:0; color:var(--accent);">Подъемы на носки на одной ноге (Single Leg Calf Raise)</h3>
+        <p>Выполнение на одной ноге удваивает нагрузку весом собственного тела и включает стабилизаторы. Это самый эффективный способ тренировки голени дома.</p>
         
-        <p><strong>Что понадобится:</strong> Любая устойчивая возвышенность высотой хотя бы 5-10 см. Это может быть:</p>
-        <ul>
-            <li>Ступенька лестницы.</li>
-            <li>Прочный порог.</li>
-            <li>Толстая книга или брусок дерева (убедитесь, что они не скользят!).</li>
-        </ul>
+        <p><strong>Что понадобится:</strong> Любая устойчивая возвышенность высотой хотя бы 5-10 см (ступенька, порог, брусок) и опора для рук.</p>
 
         <p><strong>И.П. (Исходное положение):</strong></p>
         <ul>
-            <li>Встаньте так, чтобы на возвышенности находились только подушечки стоп и пальцы.</li>
-            <li>Пятки должны свисать в воздухе.</li>
-            <li>Обязательно придерживайтесь рукой за стену, дверной косяк или стул для равновесия (не помогайте себе рукой подниматься, только баланс!).</li>
-            <li>Ноги в коленях выпрямлены (но не «защелкнуты» в суставе намертво, просто прямые).</li>
+            <li>Встаньте <strong>одной ногой</strong> на край возвышенности (работает только подушечка стопы).</li>
+            <li>Пятка должна свободно свисать.</li>
+            <li>Вторую ногу согните в колене, чтобы она не касалась пола.</li>
+            <li>Держитесь рукой за опору для равновесия, но <strong>не тяните себя вверх рукой</strong>.</li>
+            <li>Рабочая нога прямая в колене (для акцента на икроножную мышцу).</li>
         </ul>
 
         <p><strong>Выполнение:</strong></p>
         <ul>
-            <li><strong>Фаза растяжения (Вниз):</strong> Медленно и подконтрольно (на 2-3 счета) опускайте пятки вниз, ниже уровня ступеньки, настолько глубоко, насколько позволяет голеностоп. Вы должны почувствовать сильное, приятное растяжение в задней части голени. Это самая важная часть упражнения!</li>
-            <li><strong>Фаза сокращения (Вверх):</strong> Мощным движением (на 1 счет) поднимитесь на носки максимально высоко, как балерина.</li>
-            <li><strong>Пик (Верхняя точка):</strong> В самой верхней точке задержитесь на 1-2 секунды и изо всех сил напрягите икры.</li>
+            <li><strong>Вниз:</strong> Медленно (2-3 сек) опустите пятку максимально низко, чувствуя глубокое растяжение.</li>
+            <li><strong>Вверх:</strong> Мощно поднимитесь на носок как можно выше.</li>
+            <li><strong>Пик:</strong> В верхней точке пауза 1-2 сек с максимальным напряжением.</li>
         </ul>
 
-        <p><strong>Почему именно так?</strong> Когда вы стоите на полу, вы работаете в половину амплитуды. Когда вы на ступеньке, вы растягиваете мышцу под нагрузкой вашего тела перед тем, как ее сократить. Это дает гораздо больший стимул для роста.</p>
-
-        <p><strong>Важный нюанс (прямые vs согнутые колени):</strong></p>
+        <p><strong>Нюансы:</strong></p>
         <ul>
-            <li><strong>Если колени прямые:</strong> Больше работает икроножная мышца (та самая, которая дает объем и форму "сердечка" сверху).</li>
-            <li><strong>Если колени слегка согнуты (и остаются согнутыми все время):</strong> Нагрузка смещается на камбаловидную мышцу (она находится под икроножной и придает голени "толщину" снизу).</li>
+            <li>Если легко — возьмите в свободную руку отягощение (бутылку воды, рюкзак).</li>
+            <li>Прямое колено = икроножная мышца (объем верха). Согнутое колено = камбаловидная (объем низа).</li>
         </ul>
       `,
       'Грудь': `
@@ -410,7 +494,13 @@
       table.innerHTML = '';
 
       const thead = document.createElement('thead');
-      thead.innerHTML = `<tr><th>Мышцы</th>${trainings.map(t => sets.map(s => `<th>${t}${s}</th>`).join('')).join('')}</tr>`;
+      const headerHtml = trainings.map(t => sets.map(s => {
+        const key = `${t}_${s}`;
+        const isActive = state._activeCol === key;
+        return `<th data-col="${key}" class="${isActive ? 'active-col-header' : ''}">${t}${s}</th>`;
+      }).join('')).join('');
+
+      thead.innerHTML = `<tr><th>Мышцы</th>${headerHtml}</tr>`;
       table.appendChild(thead);
 
       const tbody = document.createElement('tbody');
@@ -421,11 +511,19 @@
 
         trainings.forEach(t => sets.forEach(s => {
           const key = keyOf(m, t, s);
+          const colKey = `${t}_${s}`;
+          const isActive = state._activeCol === colKey;
+
           const cell = state[key] || { reps: '', done: false };
           const td = document.createElement('td');
+          td.dataset.col = colKey;
+          if (isActive) td.classList.add('active-col-cell');
+
           td.innerHTML = `
         <div class="cell">
-          <input type="number" value="${cell.reps}" onchange="setReps('${key}',this.value)">
+          <input type="number" 
+                 value="${cell.reps}" 
+                 onchange="setReps('${key}',this.value)">
           <button class="set ${cell.done ? 'done' : ''}" onclick="toggle('${key}',this)">✓</button>
         </div>`;
           tr.appendChild(td);
@@ -440,6 +538,7 @@
     function setReps(key, val) {
       state[key] = state[key] || { reps: '', done: false };
       state[key].reps = val;
+      saveData();
     }
 
     function toggle(key, btn) {
@@ -452,19 +551,61 @@
         stats.push({ key, reps: Number(state[key].reps) || 0, ts: Date.now() });
         localStorage.setItem(STATS_KEY, JSON.stringify(stats));
         renderStats();
+
+        // Update analytics charts if visible
+        if (document.getElementById('view-analytics').style.display !== 'none') {
+          renderHighLevelAnalytics();
+        }
       }
+
+      saveData();
     }
 
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
+    function finishSet() {
+      // 1. Identify all columns in order
+      const allCols = [];
+      trainings.forEach(t => sets.forEach(s => allCols.push(`${t}_${s}`)));
+
+      // 2. Find current index
+      const currentIndex = allCols.indexOf(state._activeCol);
+
+      // 3. Determine next
+      let nextIndex = -1;
+      if (currentIndex === -1) {
+        // If not set, start at 0? Or just leave it to auto-fill?
+        // Let's start at 0 if nothing active.
+        nextIndex = 0;
+      } else {
+        nextIndex = currentIndex + 1;
+      }
+
+      // 4. Update or Finish
+      if (nextIndex < allCols.length) {
+        state._activeCol = allCols[nextIndex];
+        saveData();
+        render(); // Re-render to update highlight
+
+        // Visual feedback
+        // alert(`Переход к подходу ${state._activeCol.replace('_', '')}`);
+      } else {
+        if (confirm('Это был последний подход. Завершить тренировку?')) {
+          state._activeCol = null;
+          saveData();
+          render();
+        }
+      }
+    }
+
     function resetData() {
-      if (!confirm('Сбросить все данные?')) return;
-      localStorage.clear();
+      if (!confirm('Сбросить текущий прогресс? (История аналитики сохранится)')) return;
+      localStorage.removeItem(STORAGE_KEY);
       state = {};
       render();
-      renderStats();
+      renderHighLevelAnalytics();
     }
 
     let currentMuscle = ''; // Ensure variable exists
@@ -891,11 +1032,134 @@
       if (!timerRunning) startTimer();
     }
 
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      // Find the button that was clicked or corresponds to the tab
+      const clickedButton = event.target.closest('.tab-btn') || document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+      if (clickedButton) {
+        clickedButton.classList.add('active');
+      }
+
+      document.getElementById('view-workout').style.display = tab === 'workout' ? 'block' : 'none';
+      document.getElementById('view-analytics').style.display = tab === 'analytics' ? 'block' : 'none';
+
+      if (tab === 'analytics') {
+        renderHighLevelAnalytics();
+      }
+    }
+
+    function renderHighLevelAnalytics() {
+      const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
+
+      if (!stats.length) {
+        document.getElementById('stat-workouts').innerText = '0';
+        document.getElementById('stat-sets').innerText = '0';
+        document.getElementById('stat-time').innerText = '0m';
+        // Clear charts if no data
+        if (window.histChart) window.histChart.destroy();
+        if (window.distChart) window.distChart.destroy();
+        document.getElementById('stats').innerHTML = '<span class="subtitle">Нет данных</span>';
+        return;
+      }
+
+      // 1. Process Data
+      const dates = new Set();
+      let totalSeconds = 0;
+      const muscleVol = {};
+      const dailyVol = {}; // { 'YYYY-MM-DD': seconds }
+
+      stats.forEach(s => {
+        const d = new Date(s.ts);
+        const dateKey = d.toISOString().split('T')[0];
+        dates.add(dateKey);
+
+        totalSeconds += s.reps;
+
+        const m = s.key.split('_')[0];
+        muscleVol[m] = (muscleVol[m] || 0) + s.reps;
+
+        dailyVol[dateKey] = (dailyVol[dateKey] || 0) + s.reps;
+      });
+
+      // 2. High Level KPIs
+      // Count unique sets (Key + Date)
+      const uniqueSets = new Set(stats.map(s => {
+        const d = new Date(s.ts).toISOString().split('T')[0];
+        return `${s.key}_${d}`;
+      }));
+
+      document.getElementById('stat-workouts').innerText = dates.size;
+      document.getElementById('stat-sets').innerText = uniqueSets.size;
+
+      const hrs = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      document.getElementById('stat-time').innerText = hrs > 0 ? `${hrs}ч ${mins}м` : `${mins} мин`;
+
+      // 3. History Chart
+      const sortedDays = Object.keys(dailyVol).sort();
+      const dayLabels = sortedDays.map(d => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }));
+      const dayData = sortedDays.map(d => Math.round(dailyVol[d] / 60)); // Minutes
+
+      const ctxHist = document.getElementById('historyChart').getContext('2d');
+      if (window.histChart) window.histChart.destroy();
+      window.histChart = new Chart(ctxHist, {
+        type: 'line',
+        data: {
+          labels: dayLabels,
+          datasets: [{
+            label: 'Нагрузка (мин)',
+            data: dayData,
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#1f2937' }, ticks: { color: '#9ca3af' } },
+            x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      // 4. Distribution Chart
+      const muscleLabels = Object.keys(muscleVol);
+      const muscleData = Object.values(muscleVol).map(s => Math.round(s / 60));
+
+      const ctxDist = document.getElementById('distChart').getContext('2d');
+      if (window.distChart) window.distChart.destroy();
+      window.distChart = new Chart(ctxDist, {
+        type: 'doughnut',
+        data: {
+          labels: muscleLabels,
+          datasets: [{
+            data: muscleData,
+            backgroundColor: ['#38bdf8', '#22c55e', '#fbbf24', '#f472b6', '#a78bfa'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'right', labels: { color: '#e5e7eb' } }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      // Render legacy raw stats at the bottom
+      renderStats();
+    }
+
     function renderStats() {
       const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
       const box = document.getElementById('stats');
 
-      if (!stats.length) { box.innerHTML = '<span class="subtitle">Статистика пуста</span>'; return; }
+      if (!stats.length) { box.innerHTML = '<span class="subtitle">Нет данных</span>'; return; }
 
       const sum = {};
       stats.forEach(e => {
@@ -905,34 +1169,70 @@
       });
 
       box.innerHTML = `
-    <h2>Аналитика</h2>
-    <div class="stats-grid">
-      ${Object.entries(sum).map(([m, v]) => `
-        <div class="stat">
-          <div class="label">${m}</div>
-          <div class="value">${v.sets} · ${v.reps}</div>
-        </div>`).join('')}
-    </div>`;
+        <h3 style="margin-top:0; font-size:16px; margin-bottom:12px;">Сводка по упражнениям</h3>
+        <div class="stats-grid">
+            ${Object.entries(sum).map(([m, v]) => `
+            <div class="stat">
+              <div class="label">${m}</div>
+              <div class="value" style="font-size:16px;">${v.sets} п. · ${Math.round(v.reps / 60)} мин</div>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    function renderCharts() {
+      // Deprecated, logic moved to renderHighLevelAnalytics
+      // Kept empty to prevent errors if called
     }
 
     function autoFillCurrentSet(muscle, value) {
-      // Find first empty slot
-      for (let t of trainings) { // ['A', 'B']
-        for (let s of sets) { // [1, 2, 3, 4]
-          const key = keyOf(muscle, t, s);
-          const cell = state[key];
-          // Fill if cell doesn't exist or reps is empty
-          if (!cell || !cell.reps) {
-            setReps(key, value);
-            render();
-            return;
+      let activeCol = state._activeCol;
+
+      // If no active column, find the first completely empty one
+      if (!activeCol) {
+        for (let t of trainings) {
+          for (let s of sets) {
+            const colKey = `${t}_${s}`;
+            // Check if this column has ANY data for ANY muscle
+            const hasData = muscles.some(m => {
+              const k = keyOf(m, t, s);
+              return state[k] && (state[k].reps || state[k].done);
+            });
+
+            if (!hasData) {
+              activeCol = colKey;
+              state._activeCol = activeCol;
+              break;
+            }
           }
+          if (activeCol) break;
         }
       }
+
+      // If still no active col (all full), default to the last one or handle error
+      if (!activeCol) activeCol = 'B_4'; // Fallback
+
+      const [t, s] = activeCol.split('_');
+      const key = keyOf(muscle, t, s);
+
+      const cell = state[key] || { reps: '', done: false };
+
+      // Logic: Add to current value
+      const validChars = /[^0-9.]/g;
+      // If user typed "15kg", we probably shouldn't blindly add. But context is seconds.
+      // Assuming naive number addition for timer integration.
+      const currentVal = parseFloat(cell.reps) || 0;
+      // If cell was empty, currentVal is 0.
+
+      cell.reps = currentVal + value;
+      state[key] = cell; // Ensure assigned
+
+      saveData();
+      render();
     }
 
     render();
-    renderStats();
+    // Initial tab setup
+    switchTab('workout');
   </script>
 </body>
 
