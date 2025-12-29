@@ -428,12 +428,16 @@ export const ui = {
             dailyVol[dateKey] = (dailyVol[dateKey] || 0) + s.reps;
         });
 
-        const uniqueSets = new Set(stats.map(s => {
+        const uniqueSets = new Set();
+        stats.forEach(s => {
+            const d = new Date(s.ts);
+            if (isNaN(d.getTime())) return;
+
             const parts = s.key.split('_');
             const colKey = `${parts[1]}_${parts[2]}`;
-            const d = new Date(s.ts).toISOString().split('T')[0];
-            return `${colKey}_${d}`;
-        }));
+            const dateStr = d.toISOString().split('T')[0];
+            uniqueSets.add(`${colKey}_${dateStr}`);
+        });
 
         document.getElementById('stat-workouts').innerText = dates.size;
         document.getElementById('stat-sets').innerText = uniqueSets.size;
