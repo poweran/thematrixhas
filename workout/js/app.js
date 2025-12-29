@@ -12,6 +12,11 @@ sync.init();
 ui.init();
 events.init();
 events.ensureActiveColumn();
+store.subscribe((source) => {
+    if (source === 'external') {
+        ui.render();
+    }
+});
 ui.render();
 ui.switchTab('workout');
 

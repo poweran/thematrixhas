@@ -42,11 +42,8 @@ export const sync = {
             });
 
             // Listen for local store changes to push to cloud
-            store.subscribe(() => {
-                // If this update didn't come from cloud (handled in store via flag, but here we just check equality or rely on debouncing)
-                // Actually, store doesn't tell us origin.
-                // We will implement `pushToCloud` which checks difference or just overwrites.
-                if (currentUser) {
+            store.subscribe((source) => {
+                if (source === 'local' && currentUser) {
                     this.pushToCloud();
                 }
             });

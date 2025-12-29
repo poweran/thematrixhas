@@ -11,14 +11,14 @@ export const store = {
         this.listeners.push(fn);
     },
 
-    notify() {
-        this.listeners.forEach(fn => fn());
+    notify(source = 'local') {
+        this.listeners.forEach(fn => fn(source));
     },
 
     setState(newState) {
         this.state = newState || {};
         this.saveData(true); // true = skip cloud sync to prevent loops if coming from cloud
-        this.notify();
+        this.notify('external');
     },
 
     // Config Management
@@ -72,7 +72,7 @@ export const store = {
         }
 
         if (!skipNotify) {
-            this.notify();
+            this.notify('local');
         }
     },
 
