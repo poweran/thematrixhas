@@ -175,6 +175,7 @@ function render() {
               min="0" max="999"
               ${disabledAttr}
               tabindex="${tabIndex}"
+              enterkeyhint="done"
               onfocus="checkAutoFinish('${colKey}')"
               onchange="setReps('${key}',this.value)"
               onkeydown="handleEnter(event, '${key}', this)">
@@ -273,7 +274,12 @@ function toggle(key, btn) {
 }
 
 function handleEnter(event, key, input) {
-    if (event.key !== 'Enter') return;
+    // Treat Enter (13) and Tab (9) as completion triggers
+    const isEnter = event.key === 'Enter' || event.keyCode === 13;
+    const isTab = event.key === 'Tab' || event.keyCode === 9;
+
+    if (!isEnter && !isTab) return;
+
     event.preventDefault();
 
     const val = input.value;
