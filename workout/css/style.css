@@ -113,6 +113,10 @@ table {
   font-size: 13px;
 }
 
+.mobile-day-header {
+  display: none;
+}
+
 thead th {
   position: sticky;
   top: 0;
@@ -626,102 +630,119 @@ thead tr:nth-child(1) th {
 
   /* Cards & Layout */
   .card {
+    padding: 0;
     margin-bottom: 24px;
-    overflow-x: auto;
-    /* Allow scrolling */
-    margin-left: -12px;
-    margin-right: -12px;
-    padding-left: 12px;
-    padding-right: 12px;
-    width: calc(100% + 24px);
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    overflow: visible;
   }
 
-  /* Restore Table Layout */
-  table {
-    display: table;
+  /* Table Transformation to Stacked Grid */
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    display: block;
     width: 100%;
-    min-width: max-content;
-    /* Force width to fit content, triggering scroll on .card */
   }
 
   thead {
-    display: table-header-group;
+    display: none;
   }
 
+  /* Card Container for each Muscle */
   tbody tr {
-    display: table-row;
-    border: none;
-    margin-bottom: 0;
-    background: transparent;
-  }
-
-  /* Reset Header Cells which were modified in card view */
-  th,
-  td {
-    display: table-cell;
-    width: auto;
-  }
-
-  /* Muscle Name */
-  td.group {
-    grid-column: auto;
-    text-align: left;
-    background: transparent;
-    border-bottom: 1px solid var(--border);
-    margin: 0;
-    padding: 8px 6px;
-    font-size: 13px;
-    position: sticky;
-    left: 0;
     background: var(--card);
-    /* Keep it readable over scrolling content */
-    z-index: 10;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-    /* Shadow to separate sticky col */
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    display: grid;
+    /* Use CSS var from JS, default to 4 */
+    grid-template-columns: repeat(var(--sets-count, 4), 1fr);
+    padding: 16px;
+    gap: 12px;
+    position: relative;
+  }
+
+  /* Muscle Name Header */
+  td.group {
+    grid-column: 1 / -1;
+    text-align: center;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    margin: -16px -16px 8px -16px;
+    /* Bleed to edges */
+    padding: 14px;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    position: static;
+    /* Remove sticky from previous attempt */
+    box-shadow: none;
   }
 
   td.group:hover {
-    text-decoration: underline;
-    background: var(--card);
+    text-decoration: none;
+    background: var(--card-2);
   }
 
-  /* Data Cells */
-  td:not(.group) {
-    border-bottom: 1px solid var(--border);
-    padding: 8px 6px;
-    display: table-cell;
-    padding-top: 8px;
-    /* Reset padding */
-  }
-
-  /* Remove Label pseudo-element */
-  td:not(.group)::before {
-    content: none;
-  }
-
-  .cell {
-    flex-direction: row;
-    /* Back to row */
+  /* Mobile Day Divider */
+  .mobile-day-header {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: baseline;
     gap: 8px;
-    width: auto;
-  }
-
-  input {
-    width: 44px;
-    /* Slightly larger for touch */
-    height: 36px;
+    padding-bottom: 8px;
+    margin-top: 8px;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 700;
     font-size: 14px;
   }
 
-  button.set {
-    width: 32px;
-    height: 32px;
+  .mobile-day-header span:first-child {
+    color: var(--accent);
+    font-size: 18px;
   }
 
-  /* Controls */
+  .mobile-day-header.current-day span:first-child {
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  }
+
+  /* Data Cells */
+  td:not(.group):not(.mobile-day-header) {
+    border: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .cell {
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+  }
+
+  input {
+    width: 100%;
+    height: 44px;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 4px;
+    /* Slight round for mobile inputs */
+  }
+
+  button.set {
+    width: 100%;
+    height: 32px;
+    border-radius: 4px;
+  }
+
+  /* Controls and Settings */
   .controls {
     flex-direction: column;
     gap: 12px;

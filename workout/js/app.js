@@ -150,39 +150,55 @@ function render() {
 
     muscles.forEach((m, mIndex) => {
         const tr = document.createElement('tr');
+        // Set sets count for CSS Grid in mobile view
+        tr.style.setProperty('--sets-count', sets.length);
+
         tr.innerHTML = `<td class="group" onclick="openModal('${m}')">${m}</td>`;
 
-        trainings.forEach((t, tIndex) => sets.forEach((s, sIndex) => {
-            const key = keyOf(m, t, s);
-            const colKey = `${t}_${s}`;
-            const isActive = state._activeCol === colKey;
+        trainings.forEach((t, tIndex) => {
+            // Mobile Day Header (Hidden on Desktop)
+            const dayDate = dates[tIndex];
+            const dateStr = dayDate.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
 
-            // Calculate tabindex for vertical navigation
-            const colIndex = tIndex * sets.length + sIndex;
-            const tabIndex = colIndex * muscles.length + mIndex + 1;
+            // Check if this day is "current" (today)
+            // Simplified check matching the header logic approximately
+            // Actually header logic used ranges. Simple day check:
+            const isToday = new Date().toDateString() === dayDate.toDateString();
 
-            const cell = state[key] || { reps: '', done: false };
-            const td = document.createElement('td');
-            td.dataset.col = colKey;
-            td.dataset.label = `${t}${s}`;
-            if (isActive) td.classList.add('active-col-cell');
+            const headerTd = document.createElement('td');
+            headerTd.className = `mobile-day-header ${isToday ? 'current-day' : ''}`;
+            headerTd.innerHTML = `<span>${t}</span> <span style="opacity:0.5; font-weight:400; margin-left:6px">${dateStr}</span>`;
+            tr.appendChild(headerTd);
 
-            const disabledAttr = cell.done ? 'disabled' : '';
-            td.innerHTML = `
-    <div class="cell">
-      <input type="number" 
-              value="${cell.reps}" 
-              min="0" max="999"
-              ${disabledAttr}
-              tabindex="${tabIndex}"
-              enterkeyhint="done"
-              onfocus="checkAutoFinish('${colKey}')"
-              onchange="setReps('${key}', this)"
-              onkeydown="handleEnter(event, this)">
-      <button class="set ${cell.done ? 'done' : ''}" onclick="toggle('${key}',this)">✓</button>
-    </div>`;
-            tr.appendChild(td);
-        }));
+            sets.forEach((s, sIndex) => {
+                const key = keyOf(m, t, s);
+                const colKey = `${t}_${s}`;
+                const isActive = state._activeCol === colKey;
+                const colIndex = tIndex * sets.length + sIndex;
+                const tabIndex = colIndex * muscles.length + mIndex + 1;
+
+                const cell = state[key] || { reps: '', done: false };
+                const td = document.createElement('td');
+                td.dataset.col = colKey;
+                td.className = isActive ? 'active-col-cell set-cell' : 'set-cell';
+
+                const disabledAttr = cell.done ? 'disabled' : '';
+                td.innerHTML = `
+                <div class="cell">
+                  <input type="number" 
+                          value="${cell.reps}" 
+                          min="0" max="999"
+                          ${disabledAttr}
+                          tabindex="${tabIndex}"
+                          enterkeyhint="done"
+                          onfocus="checkAutoFinish('${colKey}')"
+                          onchange="setReps('${key}', this)"
+                          onkeydown="handleEnter(event, this)">
+                  <button class="set ${cell.done ? 'done' : ''}" onclick="toggle('${key}',this)">✓</button>
+                </div>`;
+                tr.appendChild(td);
+            });
+        });
 
         tbody.appendChild(tr);
     });
