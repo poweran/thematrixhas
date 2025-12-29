@@ -626,99 +626,99 @@ thead tr:nth-child(1) th {
 
   /* Cards & Layout */
   .card {
-    padding: 0;
     margin-bottom: 24px;
-    background: transparent;
-    box-shadow: none;
-    border: none;
-    overflow: visible;
+    overflow-x: auto;
+    /* Allow scrolling */
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    width: calc(100% + 24px);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
 
-  /* Table Transformation to Cards */
-  table,
-  thead,
-  tbody,
-  th,
-  td,
-  tr {
-    display: block;
-    min-width: 0;
+  /* Restore Table Layout */
+  table {
+    display: table;
     width: 100%;
+    min-width: max-content;
+    /* Force width to fit content, triggering scroll on .card */
   }
 
   thead {
-    display: none;
+    display: table-header-group;
   }
 
   tbody tr {
-    background: var(--card);
-    border: 1px solid var(--border);
-    margin-bottom: 16px;
-    display: grid;
-    /* 4 columns default. */
-    grid-template-columns: repeat(4, 1fr);
-    padding: 8px;
-    gap: 8px;
+    display: table-row;
+    border: none;
+    margin-bottom: 0;
+    background: transparent;
   }
 
-  /* Title Row (Muscle Name) */
+  /* Reset Header Cells which were modified in card view */
+  th,
+  td {
+    display: table-cell;
+    width: auto;
+  }
+
+  /* Muscle Name */
   td.group {
-    grid-column: 1 / -1;
-    text-align: center;
-    background: var(--bg);
+    grid-column: auto;
+    text-align: left;
+    background: transparent;
     border-bottom: 1px solid var(--border);
-    margin: -8px -8px 8px -8px;
-    padding: 12px;
-    font-size: 16px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--accent);
+    margin: 0;
+    padding: 8px 6px;
+    font-size: 13px;
+    position: sticky;
+    left: 0;
+    background: var(--card);
+    /* Keep it readable over scrolling content */
+    z-index: 10;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    /* Shadow to separate sticky col */
   }
 
   td.group:hover {
-    text-decoration: none;
-    background: rgba(56, 189, 248, 0.1);
+    text-decoration: underline;
+    background: var(--card);
   }
 
   /* Data Cells */
   td:not(.group) {
-    border: none;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    padding-top: 16px;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 6px;
+    display: table-cell;
+    padding-top: 8px;
+    /* Reset padding */
   }
 
-  /* Label pseudo-element */
+  /* Remove Label pseudo-element */
   td:not(.group)::before {
-    content: attr(data-label);
-    position: absolute;
-    top: 0;
-    font-size: 10px;
-    color: var(--muted);
-    font-weight: 700;
+    content: none;
   }
 
   .cell {
-    flex-direction: column;
-    gap: 4px;
-    width: 100%;
+    flex-direction: row;
+    /* Back to row */
+    gap: 8px;
+    width: auto;
   }
 
   input {
-    width: 100%;
-    height: 40px;
-    text-align: center;
-    font-size: 18px;
-    border-radius: 4px;
+    width: 44px;
+    /* Slightly larger for touch */
+    height: 36px;
+    font-size: 14px;
   }
 
   button.set {
-    width: 100%;
+    width: 32px;
     height: 32px;
-    border-radius: 4px;
   }
 
   /* Controls */
