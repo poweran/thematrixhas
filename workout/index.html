@@ -467,8 +467,12 @@
       renderStats();
     }
 
+    let currentMuscle = ''; // Ensure variable exists
+    let isSecondSide = false;
+
     function openModal(muscle) {
       currentMuscle = muscle;
+      isSecondSide = false;
       document.getElementById('modalTitle').innerText = muscle;
       document.getElementById('modalImg').src = muscleImages[muscle];
       document.getElementById('modalDesc').innerHTML = muscleDescriptions[muscle] || '';
@@ -560,14 +564,25 @@
             playSound(800, 0.6, 'square', 0.4); // Finish sound
             stopTimer();
 
-            // Unilateral check - Prompt for side switch
+            // Unilateral check & Auto-log
             const config = exerciseConfig[currentMuscle];
-            if (config && config.unilateral) {
-              const alertBox = document.getElementById('sideAlert');
-              alertBox.innerText = '🔄 ПЕРЕМЕНА СТОРОН! ТЕПЕРЬ ДРУГАЯ НОГА';
-              alertBox.style.borderColor = '#fbbf24';
-              alertBox.style.color = '#fbbf24';
+            const isUnilateral = config && config.unilateral;
+
+            if (isUnilateral) {
+              if (!isSecondSide) {
+                isSecondSide = true;
+                const alertBox = document.getElementById('sideAlert');
+                alertBox.innerText = '🔄 ПЕРЕМЕНА СТОРОН! ТЕПЕРЬ ДРУГАЯ НОГА';
+                alertBox.style.borderColor = '#fbbf24';
+                alertBox.style.color = '#fbbf24';
+                return;
+              } else {
+                isSecondSide = false;
+                document.getElementById('sideAlert').style.display = 'none';
+              }
             }
+
+            autoFillCurrentSet(currentMuscle, currentBaseTime);
           }
         } else {
           timerTime++;
@@ -898,6 +913,22 @@
           <div class="value">${v.sets} · ${v.reps}</div>
         </div>`).join('')}
     </div>`;
+    }
+
+    function autoFillCurrentSet(muscle, value) {
+      // Find first empty slot
+      for (let t of trainings) { // ['A', 'B']
+        for (let s of sets) { // [1, 2, 3, 4]
+          const key = keyOf(muscle, t, s);
+          const cell = state[key];
+          // Fill if cell doesn't exist or reps is empty
+          if (!cell || !cell.reps) {
+            setReps(key, value);
+            render();
+            return;
+          }
+        }
+      }
     }
 
     render();
