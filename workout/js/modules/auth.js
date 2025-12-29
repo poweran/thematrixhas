@@ -1,3 +1,5 @@
+import { sync } from './sync.js';
+
 export const auth = {
     user: null,
 
@@ -46,6 +48,10 @@ export const auth = {
         const payload = this.decodeJwt(response.credential);
         this.user = payload;
         localStorage.setItem('auth_user', JSON.stringify(this.user));
+
+        // Sync with Firebase
+        sync.signInWithGoogleToken(response.credential);
+
         this.renderUserInfo();
     },
 
@@ -53,6 +59,7 @@ export const auth = {
         this.user = null;
         localStorage.removeItem('auth_user');
         window.google.accounts.id.disableAutoSelect(); // Prevent auto-relogin
+        sync.logout();
         this.renderButton();
     },
 

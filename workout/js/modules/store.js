@@ -5,6 +5,21 @@ export const store = {
     config: { days: 2, sets: 4 },
     state: {},
     currentWeekOffset: 0,
+    listeners: [],
+
+    subscribe(fn) {
+        this.listeners.push(fn);
+    },
+
+    notify() {
+        this.listeners.forEach(fn => fn());
+    },
+
+    setState(newState) {
+        this.state = newState || {};
+        this.saveData(true); // true = skip cloud sync to prevent loops if coming from cloud
+        this.notify();
+    },
 
     // Config Management
     loadConfig() {
@@ -46,7 +61,7 @@ export const store = {
         return this.state;
     },
 
-    saveData() {
+    saveData(skipNotify = false) {
         const weekId = getWeekId(this.currentWeekOffset);
         const key = `${STORAGE_KEY_BASE}_${weekId}`;
         localStorage.setItem(key, JSON.stringify(this.state));
@@ -54,6 +69,10 @@ export const store = {
         // Sync to legacy key ONLY if it's the current week
         if (this.currentWeekOffset === 0) {
             localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(this.state));
+        }
+
+        if (!skipNotify) {
+            this.notify();
         }
     },
 
