@@ -563,6 +563,11 @@ thead tr:nth-child(1) th {
   background: var(--card);
 }
 
+/* Mobile Navigation hidden by default */
+.mobile-nav-controls {
+  display: none;
+}
+
 /* Mobile Adaptation */
 @media (max-width: 768px) {
   body {
