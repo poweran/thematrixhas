@@ -15,6 +15,26 @@ export const auth = {
                 this.initializeGoogle();
             }
         }, 100);
+
+        // Fallback: If Google script is blocked or fails to load (e.g. strict Telegram webview)
+        setTimeout(() => {
+            if (!window.google && !this.user) {
+                clearInterval(checkGoogle);
+                this.renderTelegramFallback();
+            }
+        }, 3000);
+    },
+
+    renderTelegramFallback() {
+        const parent = document.getElementById('google-auth-container');
+        if (parent) {
+            parent.innerHTML = `
+                <div style="font-size: 11px; line-height: 1.2; color: #fbbf24; text-align: right; max-width: 140px;">
+                    Вход недоступен.<br>
+                    <strong style="color: #fff;">Откройте в браузере</strong> ↗
+                </div>
+            `;
+        }
     },
 
     initializeGoogle() {
@@ -42,23 +62,6 @@ export const auth = {
         const parent = document.getElementById('google-auth-container');
         if (parent) {
             parent.innerHTML = '';
-
-            const ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
-
-            // Temporary Debug Alert
-            alert("UA: " + ua);
-
-            const isEmbedded = (ua.includes("telegram")) || (ua.includes("instagram")) || (ua.includes("tiktok")) || (ua.includes("fban") || ua.includes("fbav"));
-
-            if (isEmbedded) {
-                parent.innerHTML = `
-                    <div style="font-size: 11px; line-height: 1.2; color: #fbbf24; text-align: right; max-width: 140px;">
-                        Google вход не работает внутри Telegram.<br>
-                        <strong style="color: #fff;">Откройте в Chrome/Safari</strong> ↗
-                    </div>
-                `;
-                return; // Stop execution here, do NOT try to render google button
-            }
 
             window.google.accounts.id.renderButton(
                 parent,
