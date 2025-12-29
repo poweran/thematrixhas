@@ -46,6 +46,9 @@ export const sync = {
                 if (source === 'local' && currentUser) {
                     this.pushToCloud();
                 }
+                if (source === 'local_stats' && currentUser) {
+                    this.pushStatsToCloud();
+                }
             });
 
         } catch (e) {
@@ -73,33 +76,40 @@ export const sync = {
 
         const weekId = getWeekId(store.currentWeekOffset);
         const docRef = doc(db, "users", currentUser.uid, "weeks", weekId);
+        const statsRef = doc(db, "users", currentUser.uid, "data", "stats");
 
-        // 1. Initial Load / Realtime Listener
+        // 1. Week Data Listener
         unsubscribeDoc = onSnapshot(docRef, (docSnap) => {
             const source = docSnap.metadata.hasPendingWrites ? "Local" : "Server";
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                // Compare with current? Simpler: Update store.
-                // Store.setState calls notify(), which calls pushToCloud.
-                // We need to avoid infinite loop.
-                // One way: Check if data is deeply equal.
-                // Or set a flag "isUpdatingFromCloud".
-                // store.setState(data) passes true to skipNotify? No, setState(data) uses 'true' for skipCloudSync logic inside store?
-                // Let's modify store.js logic slightly or handle it here.
-
-                // Let's compare JSON strings to be safe/lazy
                 if (JSON.stringify(store.state) !== JSON.stringify(data)) {
-                    console.log(`Sync: Received update from ${source}`);
+                    console.log(`Sync: Applying update from cloud (week)`);
                     store.setState(data);
                 }
             } else {
-                // Doc doesn't exist. If we have local data, create it.
                 if (Object.keys(store.state).length > 0) {
                     this.pushToCloud(true);
                 }
             }
-        }, (error) => {
-            console.error("Sync: Listener Error:", error);
+        });
+
+        // 2. Stats Data Listener
+        // Note: We use a separate unsubscribe variable for stats ideally, but for simplicity let's misuse the same logic or just fire and forget if simplistic. 
+        // Correct way: store multiple unsubscribes.
+        this.unsubscribeStats = onSnapshot(statsRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const cloudStats = data.list || [];
+                if (JSON.stringify(store.getStats()) !== JSON.stringify(cloudStats)) {
+                    console.log('Sync: Applying stats from cloud');
+                    store.setStats(cloudStats);
+                }
+            } else {
+                if (store.getStats().length > 0) {
+                    this.pushStatsToCloud();
+                }
+            }
         });
     },
 
@@ -107,6 +117,10 @@ export const sync = {
         if (unsubscribeDoc) {
             unsubscribeDoc();
             unsubscribeDoc = null;
+        }
+        if (this.unsubscribeStats) {
+            this.unsubscribeStats();
+            this.unsubscribeStats = null;
         }
     },
 
@@ -118,9 +132,20 @@ export const sync = {
 
         try {
             await setDoc(docRef, store.state, { merge: true });
-            console.log('Sync: Pushed to cloud successfully');
+            console.log('Sync: Pushed week data');
         } catch (e) {
             console.error("Sync Push Error:", e);
+        }
+    },
+
+    async pushStatsToCloud() {
+        if (!currentUser || !db) return;
+        const statsRef = doc(db, "users", currentUser.uid, "data", "stats");
+        try {
+            await setDoc(statsRef, { list: store.getStats() }, { merge: true });
+            console.log('Sync: Pushed stats data');
+        } catch (e) {
+            console.error("Sync Stats Push Error:", e);
         }
     }
 };

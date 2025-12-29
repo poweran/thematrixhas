@@ -7,6 +7,7 @@ import { sync } from './modules/sync.js';
 // Initialize
 store.loadConfig();
 store.loadState();
+store.loadStats();
 auth.init();
 sync.init();
 ui.init();
@@ -15,6 +16,11 @@ events.ensureActiveColumn();
 store.subscribe((source) => {
     if (source === 'external') {
         ui.render();
+    }
+    if (source === 'external_stats') {
+        if (document.getElementById('view-analytics').style.display !== 'none') {
+            ui.renderHighLevelAnalytics();
+        }
     }
 });
 ui.render();

@@ -4,6 +4,8 @@ import { getWeekId } from './utils.js';
 export const store = {
     config: { days: 2, sets: 4 },
     state: {},
+    statsState: [],
+    currentWeekOffset: 0,
     currentWeekOffset: 0,
     listeners: [],
 
@@ -77,15 +79,27 @@ export const store = {
     },
 
     // Stats Management
+    loadStats() {
+        const stats = localStorage.getItem(STATS_KEY);
+        this.statsState = stats ? JSON.parse(stats) : [];
+        return this.statsState;
+    },
+
+    setStats(newStats) {
+        this.statsState = newStats || [];
+        localStorage.setItem(STATS_KEY, JSON.stringify(this.statsState));
+        this.notify('external_stats');
+    },
+
     addStat(key, reps) {
-        const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
-        stats.push({ key, reps, ts: Date.now() });
-        localStorage.setItem(STATS_KEY, JSON.stringify(stats));
-        return stats;
+        this.statsState.push({ key, reps, ts: Date.now() });
+        localStorage.setItem(STATS_KEY, JSON.stringify(this.statsState));
+        this.notify('local_stats');
+        return this.statsState;
     },
 
     getStats() {
-        return JSON.parse(localStorage.getItem(STATS_KEY)) || [];
+        return this.statsState;
     },
 
     // Helpers
