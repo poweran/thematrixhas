@@ -177,7 +177,7 @@ function render() {
               tabindex="${tabIndex}"
               onfocus="checkAutoFinish('${colKey}')"
               onchange="setReps('${key}',this.value)"
-              onkeydown="if(event.key==='Enter'){event.preventDefault();setReps('${key}',this.value);toggle('${key}',this.nextElementSibling);focusNext(this);}">
+              onkeydown="handleEnter(event, '${key}', this)">
       <button class="set ${cell.done ? 'done' : ''}" onclick="toggle('${key}',this)">✓</button>
     </div>`;
             tr.appendChild(td);
@@ -270,6 +270,61 @@ function toggle(key, btn) {
     }
 
     saveData();
+}
+
+function handleEnter(event, key, input) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+
+    const val = input.value;
+    const colKey = key.split('_').slice(1).join('_');
+
+    // 1. Check active column logic
+    const status = checkAutoFinish(colKey);
+    if (status === 'CANCELLED') {
+        render(); // restore UI
+        return;
+    }
+
+    // 2. Update Reps
+    let num = parseFloat(val);
+    if (num < 0) num = 0;
+    if (num > 999) num = 999;
+    state[key] = state[key] || { reps: '', done: false };
+    state[key].reps = isNaN(num) ? '' : num;
+
+    // 3. Mark Done and Validate
+    if (!state[key].done && (state[key].reps === '' || state[key].reps === null)) {
+        showToast('Укажите количество минут', true);
+        render();
+        return;
+    }
+
+    // Ensure active column follows
+    state._activeCol = colKey;
+
+    // Toggle (Enter usually means 'Finish/Confirm', so we set to true if not done, or toggle if done? 
+    // User wants "identically to clicking checkmark", which is toggle.
+    state[key].done = !state[key].done;
+
+    // 4. Statistics side effects
+    if (state[key].done) {
+        const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || [];
+        stats.push({ key, reps: Number(state[key].reps) || 0, ts: Date.now() });
+        localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+    }
+
+    saveData();
+    render();
+
+    if (document.getElementById('view-analytics').style.display !== 'none') {
+        renderHighLevelAnalytics();
+    }
+
+    // 6. Focus Next
+    // We need to find the new input element because render() replaced the DOM
+    // The previous input element is stale but its tabindex attribute is correct.
+    focusNext(input);
 }
 
 function checkAutoFinish(targetCol) {
