@@ -1,6 +1,6 @@
 import { store } from './store.js';
 import { getWeekDays, getWeekMonday, isDateInRange, keyOf, getTrainings, getSets, formatTime } from './utils.js';
-import { muscles, muscleImages, muscleDescriptions, exerciseConfig } from './data.js';
+import { muscles, muscleImages, muscleDescriptions, exerciseConfig } from '../data.js';
 import { zapper } from './audio.js';
 
 export const ui = {

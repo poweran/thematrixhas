@@ -2,7 +2,7 @@ import { store } from './store.js';
 import { ui } from './ui.js';
 import { audio, zapper } from './audio.js';
 import { keyOf, getTrainings, getSets } from './utils.js';
-import { muscles, exerciseConfig } from './data.js';
+import { muscles, exerciseConfig } from '../data.js';
 
 let isCheckInProgress = false;
 let lastInputEventTime = 0;
