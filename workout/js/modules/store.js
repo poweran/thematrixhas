@@ -1,4 +1,4 @@
-import { CONFIG_KEY, STORAGE_KEY_BASE, LEGACY_STORAGE_KEY, STATS_KEY } from './constants.js';
+import { CONFIG_KEY, STORAGE_KEY_BASE, LEGACY_STORAGE_KEY, STATS_KEY, ALPHABET } from './constants.js';
 import { getWeekId } from './utils.js';
 
 export const store = {
@@ -135,10 +135,17 @@ export const store = {
             // Iterate cells
             Object.entries(weekData).forEach(([k, cell]) => {
                 if (cell && (cell.done || (cell.reps !== "" && cell.reps > 0))) {
-                    // key format: "Muscle_DayIndex_SetIndex" -> "Chest_0_1"
+                    // key format: "Muscle_DayIndex_SetIndex" -> "Chest_A_1"
                     const parts = k.split('_');
                     if (parts.length >= 3) {
-                        const dayIndex = parseInt(parts[1]);
+                        const dayLetter = parts[1];
+                        let dayIndex = parseInt(dayLetter); // Try legacy numeric first
+
+                        if (isNaN(dayIndex)) {
+                            dayIndex = ALPHABET.indexOf(dayLetter);
+                        }
+
+                        if (dayIndex === -1 || isNaN(dayIndex)) return;
 
                         // Calculate specific date
                         const d = new Date(isoWeekStart);
