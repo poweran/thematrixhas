@@ -50,11 +50,16 @@ export const events = {
 
         // focusin обработчик удалён - больше не блокирует переключение фокуса
 
-        document.getElementById('log').addEventListener('change', (e) => {
+        // change срабатывает при изменении значения и потере фокуса
+        // blur срабатывает при любой потере фокуса (для надёжности)
+        const handleInputSave = (e) => {
             if (e.target.matches('input.rep-input')) {
                 this.setReps(e.target.dataset.key, e.target);
             }
-        });
+        };
+
+        document.getElementById('log').addEventListener('change', handleInputSave);
+        document.getElementById('log').addEventListener('blur', handleInputSave, true);
 
         document.getElementById('log').addEventListener('keydown', (e) => {
             if (e.target.matches('input.rep-input')) {
