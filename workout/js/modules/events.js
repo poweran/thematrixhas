@@ -113,10 +113,10 @@ export const events = {
             store.state[key].done = false;
         }
 
-        // Сохраняем данные с skipNotify=true (чтобы не триггерить ui.render)
+        // Сохраняем данные с skipNotify=true (чтобы синхронно не триггерить ui.render)
         store.saveData(true);
 
-        // Отложенное обновление UI - даём браузеру сначала переместить фокус
+        // Отложенное обновление UI и синхронизация - даём браузеру сначала переместить фокус
         const isDone = store.state[key].done;
         setTimeout(() => {
             const btn = input.nextElementSibling;
@@ -127,6 +127,8 @@ export const events = {
                 input.disabled = false;
                 if (btn) btn.classList.remove('done');
             }
+            // Отложенный notify для синхронизации с облаком
+            store.notify('local');
         }, 0);
 
         lastInputEventTime = Date.now();
