@@ -591,6 +591,14 @@ thead tr:nth-child(1) th {
   display: none;
 }
 
+#google-auth-container>div:nth-child(1)>div:nth-child(1)>span:nth-child(2) {
+  font-weight: 500;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 75px;
+}
+
 /* Mobile Adaptation */
 @media (max-width: 768px) {
   body {
