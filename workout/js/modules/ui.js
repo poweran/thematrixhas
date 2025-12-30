@@ -2,6 +2,7 @@ import { store } from './store.js';
 import { getWeekDays, getWeekMonday, isDateInRange, keyOf, getTrainings, getSets, formatTime } from './utils.js';
 import { muscles, muscleImages, muscleDescriptions, exerciseConfig } from '../data.js';
 import { zapper } from './audio.js';
+import { ALPHABET } from './constants.js';
 
 export const ui = {
     // Mobile State
@@ -76,15 +77,33 @@ export const ui = {
           </svg>
         </div>
       </th>`;
-
-            // Auto-detect current day for mobile init using date range
-            if (!this.mobileInitDone && isCurrent) {
-                this.mobileDayIndex = i;
-            }
         });
 
-        // Mark mobile init as done after first render
+        // Auto-detect mobile day on first render
         if (!this.mobileInitDone) {
+            // Приоритет 1: Используем _activeCol из сохранённого состояния
+            if (store.state._activeCol) {
+                const dayLetter = store.state._activeCol.split('_')[0];
+                const savedDayIndex = ALPHABET.indexOf(dayLetter);
+                if (savedDayIndex !== -1 && savedDayIndex < store.config.days) {
+                    this.mobileDayIndex = savedDayIndex;
+                }
+            } else {
+                // Приоритет 2: Определяем по текущей дате
+                trainings.forEach((t, i) => {
+                    const start = dates[i];
+                    let end;
+                    if (i < dates.length - 1) {
+                        end = new Date(dates[i + 1]);
+                        end.setDate(end.getDate() - 1);
+                    } else {
+                        end = weekEnd;
+                    }
+                    if (isDateInRange(new Date(), start, end)) {
+                        this.mobileDayIndex = i;
+                    }
+                });
+            }
             this.mobileInitDone = true;
         }
 

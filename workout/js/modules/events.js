@@ -3,6 +3,7 @@ import { ui } from './ui.js';
 import { audio, zapper } from './audio.js';
 import { keyOf, getTrainings, getSets } from './utils.js';
 import { muscles, exerciseConfig } from '../data.js';
+import { ALPHABET } from './constants.js';
 
 let isCheckInProgress = false;
 let lastInputEventTime = 0;
@@ -107,6 +108,9 @@ export const events = {
 
         store.state._activeCol = colKey;
 
+        // Обновляем мобильный день на основе редактируемого поля
+        this.updateMobileDayFromKey(colKey);
+
         if (isValid) {
             if (!store.state[key].done) {
                 store.state[key].done = true;
@@ -161,6 +165,9 @@ export const events = {
 
         store.state[key].done = !store.state[key].done;
         store.state._activeCol = colKey;
+
+        // Обновляем мобильный день на основе редактируемого поля
+        this.updateMobileDayFromKey(colKey);
 
         if (status === 'SWITCHED') {
             ui.render();
@@ -399,6 +406,20 @@ export const events = {
         store.state._activeCol = `${trainings[trainings.length - 1]}_${sets[sets.length - 1]}`;
         store.saveData();
         return store.state._activeCol;
+    },
+
+    // Обновляет мобильный день на основе ключа колонки (например "A_1" -> день 0)
+    updateMobileDayFromKey(colKey) {
+        if (!colKey) return;
+
+        const dayLetter = colKey.split('_')[0]; // "A", "B", "C"...
+        const dayIndex = ALPHABET.indexOf(dayLetter);
+
+        if (dayIndex !== -1 && dayIndex < store.config.days) {
+            ui.mobileDayIndex = dayIndex;
+            ui.updateMobileNavControls();
+            ui.applyMobileVisibility();
+        }
     }
 };
 
