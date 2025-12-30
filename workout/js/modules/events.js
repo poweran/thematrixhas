@@ -92,6 +92,7 @@ export const events = {
     // Logic moved from app.js
     // Только сохраняет данные программно, НЕ вмешивается в фокус
     setReps(key, input) {
+        console.log('setReps called:', key, input.value);
         const val = input.value;
         const colKey = key.split('_').slice(1).join('_');
 
@@ -124,6 +125,7 @@ export const events = {
         // Отложенное обновление UI и синхронизация - даём браузеру сначала переместить фокус
         const isDone = store.state[key].done;
         setTimeout(() => {
+            console.log('setReps setTimeout: calling notify');
             const btn = input.nextElementSibling;
             if (isDone) {
                 input.disabled = true;
