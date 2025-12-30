@@ -538,7 +538,7 @@ input[type=number] {
 
 .brace-path {
   width: 100%;
-  height: 8px;
+  height: 12px;
   /* Fixed height for consistency */
   fill: none;
   stroke-width: 1.5;

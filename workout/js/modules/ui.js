@@ -72,8 +72,8 @@ export const ui = {
       <th colspan="${sets.length}" class="day-header ${isCurrent ? 'current' : ''} desktop-only" data-day-index="${i}">
         <div class="brace-wrapper">
           <span class="brace-label">${labelText}</span>
-          <svg class="brace-path" viewBox="0 0 100 10" preserveAspectRatio="none">
-              <path d="M0,10 Q40,10 50,2 Q60,10 100,10" />
+          <svg class="brace-path" viewBox="0 0 100 12" preserveAspectRatio="none">
+              <path d="M1,10 Q1,6 15,6 L45,6 Q50,6 50,2 Q50,6 55,6 L85,6 Q99,6 99,10" />
           </svg>
         </div>
       </th>`;
