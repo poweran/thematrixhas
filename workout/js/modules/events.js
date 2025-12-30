@@ -48,15 +48,7 @@ export const events = {
             }
         });
 
-        document.getElementById('log').addEventListener('focusin', (e) => {
-            if (e.target.matches('input.rep-input')) {
-                const key = e.target.dataset.key;
-                // extract colKey
-                const parts = key.split('_');
-                const colKey = `${parts[1]}_${parts[2]}`;
-                this.checkAutoFinish(colKey);
-            }
-        });
+        // focusin обработчик удалён - больше не блокирует переключение фокуса
 
         document.getElementById('log').addEventListener('change', (e) => {
             if (e.target.matches('input.rep-input')) {
