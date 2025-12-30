@@ -215,9 +215,7 @@ export const events = {
 
     checkAutoFinish(targetCol) {
         if (isCheckInProgress) {
-            if (store.state._activeCol && store.state._activeCol !== targetCol) {
-                this.refocusActiveColumn();
-            }
+            // Не перемещаем фокус во время обработки диалога
             return 'CANCELLED';
         }
 
@@ -231,13 +229,21 @@ export const events = {
 
         if (hasData) {
             isCheckInProgress = true;
+            // Сохраняем текущий активный элемент перед блокирующим confirm
+            const activeElement = document.activeElement;
+
             if (confirm('Закончить текущий подход?')) {
                 this.finishSet();
                 setTimeout(() => { isCheckInProgress = false; }, 100);
                 return 'SWITCHED';
             } else {
-                this.refocusActiveColumn();
-                setTimeout(() => { isCheckInProgress = false; }, 300);
+                // При отмене - восстанавливаем фокус на целевой элемент
+                setTimeout(() => {
+                    if (activeElement && activeElement.focus) {
+                        activeElement.focus();
+                    }
+                    isCheckInProgress = false;
+                }, 50);
                 return 'CANCELLED';
             }
         }
