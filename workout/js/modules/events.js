@@ -85,15 +85,10 @@ export const events = {
     },
 
     // Logic moved from app.js
+    // Только сохраняет данные программно, НЕ вмешивается в фокус
     setReps(key, input) {
         const val = input.value;
         const colKey = key.split('_').slice(1).join('_');
-        const status = this.checkAutoFinish(colKey);
-
-        if (status === 'CANCELLED') {
-            input.value = store.state[key]?.reps || '';
-            return;
-        }
 
         let num = parseFloat(val);
         if (num < 0) num = 0;
@@ -120,20 +115,16 @@ export const events = {
 
         store.saveData();
 
-        if (status === 'SWITCHED') {
-            ui.render();
+        // Минимальное обновление UI без перерисовки - не трогаем фокус
+        const btn = input.nextElementSibling;
+        if (store.state[key].done) {
+            input.disabled = true;
+            if (btn) btn.classList.add('done');
         } else {
-            ui.updateHighlights();
-            if (store.state[key].done) {
-                input.disabled = true;
-                const btn = input.nextElementSibling;
-                if (btn) btn.classList.add('done');
-            } else {
-                input.disabled = false;
-                const btn = input.nextElementSibling;
-                if (btn) btn.classList.remove('done');
-            }
+            input.disabled = false;
+            if (btn) btn.classList.remove('done');
         }
+
         lastInputEventTime = Date.now();
     },
 
