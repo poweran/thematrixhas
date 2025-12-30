@@ -113,17 +113,21 @@ export const events = {
             store.state[key].done = false;
         }
 
-        store.saveData();
+        // Сохраняем данные с skipNotify=true (чтобы не триггерить ui.render)
+        store.saveData(true);
 
-        // Минимальное обновление UI без перерисовки - не трогаем фокус
-        const btn = input.nextElementSibling;
-        if (store.state[key].done) {
-            input.disabled = true;
-            if (btn) btn.classList.add('done');
-        } else {
-            input.disabled = false;
-            if (btn) btn.classList.remove('done');
-        }
+        // Отложенное обновление UI - даём браузеру сначала переместить фокус
+        const isDone = store.state[key].done;
+        setTimeout(() => {
+            const btn = input.nextElementSibling;
+            if (isDone) {
+                input.disabled = true;
+                if (btn) btn.classList.add('done');
+            } else {
+                input.disabled = false;
+                if (btn) btn.classList.remove('done');
+            }
+        }, 0);
 
         lastInputEventTime = Date.now();
     },
@@ -168,9 +172,9 @@ export const events = {
 
     handleEnter(event, input) {
         const isEnter = event.key === 'Enter' || event.keyCode === 13;
-        const isTab = event.key === 'Tab' || event.keyCode === 9;
 
-        if (!isEnter && !isTab) return;
+        // Tab НЕ перехватываем - пусть работает нативно
+        if (!isEnter) return;
 
         event.preventDefault();
 
