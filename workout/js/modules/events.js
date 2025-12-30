@@ -136,6 +136,9 @@ export const events = {
             }
             // Синхронизация с облаком
             store.notify('local');
+
+            // Проверяем, завершён ли подход — если да, переключаемся
+            this.checkAndSwitchColumn(colKey);
         }, 100);
 
         lastInputEventTime = Date.now();
@@ -177,6 +180,11 @@ export const events = {
         }
 
         store.saveData();
+
+        // Проверяем, завершён ли подход — если да, переключаемся
+        if (store.state[key].done) {
+            this.checkAndSwitchColumn(colKey);
+        }
     },
 
     handleEnter(event, input) {
@@ -267,29 +275,77 @@ export const events = {
     },
 
     finishSet() {
-        const trainings = getTrainings(store.config.days);
-        const sets = getSets(store.config.sets);
+        // Проверяем, что все поля текущего подхода заполнены
+        if (store.state._activeCol) {
+            const hasEmpty = muscles.some(m => {
+                const k = keyOf(m, ...store.state._activeCol.split('_'));
+                const s = store.state[k];
+                return !s || !s.done;
+            });
 
-        const allCols = [];
-        trainings.forEach(t => sets.forEach(s => allCols.push(`${t}_${s}`)));
-
-        const currentIndex = allCols.indexOf(store.state._activeCol);
-        let nextIndex = -1;
-        if (currentIndex === -1) {
-            nextIndex = 0;
-        } else {
-            nextIndex = currentIndex + 1;
+            if (hasEmpty) {
+                ui.showToast('Заполните все поля текущего подхода', true);
+                return;
+            }
         }
 
-        if (nextIndex < allCols.length) {
-            store.state._activeCol = allCols[nextIndex];
+        // Находим следующий незаполненный подход
+        const nextCol = this.findFirstIncompleteColumn();
+
+        if (nextCol) {
+            store.state._activeCol = nextCol;
             store.saveData();
             ui.render();
         } else {
-            if (confirm('Это был последний подход. Завершить тренировку?')) {
+            if (confirm('Все подходы выполнены. Завершить тренировку?')) {
                 store.state._activeCol = null;
                 store.saveData();
                 ui.render();
+            }
+        }
+    },
+
+    findFirstIncompleteColumn() {
+        const trainings = getTrainings(store.config.days);
+        const sets = getSets(store.config.sets);
+
+        for (let t of trainings) {
+            for (let s of sets) {
+                const colKey = `${t}_${s}`;
+                const hasIncomplete = muscles.some(m => {
+                    const k = keyOf(m, t, s);
+                    const cell = store.state[k];
+                    return !cell || !cell.done;
+                });
+                if (hasIncomplete) {
+                    return colKey;
+                }
+            }
+        }
+        return null; // Все заполнены
+    },
+
+    // Проверяет, завершён ли подход, и переключает на следующий
+    checkAndSwitchColumn(colKey) {
+        // Проверяем, все ли поля текущего подхода заполнены
+        const isComplete = !muscles.some(m => {
+            const k = keyOf(m, ...colKey.split('_'));
+            const cell = store.state[k];
+            return !cell || !cell.done;
+        });
+
+        if (isComplete) {
+            // Ищем следующий незаполненный подход
+            const nextCol = this.findFirstIncompleteColumn();
+            if (nextCol && nextCol !== colKey) {
+                store.state._activeCol = nextCol;
+                store.saveData();
+                ui.render();
+                ui.showToast('Подход завершён! Переход к следующему.');
+            } else if (!nextCol) {
+                // Все подходы завершены
+                ui.showToast('Все подходы выполнены! 🎉');
+                ui.updateHighlights();
             }
         }
     },
@@ -317,27 +373,32 @@ export const events = {
     },
 
     ensureActiveColumn() {
-        if (store.state._activeCol) return store.state._activeCol;
-        const trainings = getTrainings(store.config.days);
-        const sets = getSets(store.config.sets);
-
-        for (let t of trainings) {
-            for (let s of sets) {
-                const colKey = `${t}_${s}`;
-                const hasData = muscles.some(m => {
-                    const k = keyOf(m, t, s);
-                    return store.state[k] && (store.state[k].reps || store.state[k].done);
-                });
-                if (!hasData) {
-                    store.state._activeCol = colKey;
-                    store.saveData();
-                    return colKey;
-                }
+        // Если есть активная колонка и она незавершена — оставляем её
+        if (store.state._activeCol) {
+            const hasIncomplete = muscles.some(m => {
+                const k = keyOf(m, ...store.state._activeCol.split('_'));
+                const cell = store.state[k];
+                return !cell || !cell.done;
+            });
+            if (hasIncomplete) {
+                return store.state._activeCol;
             }
         }
-        store.state._activeCol = 'A_1';
+
+        // Ищем первый незаполненный подход
+        const nextCol = this.findFirstIncompleteColumn();
+        if (nextCol) {
+            store.state._activeCol = nextCol;
+            store.saveData();
+            return nextCol;
+        }
+
+        // Всё заполнено — оставляем последний
+        const trainings = getTrainings(store.config.days);
+        const sets = getSets(store.config.sets);
+        store.state._activeCol = `${trainings[trainings.length - 1]}_${sets[sets.length - 1]}`;
         store.saveData();
-        return 'A_1';
+        return store.state._activeCol;
     }
 };
 
