@@ -122,13 +122,19 @@ export const events = {
         // Сохраняем данные локально без notify
         store.saveData(true);
 
-        // НЕ трогаем UI синхронно - только через больший таймаут
+        // Обновление UI и синхронизация через 100мс - после установки фокуса на новое поле
         const isDone = store.state[key].done;
-        const savedKey = key;
-
-        // Синхронизация с облаком через 100мс - после того как фокус точно установлен
         setTimeout(() => {
-            console.log('setReps: delayed sync');
+            // Обновляем UI
+            const btn = input.nextElementSibling;
+            if (isDone) {
+                input.disabled = true;
+                if (btn) btn.classList.add('done');
+            } else {
+                input.disabled = false;
+                if (btn) btn.classList.remove('done');
+            }
+            // Синхронизация с облаком
             store.notify('local');
         }, 100);
 
