@@ -119,24 +119,18 @@ export const events = {
             store.state[key].done = false;
         }
 
-        // Сохраняем данные с skipNotify=true (чтобы синхронно не триггерить ui.render)
+        // Сохраняем данные локально без notify
         store.saveData(true);
 
-        // Отложенное обновление UI и синхронизация - даём браузеру сначала переместить фокус
+        // НЕ трогаем UI синхронно - только через больший таймаут
         const isDone = store.state[key].done;
+        const savedKey = key;
+
+        // Синхронизация с облаком через 100мс - после того как фокус точно установлен
         setTimeout(() => {
-            console.log('setReps setTimeout: calling notify');
-            const btn = input.nextElementSibling;
-            if (isDone) {
-                input.disabled = true;
-                if (btn) btn.classList.add('done');
-            } else {
-                input.disabled = false;
-                if (btn) btn.classList.remove('done');
-            }
-            // Отложенный notify для синхронизации с облаком
+            console.log('setReps: delayed sync');
             store.notify('local');
-        }, 0);
+        }, 100);
 
         lastInputEventTime = Date.now();
     },
