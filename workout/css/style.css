@@ -148,15 +148,30 @@ td.set-cell {
 
 td.group {
   text-align: left;
-  font-weight: 600;
-  padding-left: 12px;
+  padding: 4px;
   white-space: nowrap;
-  cursor: pointer;
-  color: var(--accent);
 }
 
-td.group:hover {
-  text-decoration: underline;
+.muscle-btn {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+  text-align: left;
+  transition: all 0.2s;
+  border-radius: 0;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.muscle-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.05);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.1);
 }
 
 .cell {

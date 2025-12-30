@@ -129,7 +129,7 @@ export const ui = {
             const tr = document.createElement('tr');
             tr.style.setProperty('--sets-count', sets.length);
 
-            tr.innerHTML = `<td class="group" data-action="openModal" data-muscle="${m}">${m}</td>`;
+            tr.innerHTML = `<td class="group"><button class="muscle-btn" data-action="openModal" data-muscle="${m}">${m}</button></td>`;
 
             trainings.forEach((t, tIndex) => {
                 sets.forEach((s, sIndex) => {
