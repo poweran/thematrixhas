@@ -21,6 +21,7 @@ const firebaseConfig = {
 let app, auth, db;
 let unsubscribeDoc = null;
 let currentUser = null;
+let isPushingToCloud = false; // Флаг для игнорирования своих изменений
 
 export const sync = {
     init() {
@@ -79,6 +80,12 @@ export const sync = {
         const weeksColl = collection(db, "users", currentUser.uid, "weeks");
 
         unsubscribeDoc = onSnapshot(weeksColl, (snapshot) => {
+            // Игнорируем обратные вызовы от наших же изменений
+            if (isPushingToCloud) {
+                console.log('Sync: Ignoring snapshot during push');
+                return;
+            }
+
             snapshot.docChanges().forEach((change) => {
                 const weekId = change.doc.id;
                 const data = change.doc.data();
@@ -133,9 +140,15 @@ export const sync = {
         const docRef = doc(db, "users", currentUser.uid, "weeks", weekId);
 
         try {
+            isPushingToCloud = true;
             await setDoc(docRef, store.state, { merge: true });
             console.log('Sync: Pushed week data');
+            // Небольшая задержка перед сбросом флага, чтобы onSnapshot успел сработать
+            setTimeout(() => {
+                isPushingToCloud = false;
+            }, 500);
         } catch (e) {
+            isPushingToCloud = false;
             console.error("Sync Push Error:", e);
         }
     },
@@ -144,3 +157,4 @@ export const sync = {
         // No-op. Stats are derived from weeks now.
     }
 };
+
