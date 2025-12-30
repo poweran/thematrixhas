@@ -77,12 +77,17 @@ export const ui = {
         </div>
       </th>`;
 
-            // Auto-detect current day for mobile init
-            if (new Date().toDateString() === start.toDateString() && !this.mobileInitDone) {
+            // Auto-detect current day for mobile init using date range
+            if (!this.mobileInitDone && isCurrent) {
                 this.mobileDayIndex = i;
-                this.mobileInitDone = true;
             }
         });
+
+        // Mark mobile init as done after first render
+        if (!this.mobileInitDone) {
+            this.mobileInitDone = true;
+        }
+
         row1 += '</tr>';
 
         // Row 2: Columns
