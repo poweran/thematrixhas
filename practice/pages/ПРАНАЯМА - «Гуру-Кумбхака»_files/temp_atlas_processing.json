@@ -1,0 +1,188 @@
+{
+    "canvas_size": [
+        2640,
+        960
+    ],
+    "items": [
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_08dc9c12.jpg",
+            "filename": "img_08dc9c12.jpg",
+            "box": [
+                20,
+                20,
+                379,
+                180
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_12db7bb8.jpg",
+            "filename": "img_12db7bb8.jpg",
+            "box": [
+                548,
+                20,
+                473,
+                200
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_1ad394ea.jpg",
+            "filename": "img_1ad394ea.jpg",
+            "box": [
+                1076,
+                20,
+                179,
+                150
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_24473b1f.jpg",
+            "filename": "img_24473b1f.jpg",
+            "box": [
+                1604,
+                20,
+                55,
+                100
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_2d70d431.jpg",
+            "filename": "img_2d70d431.jpg",
+            "box": [
+                2132,
+                20,
+                150,
+                150
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_32fd883f.jpg",
+            "filename": "img_32fd883f.jpg",
+            "box": [
+                20,
+                260,
+                143,
+                180
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_38ad18f4.jpg",
+            "filename": "img_38ad18f4.jpg",
+            "box": [
+                548,
+                260,
+                201,
+                150
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_3ec2c481.jpg",
+            "filename": "img_3ec2c481.jpg",
+            "box": [
+                1076,
+                260,
+                324,
+                180
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_44e01249.jpg",
+            "filename": "img_44e01249.jpg",
+            "box": [
+                1604,
+                260,
+                179,
+                143
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_6eae5012.jpg",
+            "filename": "img_6eae5012.jpg",
+            "box": [
+                2132,
+                260,
+                112,
+                128
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_949a91dc.jpg",
+            "filename": "img_949a91dc.jpg",
+            "box": [
+                20,
+                500,
+                64,
+                36
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_bd624e42.jpg",
+            "filename": "img_bd624e42.jpg",
+            "box": [
+                548,
+                500,
+                488,
+                166
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_e2a87bb6.jpg",
+            "filename": "img_e2a87bb6.jpg",
+            "box": [
+                1076,
+                500,
+                153,
+                150
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_e367ab45.jpg",
+            "filename": "img_e367ab45.jpg",
+            "box": [
+                1604,
+                500,
+                174,
+                150
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_f6aacd8b.jpg",
+            "filename": "img_f6aacd8b.jpg",
+            "box": [
+                2132,
+                500,
+                132,
+                180
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_f981acff.jpg",
+            "filename": "img_f981acff.jpg",
+            "box": [
+                20,
+                740,
+                435,
+                18
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_faec09b8.jpg",
+            "filename": "img_faec09b8.jpg",
+            "box": [
+                548,
+                740,
+                66,
+                45
+            ]
+        },
+        {
+            "original_path": "/home/powerand/thematrixhas/practice/pages/ПРАНАЯМА - «Гуру-Кумбхака»_files/img_fe99acc7.jpg",
+            "filename": "img_fe99acc7.jpg",
+            "box": [
+                1076,
+                740,
+                40,
+                40
+            ]
+        }
+    ]
+}

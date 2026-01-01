@@ -20,12 +20,18 @@
 
 import re
 import sys
+import shutil
 import hashlib
+import os
+try:
+    import image_stitcher
+except ImportError:
+    image_stitcher = None
 import urllib.request
 import urllib.parse
 from pathlib import Path
 from html import unescape
-from typing import Optional
+from typing import Optional, List, Tuple
 
 try:
     from bs4 import BeautifulSoup, NavigableString
@@ -37,19 +43,19 @@ except ImportError:
 # Минимальный CSS для отображения
 MINIMAL_CSS = """
 body { font-family: Arial, sans-serif; background: #131833; color: #e0e0e0; line-height: 1.7; padding: 20px; max-width: 900px; margin: 0 auto; }
-h1 { color: #99FEFE; text-align: center; }
+h1 { color: #FE99FE; text-align: center; }
 .post { background: #1a1f3a; border-radius: 10px; padding: 20px; margin: 20px 0; }
 .post-content { font-size: 14px; }
 .post-content p { margin: 10px 0; }
 img.postimg { max-width: 100%; height: auto; border-radius: 5px; }
 img[title="float:right"] { float: right; padding-left: 12px; max-width: 40%; }
 img[title="float:left"] { float: left; padding-right: 12px; max-width: 40%; }
-.quote-box { background: rgba(0,0,0,0.3); border-left: 3px solid #99FEFE; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
-.spoiler-box > div:first-child { cursor: pointer; color: #99FEFE; font-weight: bold; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; }
+.quote-box { background: rgba(0,0,0,0.3); border-left: 3px solid #FE99FE; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+.spoiler-box > div:first-child { cursor: pointer; color: #FE99FE; font-weight: bold; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; }
 .spoiler-box > blockquote { display: none; padding: 15px; }
 .spoiler-box.visible > blockquote { display: block; }
 .clearer { clear: both; }
-a { color: #99FEFE; }
+a { color: #FE99FE; }
 .broken-link { color: #FF6666; text-decoration: underline dotted; cursor: help; }
 """
 
@@ -203,7 +209,12 @@ class ImageModernizer:
                 try:
                     from PIL import Image
                     init_image = Image.open(image_path).convert("RGB")
-                    init_image = init_image.resize((512, 512)) # SD 1.5 лучше работает с 512x512
+                    
+                    # Изменение размера под требования SD (кратность 64)
+                    w, h = init_image.size
+                    w = max(64, round(w / 64) * 64)
+                    h = max(64, round(h / 64) * 64)
+                    init_image = init_image.resize((w, h))
                     
                     generator = torch.manual_seed(42) if 'torch' in locals() else None
                     
@@ -299,10 +310,25 @@ def process_images(post_content, files_dir: Path, files_dir_name: str, modernize
         
         # Если URL уже локальный - оставляем (или модернизируем если это старый локальный файл?)
         # В данном контексте скрипт запускается один раз, так что локальные - это результат скачивания
-        if src and not src.startswith('http'):
-            # Если файл уже локальный, можно попробовать его модернизировать, 
-            # но надо найти его реальный путь
-            # пока пропускаем
+        if src and not src.startswith(('http://', 'https://')):
+            # Если файл уже локальный, и включена модернизация
+            if modernizer:
+                # Пытаемся найти файл относительно HTML файла
+                # files_dir.parent - это папка где лежит HTML
+                local_path = (files_dir.parent / src)
+                
+                if local_path.exists():
+                     processed_path = modernizer.process(local_path)
+                     
+                     if processed_path != local_path:
+                         # Вычисляем новый относительный путь для src
+                         try:
+                             # Если файл в той же подпапке
+                             new_src = processed_path.relative_to(files_dir.parent)
+                             img['src'] = str(new_src)
+                         except ValueError:
+                             # Если что-то пошло не так с путями, оставляем как есть
+                             pass
             continue
         
         if not url:
@@ -336,6 +362,59 @@ def process_images(post_content, files_dir: Path, files_dir_name: str, modernize
             img.decompose()
     
     return downloaded
+
+
+def batch_modernize_directory(directory: Path, modernizer: ImageModernizer):
+    """
+    Пакетная обработка изображений через атлас.
+    """
+    if not image_stitcher:
+        return
+
+    # Проверяем наличие изображений
+    extensions = ('.jpg', '.jpeg', '.png', '.webp')
+    images = [f for f in directory.iterdir() if f.suffix.lower() in extensions]
+    if not images:
+        return
+
+    print(f"  🚀 Пакетная модернизация {len(images)} файлов в {directory.name}...")
+    
+    atlas_path = directory / "temp_atlas_processing.png"
+    meta_path = directory / "temp_atlas_processing.json"
+    
+    # 1. Склейка
+    try:
+        image_stitcher.stitch_images(str(directory), str(atlas_path), str(meta_path))
+    except Exception as e:
+        print(f"  ⚠ Ошибка склейки: {e}")
+        return
+
+    if not atlas_path.exists():
+        return
+
+    # 2. Модернизация
+    processed_atlas = modernizer.process(atlas_path)
+    
+    # 3. Расклейка
+    if processed_atlas and processed_atlas.exists():
+        print(f"  ✂ Расклейка обновленного атласа...")
+        # Используем unstitch_images из модуля
+        # Важно: unstitch перезапишет файлы, если они совпадают по именам в метаданных
+        try:
+            image_stitcher.unstitch_images(str(processed_atlas), str(meta_path))
+            print("  ✅ Пакетная обработка завершена.")
+        except Exception as e:
+            print(f"  ⚠ Ошибка расклейки: {e}")
+
+    # 4. Очистка
+    try:
+        if atlas_path.exists(): os.remove(atlas_path)
+        if meta_path.exists(): os.remove(meta_path)
+        if processed_atlas != atlas_path and processed_atlas.exists():
+            os.remove(processed_atlas)
+    except Exception as e:
+        print(f"  ⚠ Ошибка очистки временных файлов: {e}")
+
 
 
 def clean_forum_html(input_path: str, output_path: str = None) -> str:
@@ -396,11 +475,17 @@ def clean_forum_html(input_path: str, output_path: str = None) -> str:
     use_local = "--local" in sys.argv
     modernizer = ImageModernizer(api_key=modernizer_api_key, use_local=use_local)
 
+    # Определяем режим работы (поштучный или пакетный)
+    use_batch = use_local and (image_stitcher is not None)
+    
+    # Если пакетный режим - в цикле не обрабатываем (передаем None)
+    loop_modernizer = None if use_batch else modernizer
+
     for post in posts:
         post_content = post.find('div', class_='post-content')
         if post_content:
             # 1. ОБРАБАТЫВАЕМ ИЗОБРАЖЕНИЯ (скачиваем)
-            total_images += process_images(post_content, files_dir, files_dir_name, modernizer)
+            total_images += process_images(post_content, files_dir, files_dir_name, loop_modernizer)
             
             # 2. УДАЛЯЕМ ИМЕНА АВТОРОВ ЦИТАТ
             for cite in post_content.find_all('cite'):
@@ -472,8 +557,14 @@ def clean_forum_html(input_path: str, output_path: str = None) -> str:
     output_file = Path(output_path) if output_path else input_file
     output_file.write_text(clean_html, encoding='utf-8')
     
+    output_file.write_text(clean_html, encoding='utf-8')
+    
     if total_images:
         print(f"  📷 Скачано {total_images} изображений в {files_dir_name}/")
+        
+    # Если пакетный режим и есть что обрабатывать
+    if use_batch and files_dir.exists():
+        batch_modernize_directory(files_dir, modernizer)
     
     return str(output_file)
 
@@ -511,27 +602,215 @@ def process_directory(directory: str, pattern: str = "*.html"):
             print(f"✗ {html_file.name}: {e}")
 
 
+def merge_forum_pages(directory: str):
+    """
+    Находит в директории группы файлов (например Name.html, Name2.html...)
+    и объединяет их в один файл с разделителем.
+    """
+    dir_path = Path(directory)
+    if not dir_path.is_dir():
+        raise NotADirectoryError(f"Не директория: {directory}")
+
+    # 1. Группируем файлы
+    # Ключ: базовое имя, Значение: список (номер, путь)
+    groups = {}
+    
+    # Регулярка для поиска: ИмяФайла + (цифра) + .html
+    # Пример: "Topic" + "" + ".html" -> номер 1
+    # "Topic" + "2" + ".html" -> номер 2
+    # Используем жадный захват для имени, чтобы цифра в конце попала в группу 2 только если она перед .html
+    pattern = re.compile(r"^(.+?)(?:(\d+))?\.html$")
+    
+    files = [f for f in dir_path.glob("*.html") if not f.name.endswith('.bak') and not f.name.endswith('_merged.html')]
+    
+    for f in files:
+        match = pattern.match(f.name)
+        if match:
+            base_name = match.group(1)
+            # Если база заканчивается на дефис или пробел, оставляем как есть, это часть имени
+            suffix = match.group(2)
+            
+            # Особая обработка: часто бывает "Name.html" и "Name2.html".
+            # Если suffix пусто, считаем это 1
+            num = int(suffix) if suffix else 1
+            
+            if base_name not in groups:
+                groups[base_name] = []
+            groups[base_name].append((num, f))
+
+    # 2. Обрабатываем группы
+    count_merged = 0
+    for base_name, file_list in groups.items():
+        if len(file_list) < 2:
+            continue
+            
+        # Сортируем по номеру
+        file_list.sort(key=lambda x: x[0])
+        
+        print(f"Объединение группы '{base_name}': {[f.name for n, f in file_list]}")
+        
+        try:
+            # Читаем первый файл (основной)
+            first_num, first_path = file_list[0]
+            
+            # Определяем кодировку и читаем
+            content = None
+            for encoding in ['utf-8', 'windows-1251', 'cp1251']:
+                try:
+                    content = first_path.read_text(encoding=encoding)
+                    break
+                except UnicodeDecodeError:
+                    continue
+            
+            if not content:
+                print(f"  ⚠ Не удалось прочитать {first_path.name}")
+                continue
+
+            soup = BeautifulSoup(content, 'html.parser')
+            body = soup.find('body')
+            if not body:
+                print(f"  ⚠ Нет body в {first_path.name}")
+                continue
+                
+            # Ищем место для вставки (после последнего div.post или просто в конец)
+            last_post = None
+            posts = body.find_all('div', class_='post')
+            if posts:
+                last_post = posts[-1]
+            
+            # Читаем остальные файлы и добавляем
+            for num, path in file_list[1:]:
+                # Читаем файл-продолжение
+                sub_content = None
+                for encoding in ['utf-8', 'windows-1251', 'cp1251']:
+                    try:
+                        sub_content = path.read_text(encoding=encoding)
+                        break
+                    except UnicodeDecodeError:
+                        continue
+                        
+                if not sub_content:
+                    continue
+                    
+                sub_soup = BeautifulSoup(sub_content, 'html.parser')
+                sub_posts = sub_soup.find_all('div', class_='post')
+                
+                if not sub_posts:
+                    # Если постов нет, может там просто контент в body?
+                    # Берем всё из body кроме script
+                    if sub_soup.body:
+                        # Упрощение: считаем что контент полезный
+                        pass
+                
+                if sub_posts:
+                    # Создаем разделитель
+                    separator = soup.new_tag('hr')
+                    separator['style'] = "border: 0; height: 1px; background: #FE99FE; opacity: 0.1; margin: 50px 0;"
+                    separator['class'] = "page-separator"
+                    
+                    header_sep = soup.new_tag('div')
+                    header_sep['style'] = "text-align: center; color: #444; font-size: 12px; margin-bottom: 20px;"
+                    header_sep.string = f"--- Страница {num} ---"
+                    
+                    # Вставляем разделитель в конец body (или после последнего поста)
+                    body.append(separator)
+                    body.append(header_sep)
+                    
+                    # Добавляем посты
+                    for post in sub_posts:
+                        # Импортируем ноду в основной документ (BS4 делает это автоматически при вставке)
+                        body.append(post)
+                        # Добавляем перенос строки для красоты
+                        body.append(NavigableString("\n\n"))
+            
+            # Сохраняем в новый файл
+            output_name = first_path.stem + "_merged.html"
+            
+            # --- КОНСОЛИДАЦИЯ ИЗОБРАЖЕНИЙ ---
+            merged_files_dir_name = Path(output_name).stem + "_files"
+            merged_files_dir = dir_path / merged_files_dir_name
+            merged_files_dir.mkdir(exist_ok=True)
+            
+            count_images = 0
+            for img in soup.find_all('img'):
+                src = img.get('src')
+                if not src or src.startswith(('http://', 'https://', 'data:')):
+                    continue
+                
+                # Ищем исходный файл
+                # src обычно "Name_files/img.jpg", путь относительно html
+                original_path = dir_path / src
+                
+                if original_path.exists() and original_path.is_file():
+                    # Копируем в новую папку
+                    new_filename = original_path.name
+                    destination = merged_files_dir / new_filename
+                    
+                    if not destination.exists():
+                        try:
+                            shutil.copy2(original_path, destination)
+                        except Exception as e:
+                            print(f"    ⚠ Ошибка копирования {new_filename}: {e}")
+                            continue
+
+                    # Обновляем ссылку
+                    img['src'] = f"{merged_files_dir_name}/{new_filename}"
+                    count_images += 1
+            
+            output_path = dir_path / output_name
+            output_path.write_text(str(soup), encoding='utf-8')
+            print(f"  ✓ Создан: {output_name} ({output_path.stat().st_size/1024:.1f} KB)")
+            if count_images:
+                print(f"    📷 Скопировано {count_images} изображений в {merged_files_dir_name}/")
+            count_merged += 1
+            
+        except Exception as e:
+            print(f"  ✗ Ошибка при объединении: {e}")
+            import traceback
+            traceback.print_exc()
+
+    if count_merged == 0:
+        print("Групп файлов для объединения не найдено.")
+    else:
+        print(f"Всего объединено групп: {count_merged}")
+
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("""
 Использование:
-  python clean_forum_html.py <файл.html>           # Очистить один файл
-  python clean_forum_html.py <директория>          # Очистить все .html в папке
-  python clean_forum_html.py <файл.html> <выход>   # Сохранить в другой файл
+  python clean_forum_html.py <файл.html> [опции]          # Очистить один файл
+  python clean_forum_html.py <директория> [опции]         # Очистить все .html в папке
+  python clean_forum_html.py <файл.html> <выход> [опции]  # Сохранить в другой файл
+        
+Опции:
+  --merge   Объединить группы файлов (Name.html + Name2.html)
+  --local   Использовать локальную генерацию изображений (Stable Diffusion)
         
 Примеры:
-  python clean_forum_html.py index.html
-  python clean_forum_html.py ./pages/
-  python clean_forum_html.py raw.html clean.html
+  python clean_forum_html.py pages/ --local
+  python clean_forum_html.py --merge pages/
 """)
         sys.exit(1)
     
-    target = sys.argv[1]
+    # Разделяем флаги и позиционные аргументы
+    args = sys.argv[1:]
+    flags = [a for a in args if a.startswith('--')]
+    positional = [a for a in args if not a.startswith('--')]
     
-    if Path(target).is_dir():
+    if not positional:
+         print("✗ Не указан целевой файл или директория")
+         sys.exit(1)
+         
+    target = positional[0]
+    
+    if '--merge' in flags:
+        merge_forum_pages(target)
+    elif Path(target).is_dir():
         process_directory(target)
     elif Path(target).is_file():
-        output = sys.argv[2] if len(sys.argv) > 2 else None
+        output = positional[1] if len(positional) > 1 else None
         result = clean_forum_html(target, output)
         print(f"✓ Сохранено: {result}")
     else:
