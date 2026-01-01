@@ -25,6 +25,7 @@ import urllib.request
 import urllib.parse
 from pathlib import Path
 from html import unescape
+from typing import Optional
 
 try:
     from bs4 import BeautifulSoup, NavigableString
@@ -78,7 +79,7 @@ def fix_image_url(url: str) -> str:
     return url
 
 
-def download_image(url: str, save_dir: Path) -> str | None:
+def download_image(url: str, save_dir: Path) -> Optional[str]:
     """
     Скачать изображение по URL и сохранить в папку.
     Возвращает локальный путь или None при ошибке.
@@ -125,7 +126,159 @@ def download_image(url: str, save_dir: Path) -> str | None:
         return None
 
 
-def process_images(post_content, files_dir: Path, files_dir_name: str) -> int:
+
+class ImageModernizer:
+    """
+    Класс для модернизации изображений.
+    Может использовать API (например, Stability AI) или локальные модели.
+    """
+    def __init__(self, api_key=None, use_local=False):
+        self.api_key = api_key
+        self.use_local = use_local
+        self.pipeline = None
+        
+        # Здесь можно настроить параметры стиля
+        self.style_prompt = "modern clean aesthetic, high quality, 4k, detailed, professional photography, soft lighting"
+        self.negative_prompt = "blurry, low quality, distorted, watermark, text, ugly"
+
+    def _init_local_pipeline(self):
+        """Инициализация локальной модели Stable Diffusion"""
+        if self.pipeline:
+            return
+
+        print("  ⏳ Загрузка модели Stable Diffusion (это может занять время)...")
+        try:
+            import torch
+            from diffusers import StableDiffusionImg2ImgPipeline
+            
+            model_id = "runwayml/stable-diffusion-v1-5"
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            dtype = torch.float16 if device == "cuda" else torch.float32
+            
+            self.pipeline = StableDiffusionImg2ImgPipeline.from_pretrained(
+                model_id, 
+                torch_dtype=dtype,
+                use_safetensors=True
+            ).to(device)
+            
+            # Оптимизация памяти
+            if device == "cuda":
+                self.pipeline.enable_attention_slicing()
+                
+            self.device = device
+            print(f"  ✅ Модель загружена на {device.upper()}")
+            
+        except ImportError:
+            print("  ❌ Ошибка: Не установлены библиотеки для локальной работы.")
+            print("  Пожалуйста, выполните: pip install torch diffusers transformers accelerate")
+            self.use_local = False
+        except Exception as e:
+            print(f"  ❌ Ошибка загрузки модели: {e}")
+            self.use_local = False
+
+    def process(self, image_path: Path) -> Path:
+        """
+        Принимает путь к изображению, отправляет его на обработку
+        и возвращает путь к новому файлу.
+        """
+        if not image_path.exists():
+            return image_path
+
+        # Пропускаем маленькие файлы или иконки
+        if image_path.stat().st_size < 5000:
+            return image_path
+            
+        print(f"  🎨 Модернизация: {image_path.name}...")
+        
+        # --- ЛОКАЛЬНАЯ ГЕНЕРАЦИЯ ---
+        if self.use_local:
+            # Проверяем кэш, чтобы не генерировать повторно
+            modern_path = image_path.parent / f"modern_{image_path.stem}.png"
+            if modern_path.exists():
+                print(f"    ✨ Взято из кэша: {modern_path.name}")
+                return modern_path
+
+            self._init_local_pipeline()
+            if self.pipeline:
+                try:
+                    from PIL import Image
+                    init_image = Image.open(image_path).convert("RGB")
+                    init_image = init_image.resize((512, 512)) # SD 1.5 лучше работает с 512x512
+                    
+                    generator = torch.manual_seed(42) if 'torch' in locals() else None
+                    
+                    image = self.pipeline(
+                        prompt=self.style_prompt,
+                        negative_prompt=self.negative_prompt,
+                        image=init_image,
+                        strength=0.35, # Сила изменений (больше -> сильнее меняется)
+                        guidance_scale=7.5,
+                        num_inference_steps=30,
+                        generator=generator
+                    ).images[0]
+                    
+                    modern_path = image_path.parent / f"modern_{image_path.stem}.png"
+                    image.save(modern_path)
+                    print(f"    ✨ Сохранено: {modern_path.name}")
+                    return modern_path
+                    
+                except Exception as e:
+                    print(f"  ⚠ Ошибка локальной генерации: {e}")
+                    return image_path
+            else:
+                 # Если инициализация не удалась, возвращаем оригинал
+                 return image_path
+
+        # --- ВАРИАНТ: STABILITY AI API ---
+        # Подробнее: https://platform.stability.ai/docs/api-reference#tag/v1generation/operation/imageToImage
+        if self.api_key:
+            import requests
+            url = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image"
+            
+            try:
+                response = requests.post(
+                    url,
+                    headers={
+                        "Accept": "application/json",
+                        "Authorization": f"Bearer {self.api_key}"
+                    },
+                    files={
+                        "init_image": open(image_path, "rb")
+                    },
+                    data={
+                        "init_image_mode": "IMAGE_STRENGTH",
+                        "image_strength": 0.35, 
+                        "text_prompts[0][text]": self.style_prompt,
+                        "text_prompts[0][weight]": 1,
+                        "text_prompts[1][text]": self.negative_prompt,
+                        "text_prompts[1][weight]": -1,
+                        "samples": 1,
+                        "steps": 30,
+                    }
+                )
+                
+                if response.status_code != 200:
+                    print(f"  ⚠ Ошибка API: {response.text}")
+                    return image_path
+
+                data = response.json()
+                import base64
+                
+                for i, image in enumerate(data.get("artifacts", [])):
+                    modern_path = image_path.parent / f"modern_{image_path.stem}.png"
+                    with open(modern_path, "wb") as f:
+                        f.write(base64.b64decode(image["base64"]))
+                    return modern_path
+
+            except Exception as e:
+                print(f"  ⚠ Ошибка обработки через API: {e}")
+                return image_path
+        
+        # Если ничего не выбрано - просто заглушка (возвращаем оригинал)
+        return image_path
+
+
+def process_images(post_content, files_dir: Path, files_dir_name: str, modernizer: ImageModernizer = None) -> int:
     """
     Обработать все изображения в посте.
     Возвращает количество успешно скачанных.
@@ -144,8 +297,12 @@ def process_images(post_content, files_dir: Path, files_dir_name: str) -> int:
                 url = fix_image_url(candidate)
                 break
         
-        # Если URL уже локальный - оставляем
+        # Если URL уже локальный - оставляем (или модернизируем если это старый локальный файл?)
+        # В данном контексте скрипт запускается один раз, так что локальные - это результат скачивания
         if src and not src.startswith('http'):
+            # Если файл уже локальный, можно попробовать его модернизировать, 
+            # но надо найти его реальный путь
+            # пока пропускаем
             continue
         
         if not url:
@@ -153,11 +310,20 @@ def process_images(post_content, files_dir: Path, files_dir_name: str) -> int:
             continue
         
         # Пробуем скачать
-        local_file = download_image(url, files_dir)
+        local_filename = download_image(url, files_dir)
         
-        if local_file:
+        if local_filename:
+            local_path = files_dir / local_filename
+            
+            # МОДЕРНИЗАЦИЯ
+            if modernizer:
+                processed_path = modernizer.process(local_path)
+                # Если путь изменился (создан новый файл), используем его имя
+                if processed_path != local_path:
+                    local_filename = processed_path.name
+
             # Успешно - обновляем src
-            img['src'] = f"{files_dir_name}/{local_file}"
+            img['src'] = f"{files_dir_name}/{local_filename}"
             img['loading'] = 'lazy'
             img['class'] = 'postimg'
             # Убираем ненужные атрибуты
@@ -223,11 +389,18 @@ def clean_forum_html(input_path: str, output_path: str = None) -> str:
     cleaned_posts = []
     total_images = 0
     
+    # Инициализация модернизатора
+    import os
+    modernizer_api_key = os.environ.get("STABILITY_API_KEY")
+    # Простейшая проверка аргумента командной строки для включения локального режим (для теста)
+    use_local = "--local" in sys.argv
+    modernizer = ImageModernizer(api_key=modernizer_api_key, use_local=use_local)
+
     for post in posts:
         post_content = post.find('div', class_='post-content')
         if post_content:
             # 1. ОБРАБАТЫВАЕМ ИЗОБРАЖЕНИЯ (скачиваем)
-            total_images += process_images(post_content, files_dir, files_dir_name)
+            total_images += process_images(post_content, files_dir, files_dir_name, modernizer)
             
             # 2. УДАЛЯЕМ ИМЕНА АВТОРОВ ЦИТАТ
             for cite in post_content.find_all('cite'):
