@@ -4,27 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ПРАНАЯМА — Гуру-Кумбхака</title>
+    <title>ПРАНАЯМА - «Гуру-Кумбхака»</title>
     <style>
-        :root {
-            --bg: #0b1220;
-            --card: #111827;
-            --text: #e5e7eb;
-            --accent: #99FEFE;
-            --accent2: #65FEFE;
-            --red: #FE3333;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: Arial, sans-serif;
+            background: #131833;
+            color: #e0e0e0;
             line-height: 1.7;
             padding: 20px;
             max-width: 900px;
@@ -32,361 +17,394 @@
         }
 
         h1 {
-            color: var(--accent);
+            color: #99FEFE;
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 1.8em;
-        }
-
-        h2 {
-            color: var(--accent);
-            margin: 30px 0 15px;
-            font-size: 1.3em;
-            border-bottom: 1px solid var(--accent);
-            padding-bottom: 5px;
-        }
-
-        h3 {
-            color: var(--accent2);
-            margin: 20px 0 10px;
-            font-size: 1.1em;
         }
 
         .post {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
+            background: #1a1f3a;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
         }
 
-        p {
-            margin-bottom: 15px;
+        .post-content {
+            font-size: 14px;
         }
 
-        img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
+        .post-content p {
             margin: 10px 0;
         }
 
-        .center {
-            text-align: center;
+        img.postimg {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
         }
 
-        .spoiler {
+        img[title="float:right"] {
+            float: right;
+            padding-left: 12px;
+            max-width: 40%;
+        }
+
+        img[title="float:left"] {
+            float: left;
+            padding-right: 12px;
+            max-width: 40%;
+        }
+
+        .quote-box {
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            margin: 15px 0;
-        }
-
-        .spoiler-title {
-            padding: 12px 15px;
-            cursor: pointer;
-            color: var(--accent);
-            font-weight: bold;
-        }
-
-        .spoiler-title:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .spoiler-content {
-            display: none;
-            padding: 15px;
-            text-align: center;
-        }
-
-        .spoiler.open .spoiler-content {
-            display: block;
-        }
-
-        .quote {
-            background: rgba(0, 0, 0, 0.3);
-            border-left: 3px solid var(--accent);
+            border-left: 3px solid #99FEFE;
             padding: 15px;
             margin: 15px 0;
             border-radius: 0 8px 8px 0;
         }
 
-        .quote cite {
+        .quote-box cite {
             color: #888;
-            font-size: 0.9em;
             display: block;
             margin-bottom: 10px;
         }
 
-        .quote blockquote {
-            color: #9ca3af;
+        .spoiler-box>div:first-child {
+            cursor: pointer;
+            color: #99FEFE;
+            font-weight: bold;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
         }
 
-        .highlight {
-            color: var(--accent);
+        .spoiler-box>blockquote {
+            display: none;
+            padding: 15px;
+            text-align: center;
         }
 
-        .warning {
-            color: var(--red);
+        .spoiler-box.visible>blockquote {
+            display: block;
         }
 
-        strong.action {
-            font-size: 15px;
+        .clearer {
+            clear: both;
         }
 
-        ul,
-        ol {
-            margin: 15px 0 15px 25px;
+        span[style*="color: #99FEFE"] {
+            color: #99FEFE !important;
         }
 
-        li {
-            margin-bottom: 8px;
+        span[style*="color: #65FEFE"] {
+            color: #65FEFE !important;
+        }
+
+        span[style*="color: #FE3333"] {
+            color: #FE3333 !important;
+        }
+
+        span[style*="color: #CAFEFE"] {
+            color: #CAFEFE !important;
+        }
+
+        a {
+            color: #99FEFE;
         }
     </style>
 </head>
 
 <body>
+    <h1>ПРАНАЯМА - «Гуру-Кумбхака»</h1>
 
-    <h1>Пранаяма «Гуру-Кумбхака»</h1>
-
-    <!-- Пост 1: Вступление -->
-    <article class="post">
-        <div class="center">
-            <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZeGFmNkR3aEg0NnM" alt="Гуру-Кумбхака" loading="lazy">
-            <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZaFZONjJiZXpEQnc" alt="Диафрагмальное дыхание"
-                loading="lazy">
+    <!-- Пост 1 -->
+    <div class="post">
+        <div class="post-content">
+            <p><span style="display: block; text-align: center"> <img class="postimg" loading="lazy"
+                        src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZeGFmNkR3aEg0NnM" alt="" /> <br /> <img
+                        class="postimg" loading="lazy"
+                        src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZaFZONjJiZXpEQnc" alt="" /> </span></p>
         </div>
-    </article>
+    </div>
 
-    <!-- Пост 2: Введение -->
-    <article class="post">
-        <div class="center">
-            <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZNGhabkFPWVhwRjg" alt="" loading="lazy">
-            <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZRkpLckIwRk5Tc1k" alt="" loading="lazy">
-            <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZVWpRMjR4Nk9CMjQ" alt="" loading="lazy">
-        </div>
-
-        <p>Основная цель практики — растянуть паузу после выдоха и накопить углекислоту в крови и тканях. Конечная цель
-            — подготовка к активации Аджны (шишковидной железы), полная остановка дыхания с включением эндогенного
-            дыхания.</p>
-
-        <p>Положительное воздействие на: продолжительность жизни, систему бретарианства и солнцеедения, усвоение
-            кислорода, очищение организма на клеточном уровне, сердечную и сосудистую систему, психическую устойчивость.
-        </p>
-
-        <p>Предварительно надо быть готовым к практике, которая даёт нагрузку на лёгкие, диафрагму и сердце. Нужно иметь
-            растянутую грудную клетку и очищенный организм. Полезно размять мышцы шеи и проверить точку сердца. Дыхание
-            — диафрагмой (вдыхаете и выдыхаете как бы животом, а не раздуваете верх лёгких).</p>
-
-        <p>Сядьте в позу со скрещенными ногами — лотос, полулотос, Сиддхасана. Можно прослушивать звуки природы или
-            спокойную мелодию. Начните с 10 минут и доведите до 35 минут. Не должно быть источников слов (ТВ,
-            разговоры). Позвоночник прямой, дыхание только носом.</p>
-
-        <p>Ладони на коленях, можно замкнуть меридианы (Джани-мудра). Центр ладони — на колене.</p>
-
-        <div class="spoiler" onclick="this.classList.toggle('open')">
-            <div class="spoiler-title">ФОТО ПОЛОЖЕНИЯ РУК</div>
-            <div class="spoiler-content">
-                <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZQmxQX2RqalkzUjA" alt="Положение рук 1"
-                    loading="lazy">
-                <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZVlg3anVpTWlfU1k" alt="Положение рук 2"
-                    loading="lazy">
-                <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZYlNjaG5hMDRMSkE" alt="Положение рук 3"
-                    loading="lazy">
+    <!-- Пост 2 -->
+    <div class="post">
+        <div class="post-content">
+            <p><span style="display: block; text-align: center"><span style="color: #99FEFE"><strong><span
+                                style="font-size: 22px">Пранаяма
+                                «Гуру-Кумбхака»</span></strong></span></span><br /><span
+                    style="display: block; text-align: center"><img class="postimg" loading="lazy"
+                        src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZNGhabkFPWVhwRjg" alt="" /> <img
+                        class="postimg" loading="lazy"
+                        src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZRkpLckIwRk5Tc1k" alt="" /> <img
+                        class="postimg" loading="lazy"
+                        src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZVWpRMjR4Nk9CMjQ" alt="" /></span><br />
+                Основная цель практики в том чтобы растянуть паузу после выдоха и накопить углекислоту в крови и тканях.
+                Конечная цель практики заключается в подготовке человека к активации Аджны (шишковидной железы), полной
+                остановки дыхания с включением эндогенного дыхания. Так же положительное воздействие оказывается: на
+                продолжительность жизни, на систему бретарианство и солнцеедение, усвоение кислорода, очищение организма
+                на клеточном уровне, на сердечную и сосудистую систему и т.д. психическую устойчивость.<br />
+                Предварительно надо конечно быть готовым к такой практике которая даёт нагрузку на лёгкие, диафрагму и
+                сердце. От того надо иметь растянутую грудную клетку, то есть тело должно быть немного гибким – в общем
+                надо иметь организм очищенный, лучше сыроедить, ну и хатха-йогой или выгибаниями надо подготовить грудь.
+                Для многих полезно будет размять мышцы шеи и проверить точку сердца, чтобы снять напряжение с этих
+                областей. Так же будет правильным понять практично что такое дыхание диафрагмой (видео в первом посте
+                поясняет), где вы вдыхаете и выдыхаете как бы животом, а не раздуваете верх лёгких. В пранаяме по началу
+                не стараться расширять время при выдохе и задержке – не зачем нагружать сердце, потом оно привыкнет. В
+                общем, надо быть относительно здоровым, ведь это пранаяма - практика идущая за физической хатха-йогой,
+                где вы должны были укрепить своё тело чтобы оно могло получить следующие нагрузки. Чистота тела – это
+                ещё и возможность телу пропускать энергии более высокой вибрации. Если вы здоровы – то автоматически у
+                вас будут длинные задержки без воздуха, но и верно обратное – задержки дыхания увеличат здоровье, но
+                естественно первое лучше и запускает быстро второе.<br /> Надо сесть в позу со скрещенными ногами –
+                лотос, полулотос, лодыжка на голене <span style="font-style: italic">(Сиддхасана)</span>. Практика
+                состоит из многих добавлений к основной относительно спокойной и механической работе. Можно прослушивать
+                звуки природы или спокойную мелодию без текста в это время. Начать можно с 10 минут и потом довести до
+                35 минут. Не должно в комнате быть источников слов типа ТВ и чужих разговоров – так как они будут
+                программировать вас в крайних точках задержки дыхания. Так же надо помнить о прямом позвоночнике, то
+                есть постепенно не ссутулится в средней части спины, естественно дыхание только носом.<br /> Ладони надо
+                положить на колени, если это удобно то замкните меридианы как это делают в йоге при любой медитации
+                <span style="font-style: italic">(рис.1-2)</span> <span style="font-style: italic">(Джани-мудра)</span>,
+                а если это как-то раздражает психику при занятии, то просто разверните ладони и положите на колени <span
+                    style="font-style: italic">(рис.3)</span>. Главное в том и другом случае центр ладони должен быть на
+                колене (внутренней стороной или тыльной) но «чакра» ладони должна быть на «чакре» коленной, а не
+                запястье на бедре <span style="font-style: italic">(<span style="color: #FE3333">*</span> на картинках 2
+                    и 3 показаны не совсем правильные положения).</span>
+            </p>
+            <div class="quote-box spoiler-box" onclick="this.classList.toggle('visible')">
+                <div><strong><span style="color: #99FEFE">ФОТО ПОЛОЖЕНИЯ РУК</span></strong></div>
+                <blockquote>
+                    <p><span style="display: block; text-align: center"><img class="postimg" loading="lazy"
+                                src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZQmxQX2RqalkzUjA" alt="" /> <img
+                                class="postimg" loading="lazy"
+                                src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZVlg3anVpTWlfU1k" alt="" /> <img
+                                class="postimg" loading="lazy"
+                                src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZYlNjaG5hMDRMSkE" alt="" /></span>
+                    </p>
+                </blockquote>
             </div>
         </div>
-    </article>
+    </div>
 
-    <!-- Пост 3: Действие 1 -->
-    <article class="post">
-        <h2>ДЕЙСТВИЕ 1. Естественная задержка</h2>
+    <!-- Пост 3: ДЕЙСТВИЕ 1 -->
+    <div class="post">
+        <div class="post-content">
+            <p><img class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZdUd4SzhjY3pudVU" alt="" /> <span
+                    style="font-size: 15px"><span style="color: #99FEFE"><strong>ДЕЙСТВИЕ 1.</strong> Естественная
+                        задержка </span></span><br /> Делаем выдох опуская медленно голову – выдох относительно
+                медленный и воздух выходит весь из лёгких, в этот момент подбородок касается груди (если получается). То
+                есть делаем Джаландхару-бандху в конечной точке выдоха. Так остаёмся в задержке дыхания без воздуха до
+                лёгкого дискомфорта. Затем подбородок отрывается от груди и почти сразу начинается вдох, который должен
+                длиться 2 секунды. Затем практически без задержки или после естественной 1 секунды задержки с воздухом –
+                начинается медленное опускание головы на грудь с таким же медленным выдохом. Это один цикл – выдох
+                медленный, долгая задержка без воздуха, короткий вдох, и всё повторяется.<br /><img class="postimg"
+                    loading="lazy" src="https://forumstatic.ru/files/0000/1a/4c/30865.gif" alt="" /> <span
+                    style="color: #99FEFE">Уточнение:</span> делая выдох, живот сам сжимается без напряжения, и когда
+                спокойно весь воздух выдохнут – есть ещё возможность сознательно выжать самую последнюю порцию воздуха
+                толчком живота – и вот это как раз не надо делать. То есть выдох должен быть полным, но всё же
+                естественным, где-то 5% остаётся в лёгких – который мы можем только сознательно из себя выжать – и если
+                это делать, то теряется большая часть защелачивающего организм эффекта, что как раз важно в этой
+                практике.<br /><img class="postimg" loading="lazy"
+                    src="https://forumstatic.ru/files/0000/1a/4c/30865.gif" alt="" /> <span
+                    style="color: #99FEFE">Возможные ошибки:</span> ждёте много при задержке до дискомфорта – от того
+                получается что начиная вдох он врывается и в тот же момент когда вы только начали подымать подбородок.
+                Всё должно быть отрегулировано, как ритм циклов без скачком типа отдышаться, без врываний воздуха, но и
+                продолжительность задержки должна быть подольше, то есть до <strong>лёгкого</strong> дискомфорта. Первые
+                занятия будут с ошибками, а потом станет понятен и приемлем такой ритм, где вы спокойно и бессознательно
+                слушая музыку делаете эту пранаяму.<br /><img class="postimg" loading="lazy"
+                    src="https://forumstatic.ru/files/0000/1a/4c/30865.gif" alt="" /> <span style="color: #99FEFE">За
+                    минимальную норму считается:</span> вдох до 2 секунд (больше нельзя), выдох должен быть минимум в
+                три раза дольше вдоха, а задержка без воздуха – 30 секунд. В таком ритме 30 минут выполнять, где дальше
+                идёт очень постепенное растягивание выдоха и задержки, но оно как бы идёт само и из-за того что будут
+                добавляться другие элементы в практику, просто дискомфорт будет отдалятся. От того всё сначала ставится
+                на ощущение нормального дискомфорта и на повторение пранаямы.<br /> Тут имеется ввиду, что в начале нет
+                смысла браться за ритм дыхания, но при этом эффект от упражнения уже идёт за счёт ограниченного вдоха и
+                попыток выдыхать медленно и задерживать подольше паузу. То есть весь смысл подготовительной практики –
+                не считать время. А просто тренировать лёгкие в задержке. По этому 30 секунд задержки это не минимум
+                который должен быть с самого начала, а норма до чего надо дойти например за пару недель, что будет
+                означать что диафрагму проработали и в организме уже изменилась соотношение газов и возможно кислород
+                стал лучше усваиваться и от того потребность в нём снизилась. Так что сначала задержка будет любая,
+                которая с каждым днём сама будет увеличиваться и её надо довести но минимальной нормы – 30 секунд. То же
+                касается и выдоха – его просто надо стараться делать спокойно, и не привязывать к секундам – сколько
+                получается столько пусть и будет.</p>
+        </div>
+    </div>
 
-        <p>Делаем выдох, медленно опуская голову — выдох медленный, воздух выходит весь из лёгких, подбородок касается
-            груди (Джаландхара-бандха). Остаёмся в задержке дыхания без воздуха до лёгкого дискомфорта.</p>
+    <!-- Пост 4: ДЕЙСТВИЕ 2 -->
+    <div class="post">
+        <div class="post-content">
+            <p><img class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZdUd4SzhjY3pudVU" alt="" /> <span
+                    style="font-size: 15px"><span style="color: #99FEFE"><strong>ДЕЙСТВИЕ 2.</strong> Волевая задержка
+                    </span></span><br />
+                Проделав две недели основную технику, и если нет ни какого дискомфорта, всё легко автоматически
+                выполняется, и если задержка около 30 секунд возможна – тогда можно пробовать добавлять насилие к этой
+                технике – волевое удержание задержки. Для этого в идеале нужен секундомер.<img class="postimg"
+                    loading="lazy" src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZc3pEM2RXOHYtME0" alt=""
+                    title="float:right" /><br />
+                <span style="color: #99FEFE">Подробнее выполнение:</span> Обязательно проделав 25-30 минут основное
+                упражнение, вы разминаете грудную клетку. Приготовив секундомер, делаете короткий спокойный вдох,
+                выдыхаете весь воздух – подбородок двигается к груди в замок – пускается время…<br />
+                <img class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZcUVZeWhQQW11LUU" alt="" /> Наступает момент
+                когда захочется вдоха – это стадия <strong><span style="font-style: italic">волевой
+                        задержки</span></strong>. У каждого она может длиться по разному, 10-30 секунд. Волевую задержку
+                можно разделить на терпимую и крайнюю стадии. В крайней стадии тело хочет трястись – позвольте это.
+                Начать надо с трёх, довести до десяти. Время задержки может колебаться от 40 до 70 секунд.
+            </p>
+        </div>
+    </div>
 
-        <p>Затем подбородок отрывается от груди, начинается вдох (~2 секунды). После естественной задержки (~1 секунда)
-            — медленное опускание головы с медленным выдохом. Это один цикл.</p>
-
-        <h3 class="highlight">Уточнение:</h3>
-        <p>Выдох полный, но естественный — ~5% остаётся в лёгких. Не надо сознательно выжимать последний воздух — это
-            теряет защелачивающий эффект.</p>
-
-        <h3 class="highlight">Возможные ошибки:</h3>
-        <p>Ждёте слишком долго при задержке — воздух врывается при вдохе. Всё должно быть ритмичным, без скачков, но
-            задержка до <strong>лёгкого</strong> дискомфорта.</p>
-
-        <h3 class="highlight">Минимальная норма:</h3>
-        <ul>
-            <li>Вдох: до 2 секунд (больше нельзя)</li>
-            <li>Выдох: минимум в 3 раза дольше вдоха (~6 сек)</li>
-            <li>Задержка без воздуха: 30 секунд</li>
-        </ul>
-        <p>В таком ритме выполнять 30 минут. Сначала не считать время — просто тренировать лёгкие. 30 секунд задержки —
-            цель на пару недель.</p>
-    </article>
-
-    <!-- Пост 4: Действие 2 -->
-    <article class="post">
-        <h2>ДЕЙСТВИЕ 2. Волевая задержка</h2>
-
-        <p>После двух недель основной техники, когда задержка ~30 секунд даётся легко — добавляем волевое удержание
-            задержки. Понадобится секундомер.</p>
-
-        <h3 class="highlight">Подробнее:</h3>
-        <p>После 25-30 минут основного упражнения разомните грудную клетку. Сделайте короткий вдох, выдохните весь
-            воздух, подбородок к груди — запустите время.</p>
-
-        <p>Расслабьтесь, отстранитесь от процесса. При дискомфорте начинается <strong>волевая задержка</strong> (10-30
-            секунд). В крайней стадии тело может хотеть трястись — позвольте это (руки вверх, раскачивание, тряска тазом
-            — так можно продлить ещё ~10 сек).</p>
-
-        <p>После вдоха запрокиньте голову. За 2 вдоха-выдоха восстановитесь. Начните с 3 повторений, доведите до 10.
-            Время задержки может колебаться от 40 до 70 секунд.</p>
-    </article>
-
-    <!-- Пост 5: Действие 3 -->
-    <article class="post">
-        <h2>ДЕЙСТВИЕ 3. Насильственная задержка</h2>
-
-        <p>Для более глубокой отстранённости используйте положение тела. Положите подушку на скрещенные ноги и при
-            выдохе ложите весь корпус на подушку. Тело полностью расслабляется, сжимая грудь. Голова повёрнута в
-            сторону.</p>
-
-        <p>Через ~минуту начнутся сильные позывы к вдоху. Наблюдайте процесс — организм настаивает на вдохе, а ум
-            считает иначе. Перед вдохом сначала выровняйте корпус, затем вдыхайте.</p>
-
-        <p><strong>Альтернативная поза:</strong> «поза ученика» — сидеть на своих сложенных ногах, опуститься вперёд,
-            головой упереться в одеяло.</p>
-
-        <p>После практики делайте «позу лук» — руки в замке за спиной, тянете их, выпячивая грудь и запрокидывая голову.
-            Также руки в замке вверху и прогибы в стороны.</p>
-
-        <div class="spoiler" onclick="this.classList.toggle('open')">
-            <div class="spoiler-title">ФОТО ПОЗЫ ТЕЛА</div>
-            <div class="spoiler-content">
-                <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZQ3dETnFZN2JZTW8" alt="Поза 1" loading="lazy">
-                <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZNXFLQVN5dEZzZHM" alt="Поза 2" loading="lazy">
+    <!-- Пост 5: ДЕЙСТВИЕ 3 -->
+    <div class="post">
+        <div class="post-content">
+            <p><img class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZdUd4SzhjY3pudVU" alt="" /> <span
+                    style="font-size: 15px"><span style="color: #99FEFE"><strong>ДЕЙСТВИЕ 3.</strong> Насильственная
+                        задержка </span></span><br />
+                Далее можно более насильственно растянуть время без воздуха за счёт положения тела. Надо положить
+                подушку на скрещенные ноги, и при выдохе ложить весь корпус на подушку. Тело полностью расслабляется,
+                голова повёрнута в сторону.<br />
+                <img class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZVEhzaDdNRVBfYXM" alt="" title="float:left" />
+                Альтернатива – «поза ученика»: сидеть на своих сложенных ногах и опуститься вперёд.<br />
+                После практики делайте «позу лук» – руки в замке за спиной, тянете их выпячивая грудь и запрокидывая
+                голову.
+            </p>
+            <div class="quote-box spoiler-box" onclick="this.classList.toggle('visible')">
+                <div><strong><span style="color: #99FEFE">ФОТО ПОЗЫ ТЕЛА</span></strong></div>
+                <blockquote>
+                    <p><span style="display: block; text-align: center"><img class="postimg" loading="lazy"
+                                src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZQ3dETnFZN2JZTW8"
+                                alt="" /><br /><img class="postimg" loading="lazy"
+                                src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZNXFLQVN5dEZzZHM" alt="" /></span>
+                    </p>
+                </blockquote>
             </div>
         </div>
-    </article>
+    </div>
 
-    <!-- Пост 6: Действие 4 -->
-    <article class="post">
-        <h2>ДЕЙСТВИЕ 4. Ритм дыхания</h2>
+    <!-- Пост 6: ДЕЙСТВИЕ 4 -->
+    <div class="post">
+        <div class="post-content">
+            <p><img class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZdUd4SzhjY3pudVU" alt="" /> <span
+                    style="font-size: 15px"><span style="color: #99FEFE"><strong>ДЕЙСТВИЕ 4.</strong> Ритм
+                        дыхания</span></span><br />
+                Привыкнув к задержкам 30 секунд на протяжении 30 минут – можно подогнать ритм к 1:2:4
+                (вдох:выдох:задержка). Минимальный ритм: вдох 7-8 сек, естественная задержка 1-2 сек, выдох 15 сек,
+                задержка без воздуха 30 сек.<br />
+                <img class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZcUVZeWhQQW11LUU" alt="" /> Ритм можно
+                увеличивать: 8:16:32, затем 8,5:17:34.<img class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZczN6Y0lpdjZId3c" alt=""
+                    title="float:right" /><br />
+                Поза – строго с замкнутыми ногами. Дыхание брюшное: на вдохе живот идёт вперёд, на выдохе вжимается.<img
+                    class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZbVEwWEt5QWpaZHM" alt="" title="float:right" />
+            </p>
+        </div>
+    </div>
 
-        <p>Привыкнув к задержкам 30 секунд на протяжении 30 минут, подгоните ритм к пропорции <strong>1:2:4</strong>
-            (вдох:выдох:задержка).</p>
-
-        <p><strong>Минимальный ритм:</strong></p>
-        <ul>
-            <li>Вдох: 7-8 секунд</li>
-            <li>Задержка с воздухом: 1-2 секунды (половина вдоха)</li>
-            <li>Выдох: 15 секунд</li>
-            <li>Задержка без воздуха: 30 секунд</li>
-        </ul>
-
-        <p>Ритм можно увеличивать: 8:16:32, затем 8,5:17:34. Поза — строго с замкнутыми ногами. Дыхание брюшное: на
-            вдохе живот идёт вперёд, грудь расширяется последней. На выдохе живот вжимается, голова опускается.</p>
-    </article>
-
-    <!-- Пост 7: Действие 5 -->
-    <article class="post">
-        <h2>ДЕЙСТВИЕ 5. Увеличение ритма</h2>
-
-        <p>Цель — задержка 48 секунд (ритм 12:24:48 — это ритм здорового человека).</p>
-
-        <p><strong>Подход:</strong> ежедневная 35-минутная практика + дополнительная 20-30-минутная. Первое занятие —
-            комфортный ритм. Второе — попытка взять выше. Между занятиями 30-60 минут, не есть.</p>
-
-        <p>Во втором занятии ритм может скакать: 2 раза по 48 секунд, потом «передышка» на 15 секунд, но вдох и выдох
-            как при длинных задержках.</p>
-
-        <h3 class="highlight">НЮАНСЫ</h3>
-
-        <p><strong class="warning">●</strong> <strong>О длительности задержки:</strong> 30-48 секунд — норма «здоровых
-            блюдоманов». Цель— закрепиться на 48 секундах.</p>
-
-        <p><strong class="warning">●</strong> <strong>Ещё раз о практике:</strong> минимум 2 раза в день. Первое —
-            комфортный ритм. Второе — высокий ритм. Не брать больше 48 секунд!</p>
-
-        <p><strong class="warning">●</strong> <strong>Период овладения:</strong> ~1 месяц чтобы дойти до задержки 48
-            секунд. На «Действие 6» можно переходить при комфортной задержке 40 секунд.</p>
-    </article>
+    <!-- Пост 7: ДЕЙСТВИЕ 5 -->
+    <div class="post">
+        <div class="post-content">
+            <p><img class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZdUd4SzhjY3pudVU" alt="" /> <span
+                    style="font-size: 15px"><span style="color: #99FEFE"><strong>ДЕЙСТВИЕ 5.</strong> Увеличение
+                        ритма</span></span><br />
+                Цель – задержка 48 секунд (ритм 12:24:48 – ритм здорового человека).<br />
+                <img class="postimg" loading="lazy" src="https://aum.wen.ru/sm/sm589.gif" alt="" /> Подход: ежедневная
+                35-минутная практика + дополнительная 20-30 минут. Первое занятие – комфортный ритм. Второе – попытка
+                взять выше.<br />
+                <img class="postimg" loading="lazy" src="https://aum.wen.ru/sm/sm573.gif" alt="" /> <strong><span
+                        style="font-size: 14px"><span style="color: #65FEFE">НЮАНСЫ</span></span></strong><br />
+                <strong><span style="color: #CAFEFE">● О длительности задержки.</span></strong> 30-48 секунд – норма
+                «здоровых блюдоманов». Цель – закрепиться на 48 секундах.<br />
+                <strong><span style="color: #CAFEFE">● Ещё раз о практике.</span></strong> Минимум 2 раза в день. Не
+                брать больше 48 секунд.<br />
+                <strong><span style="color: #CAFEFE">● Период овладения.</span></strong> ~1 месяц чтобы дойти до 48
+                секунд.
+            </p>
+        </div>
+    </div>
 
     <!-- Пост 8: Нюансы и ограничения -->
-    <article class="post">
-        <h2>Нюансы и ограничения дальнейшей практики</h2>
+    <div class="post">
+        <div class="post-content">
+            <p><img class="postimg" loading="lazy" src="https://aum.wen.ru/d/d208.gif" alt="" /> <span
+                    style="font-size: 18px"><span style="color: #99FEFE"><strong>Нюансы и ограничения</strong>
+                        дальнейшей практики</span></span><br />
+                <strong><span style="color: #FE3333">●</span></strong> <strong><span style="color: #65FEFE">Задержка
+                        дыхания.</span></strong> Лишние 5-10 секунд зависят от правильного поджатого живота,
+                Джаланхары-бандхи и полноценного вдоха.<br />
+                <strong><span style="color: #FE3333">●</span></strong> <strong><span style="color: #65FEFE">Головная
+                        боль.</span></strong> Если сильно стараться – можно заработать головную боль на полсуток. Это
+                сигнал снизить ритм.<br />
+                <strong><span style="color: #FE3333">●</span></strong> <strong><span
+                        style="color: #65FEFE">Готовность.</span></strong> Серьёзные запреты для всеядных и с
+                загрязнённым организмом. Блюдоманам – до 30-40 секунд задержки без усилий.<br />
+                <strong><span style="color: #FE3333">●</span></strong> <strong><span style="color: #65FEFE">Временные
+                        нормы.</span></strong> Одно занятие – минимум 35 минут (5 минут разминка + 30 минут
+                практика).<br />
+                <strong><span style="color: #FE3333">●</span></strong> <strong><span style="color: #65FEFE">Счёт
+                        секунд.</span></strong> При задержках ум сбивается. Разбивайте счёт на мелкие куски (4×12 вместо
+                1×48). Можно использовать метроном.
+            </p>
+        </div>
+    </div>
 
-        <p><strong class="warning">●</strong> <strong class="highlight">Задержка дыхания.</strong> Лишние 5-10 секунд
-            зависят от правильного поджатого живота, Джаланхары-бандхи и полноценного вдоха.</p>
-
-        <p><strong class="warning">●</strong> <strong class="highlight">Головная боль.</strong> Если сильно стараться —
-            головная боль на полсуток. Это сигнал снизить ритм.</p>
-
-        <p><strong class="warning">●</strong> <strong class="highlight">Готовность.</strong> Серьёзные запреты для
-            всеядных и с загрязнённым организмом. Блюдоманам — до 30-40 секунд задержки без усилий.</p>
-
-        <p><strong class="warning">●</strong> <strong class="highlight">Временные нормы.</strong> Одно занятие — минимум
-            35 минут (5 минут разминка + 30 минут практика). Если ритм не вытягиваете — снизьте, но доделайте.</p>
-
-        <p><strong class="warning">●</strong> <strong class="highlight">Счёт секунд.</strong> При задержках ум
-            сбивается. Разбивайте счёт на мелкие куски (4×12 вместо 1×48). Можно использовать метроном или тикающий
-            будильник.</p>
-    </article>
-
-    <!-- Пост 9: Предварительная подготовка -->
-    <article class="post">
-        <h2>Предварительная подготовка для дальнейшей практики</h2>
-
-        <p>Перед «Действием-6» потренируйте чередование пальцев на ноздрях.</p>
-
-        <h3 class="highlight">Чередовка ноздрей (начиная с выдоха):</h3>
-        <ol>
-            <li>Выдох правой ноздрёй</li>
-            <li>Задержка с закрытыми ноздрями</li>
-            <li>Вдох правой ноздрёй</li>
-            <li>Короткая задержка с закрытыми ноздрями</li>
-            <li>Выдох левой ноздрёй</li>
-            <li>Задержка с закрытыми ноздрями</li>
-            <li>Вдох левой ноздрёй</li>
-            <li>Короткая задержка с закрытыми ноздрями</li>
-        </ol>
-        <p>И так циклично (1-8)...</p>
-
-        <p><strong>Вишна-мудра:</strong> большой палец покрывает правую ноздрю, мизинец и безымянный — левую.
-            Указательный и средний прижаты к ладони. При вдохе/выдохе — палец НЕ касается открытой ноздри (нет
-            «замыкания» каналов).</p>
-
-        <p><strong>Плавность выдоха:</strong> первые 80% — очень медленно, бесшумно. Последние 20% — с нужной скоростью
-            чтобы уложиться в ритм.</p>
-
-        <div class="spoiler" onclick="this.classList.toggle('open')">
-            <div class="spoiler-title">ФОТО ПОЛОЖЕНИЯ ПАЛЬЦЕВ</div>
-            <div class="spoiler-content">
-                <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZZ2xYelpWc2dwOGs" alt="Вишна-мудра 1"
-                    loading="lazy">
-                <img src="https://drive.google.com/uc?&id=0B1OY37HK6DPZcGZ0N2RiWVpyYVU" alt="Вишна-мудра 2"
-                    loading="lazy">
+    <!-- Пост 9: Подготовка -->
+    <div class="post">
+        <div class="post-content">
+            <p><img class="postimg" loading="lazy" src="https://aum.wen.ru/d/d208.gif" alt="" /> <span
+                    style="font-size: 18px"><span style="color: #99FEFE"><strong>Предварительная подготовка для</strong>
+                        дальнейшей практики</span></span><br />
+                Перед «Действием-6» потренируйте чередование пальцев на ноздрях.<br />
+                <img class="postimg" loading="lazy" src="https://forumstatic.ru/files/0000/1a/4c/30865.gif" alt="" />
+                <span style="color: #99FEFE">Чередовка ноздрей (начиная с выдоха):</span><br />
+                <strong><span style="font-style: italic">1. Выдох правой ноздрёй<br />2. Задержка с закрытыми
+                        ноздрями<br />3. Вдох правой ноздрёй<br />4. Короткая задержка<br />5. Выдох левой
+                        ноздрёй<br />6. Задержка<br />7. Вдох левой ноздрёй<br />8. Короткая задержка<br />И так
+                        циклично (1-8)...</span></strong><br />
+                <strong>Вишна-мудра:</strong> большой палец покрывает правую ноздрю, мизинец и безымянный – левую.
+                Указательный и средний прижаты к ладони.<br />
+                <strong>Плавность выдоха:</strong> первые 80% – очень медленно, бесшумно. Последние 20% – с нужной
+                скоростью.
+            </p>
+            <div class="quote-box spoiler-box" onclick="this.classList.toggle('visible')">
+                <div><strong><span style="color: #99FEFE">ФОТО ПОЛОЖЕНИЯ ПАЛЬЦЕВ</span></strong></div>
+                <blockquote>
+                    <p><span style="display: block; text-align: center"><strong><span style="font-style: italic"><span
+                                        style="color: #99FEFE">"Вишна-мудра"</span></span></strong><br /><img
+                                class="postimg" loading="lazy"
+                                src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZZ2xYelpWc2dwOGs"
+                                alt="" /><br /><img class="postimg" loading="lazy"
+                                src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZcGZ0N2RiWVpyYVU" alt="" /></span>
+                    </p>
+                </blockquote>
             </div>
         </div>
-    </article>
+    </div>
 
     <!-- Пост 10: Вопрос-ответ -->
-    <article class="post">
-        <h2>Вопросы и ответы</h2>
-
-        <div class="quote">
-            <cite>ЯАРА написал(а):</cite>
-            <blockquote>Не получается естественно задерживать дыхание на 30 сек после выдоха. 10 сек даже тяжело после
-                качественного выдоха.</blockquote>
+    <div class="post">
+        <div class="post-content">
+            <div class="quote-box"><cite>ЯРА написал(а):</cite>
+                <blockquote>
+                    <p><span style="color: lime">Не получается естественно задерживать дыхание на 30 сек после выдоха.
+                            10 сек даже тяжело после качественного выдоха.</span></p>
+                </blockquote>
+            </div>
+            <p><img class="postimg" loading="lazy"
+                    src="https://drive.google.com/uc?&amp;id=0B1OY37HK6DPZcUx4VGdnUHFjR28" alt="" title="float:left" />
+                <strong>Подход 1:</strong> Взять сразу ритм 1:2:4 (пропорции, не секунды). Например: вдох 2 сек → выдох
+                4 сек → задержка 8 сек. Увеличивать умножая на 0,5 (3:6:12).<br />
+                <strong>Подход 2:</strong> Если не даётся – занимайтесь задержкой после ВДОХА. Ритм 1:4:2 (вдох,
+                задержка ×4, выдох ×2). Потом вернитесь к задержке без воздуха.<br />
+                Использовать надо брюшное дыхание как норму.
+            </p>
         </div>
-
-        <p><strong>Подход 1:</strong> Возьмите ритм 1:2:4 (пропорции, не секунды). Например: вдох 2 сек → выдох 4 сек →
-            задержка 8 сек. Увеличивайте умножая на 0,5 (3:6:12).</p>
-
-        <p><strong>Подход 2:</strong> Если не даётся — занимайтесь задержкой после ВДОХА. Ритм 1:4:2 (вдох, задержка ×4,
-            выдох ×2). Потом вернитесь к задержке без воздуха.</p>
-
-        <p>Используйте брюшное дыхание как норму.</p>
-    </article>
+    </div>
 
 </body>
 
