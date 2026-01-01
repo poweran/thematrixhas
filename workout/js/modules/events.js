@@ -33,14 +33,7 @@ export const events = {
             }
 
             // Delegate Check Auto Finish on Focus
-            if (target.matches('input.rep-input')) {
-                // Attach non-delegated listeners for specific input events if needed, 
-                // or handle via 'focusin'/'change'/'keydown' on document/container
-                // For simplicity, we can let the input inline events be replaced by global delegation?
-                // But replacing all inline events is hard without re-writing render.
-                // In UI render, we removed on* attributes but added classes/data attributes.
-                // So we need to handle them here.
-            }
+
 
             // Mobile Nav
             const navBtn = target.closest('[data-action="switchMobileDay"]');
@@ -49,10 +42,6 @@ export const events = {
             }
         });
 
-        // focusin обработчик удалён - больше не блокирует переключение фокуса
-
-        // change срабатывает при изменении значения и потере фокуса
-        // blur срабатывает при любой потере фокуса (для надёжности)
         const handleInputSave = (e) => {
             if (e.target.matches('input.rep-input')) {
                 this.setReps(e.target.dataset.key, e.target);
@@ -68,8 +57,6 @@ export const events = {
             }
         });
 
-        // Global functions exposed to window for historical reasons or specific callbacks?
-        // No, we try to contain them.
     },
 
     bindSwipe() {
@@ -93,7 +80,6 @@ export const events = {
     // Logic moved from app.js
     // Только сохраняет данные программно, НЕ вмешивается в фокус
     setReps(key, input) {
-        console.log('setReps called:', key, input.value);
         const val = input.value;
         const colKey = key.split('_').slice(1).join('_');
 
@@ -423,13 +409,7 @@ export const events = {
     }
 };
 
-// Global Exposure needed for HTML onclick bindings that are not yet removed, 
-// OR simpler: we migrated all interactions to event delegation!
-// Wait, we have some buttons in index.html like `finishSet`, `toggleZapper`, `changeWeek`, `switchTab`, `closeModal`.
-// We need to attach these to window for the HTML to see them OR rewrite the HTML to remove onclicks.
-// Plan said "Remove onclick attributes from HTML generation", which handles the Table.
-// But the static HTML still has onclicks.
-// We should probably Attach these in app.js or here.
+
 
 export function setupWindowExports() {
     window.switchTab = ui.switchTab.bind(ui);

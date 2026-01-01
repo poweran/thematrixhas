@@ -29,7 +29,7 @@ export const auth = {
         });
 
         // Log initialization success (GIS doesn't strictly have an init callback, but we proceed)
-        console.log("GIS Initialized with Client ID ends in:", CLIENT_ID.slice(-10));
+
 
         if (this.user) {
             this.renderUserInfo();

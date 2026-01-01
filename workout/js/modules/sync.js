@@ -34,10 +34,8 @@ export const sync = {
             onAuthStateChanged(auth, (user) => {
                 currentUser = user;
                 if (user) {
-                    console.log('Firebase Auth: User is signed in:', user.uid);
                     this.startSync();
                 } else {
-                    console.log('Firebase Auth: User signed out');
                     this.stopSync();
                 }
             });
@@ -74,7 +72,6 @@ export const sync = {
 
     async startSync() {
         if (!currentUser || !db) return;
-        console.log('Sync: Starting listener...', currentUser.uid);
 
         // 1. Listen to ALL weeks for analytics and current state
         const weeksColl = collection(db, "users", currentUser.uid, "weeks");
@@ -82,7 +79,6 @@ export const sync = {
         unsubscribeDoc = onSnapshot(weeksColl, (snapshot) => {
             // Игнорируем обратные вызовы от наших же изменений
             if (isPushingToCloud) {
-                console.log('Sync: Ignoring snapshot during push');
                 return;
             }
 
@@ -98,7 +94,6 @@ export const sync = {
                 if (weekId === currentWeekId && change.type === "modified") {
                     // Check if it's external
                     if (JSON.stringify(store.state) !== JSON.stringify(data)) {
-                        console.log(`Sync: Updating current week state from cloud`);
                         store.setState(data);
                     }
                 }
@@ -142,7 +137,6 @@ export const sync = {
         try {
             isPushingToCloud = true;
             await setDoc(docRef, store.state, { merge: true });
-            console.log('Sync: Pushed week data');
             // Небольшая задержка перед сбросом флага, чтобы onSnapshot успел сработать
             setTimeout(() => {
                 isPushingToCloud = false;

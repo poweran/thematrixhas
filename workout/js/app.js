@@ -7,7 +7,7 @@ import { sync } from './modules/sync.js';
 // Initialize
 store.loadConfig();
 store.loadState();
-store.loadStats();
+
 auth.init();
 sync.init();
 ui.init();

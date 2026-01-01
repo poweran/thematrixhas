@@ -6,7 +6,6 @@ export const store = {
     state: {},
     weeksCache: {},
     currentWeekOffset: 0,
-    currentWeekOffset: 0,
     listeners: [],
 
     subscribe(fn) {
@@ -50,7 +49,6 @@ export const store = {
             if (this.currentWeekOffset === 0) {
                 const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
                 if (legacy) {
-                    console.log('Migrating legacy data to current week...');
                     this.state = JSON.parse(legacy);
                     this.saveData();
                 } else {
@@ -100,17 +98,10 @@ export const store = {
         return [];
     },
 
-    loadStats() {
-        // No-op
-    },
 
-    setStats() {
-        // No-op
-    },
 
     getStats() {
         const stats = [];
-        // console.log('Store: Calculating stats from cache. Weeks:', Object.keys(this.weeksCache));
 
         // Iterate all weeks
         Object.entries(this.weeksCache).forEach(([weekId, weekData]) => {
@@ -120,7 +111,6 @@ export const store = {
             // e.g. "2024-12-30"
             const partsDate = weekId.split('-');
             if (partsDate.length !== 3) {
-                // console.warn('Store: Invalid weekId format', weekId);
                 return;
             }
 
@@ -146,7 +136,6 @@ export const store = {
                         }
 
                         if (dayIndex === -1 || isNaN(dayIndex)) {
-                            // console.warn(`Stats: Skipped key ${k} (invalid day index)`);
                             return;
                         }
 
@@ -165,8 +154,6 @@ export const store = {
                 }
             });
         });
-
-        // console.log('Store: Stats calculated. Total entries:', stats.length);
         // Sort by time
         return stats.sort((a, b) => a.ts - b.ts);
     },
