@@ -49,6 +49,7 @@ img[title="float:left"] { float: left; padding-right: 12px; max-width: 40%; }
 .spoiler-box.visible > blockquote { display: block; }
 .clearer { clear: both; }
 a { color: #99FEFE; }
+.broken-link { color: #FF6666; text-decoration: underline dotted; cursor: help; }
 """
 
 
@@ -242,11 +243,15 @@ def clean_forum_html(input_path: str, output_path: str = None) -> str:
                 if re.match(r'Пост\s+\d+\s+из\s+\d+', text):
                     span.decompose()
             
-            # 5. Удаляем ненужные ссылки
+            # 5. Обрабатываем ссылки
             for a in post_content.find_all('a'):
                 href = a.get('href', '')
+                # Удаляем технические ссылки
                 if href.startswith('javascript:') or 'PostBgColor' in href or 'PhrasesBgcolor' in href:
                     a.replace_with(a.get_text())
+                # Внешние ссылки на форум - помечаем классом
+                elif 'aum.mybb.ru' in href:
+                    a.attrs = {'class': 'broken-link', 'data-original-href': href}
                 else:
                     a.attrs = {'href': href} if href and not href.startswith('javascript:') else {}
             
