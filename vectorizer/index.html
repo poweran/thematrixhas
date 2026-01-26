@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart VectorCam Hybrid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #000;
+            color: #eee;
+            overflow: hidden;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        #app-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #viewport {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
+        video {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            width: 1px;
+            height: 1px;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        #svg-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+        }
+
+        #svg-output {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            shape-rendering: geometricPrecision;
+        }
+
+        /* Glass UI */
+        #controls {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 320px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 24px;
+            overflow-y: auto;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateX(0);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 50;
+        }
+
+        #controls.collapsed {
+            transform: translateX(100%);
+        }
+
+        #controls::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #controls::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #controls::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 12px 0;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            margin-top: -5px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        .value-disp {
+            font-family: 'Fira Code', monospace;
+            color: white;
+            font-weight: 700;
+        }
+
+        #loader {
+            position: absolute;
+            inset: 0;
+            background: #000;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: black;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            transition: all 0.1s;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 10px;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-auto {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.8) 0%, rgba(234, 179, 8, 0.8) 100%);
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            color: white;
+            font-weight: 700;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+
+        .btn-auto:hover:not(:disabled) {
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-auto:disabled {
+            opacity: 0.5;
+            filter: grayscale(1);
+            cursor: wait;
+        }
+
+        .ga-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: #fff;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        #toggle-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 60;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+        }
+
+        #toggle-controls:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        #error-msg {
+            max-width: 80%;
+            text-align: center;
+            background: rgba(220, 38, 38, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(220, 38, 38, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loader">
+        <h1 class="text-6xl font-black mb-2 tracking-tighter text-white select-none">VECTOR<span
+                class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-500">CAM</span></h1>
+        <p class="text-gray-500 mb-8 text-xs uppercase tracking-[0.3em]">Hybrid Engine v20</p>
+        <button id="start-btn" class="btn-primary" style="width: auto; padding: 12px 40px;">
+            Initialize
+        </button>
+        <p id="error-msg" class="text-red-400 mt-4 text-sm hidden"></p>
+    </div>
+
+    <div id="app-container">
+        <button id="toggle-controls">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12h18M3 6h18M3 18h18" />
+            </svg>
+        </button>
+
+        <div id="viewport">
+            <video id="video" autoplay playsinline muted></video>
+            <canvas id="temp-canvas"></canvas>
+            <div id="svg-container">
+                <svg id="svg-output" viewBox="0 0 100 75" preserveAspectRatio="xMidYMid slice"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100%" height="100%" fill="#000" />
+                </svg>
+            </div>
+        </div>
+
+        <div id="controls">
+            <h2 class="text-xl font-bold mb-6 text-white tracking-tight">Hybrid Settings</h2>
+
+            <button id="ga-btn" class="btn-auto">
+                Restore Texture AI
+                <div id="ga-bar" class="ga-progress"></div>
+            </button>
+            <div id="ga-status" class="text-xs text-center text-gray-400 mb-6 h-4 font-mono"></div>
+
+            <div class="control-group">
+                <div class="control-header">Merge Threshold <span id="v-area" class="value-disp">2</span></div>
+                <input type="range" id="opt-area" min="0" max="20" step="1" value="2">
+                <p class="text-xs text-gray-500">Only removes invisible noise</p>
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">Grid Detail <span id="v-res" class="value-disp">75%</span></div>
+                <input type="range" id="opt-res" min="20" max="150" step="5" value="75">
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">Colors <span id="v-colors" class="value-disp">64</span></div>
+                <input type="range" id="opt-colors" min="8" max="128" step="4" value="64">
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">Border Overlap <span id="v-gap" class="value-disp">0.5</span></div>
+                <input type="range" id="opt-gap" min="0" max="2.0" step="0.1" value="0.5">
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">Smoothing (Large) <span id="v-smooth" class="value-disp">0.4</span></div>
+                <input type="range" id="opt-smooth" min="0" max="2" step="0.1" value="0.4">
+                <p class="text-xs text-gray-500">Only affects large shapes</p>
+            </div>
+
+            <div class="control-group">
+                <div class="control-header">Simplify <span id="v-simp" class="value-disp">0.2</span></div>
+                <input type="range" id="opt-simp" min="0.1" max="2" step="0.1" value="0.2">
+            </div>
+
+            <div class="flex items-center justify-between mb-4 p-3 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition"
+                onclick="document.getElementById('opt-wire').click()">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-300">Wireframe</span>
+                <input type="checkbox" id="opt-wire" class="w-4 h-4 accent-white">
+            </div>
+
+            <button id="download-btn" class="btn-primary">Save SVG</button>
+            <div class="text-xs text-center text-gray-500 mt-6 font-mono opacity-60" id="stats">Warming up...</div>
+        </div>
+    </div>
+
+    <script>
+        // --- State Definition (Global) ---
+        let state = {
+            running: false,
+            aspectRatio: 1.33,
+            worker: null
+        };
+
+        /**
+         * SMART VECTOR ENGINE v20.0 - HYBRID
+         * - Adaptive Smoothing: Small objects are Sharp, Large are Smooth.
+         * - No circles for noise.
+         */
+
+        // --- Worker Source Code ---
+        const workerScript = `
+    let mem = {
+        visited: null,
+        stack: null,
+        blobInds: null,
+        neighbors: null,
+        prevPalette: null
+    };
+
+    self.onmessage = function(e) {
+        const { type } = e.data;
+
+        if (type === 'render') {
+            const { buffer, width, height, settings, resetPalette } = e.data;
+            const data = new Uint8ClampedArray(buffer);
+            const size = width * height;
+
+            if (!mem.visited || mem.visited.length !== size) {
+                mem.visited = new Uint8Array(size);
+                mem.stack = new Int32Array(size);
+                mem.blobInds = new Int32Array(size);
+            }
+
+            if (data[0]===0 && data[1]===0 && data[2]===0) {
+                self.postMessage({ type: 'render', shapes: [], bg: null }); 
+                return;
+            }
+
+            if (resetPalette) mem.prevPalette = null;
+            
+            const { palette, indexed } = quantize(data, width, height, settings.colors, mem.prevPalette);
+            mem.prevPalette = palette;
+
+            // PASS 1: MERGE ONLY MICROSCOPIC NOISE (<2 px) OR SIMILAR COLORS
+            if (settings.minArea > 0) {
+                mergeRegionsAdaptive(indexed, width, height, settings.minArea, palette, 25);
+            }
+
+            if (!mem.neighbors || mem.neighbors.length !== palette.length) {
+                mem.neighbors = new Int32Array(palette.length);
+            } else {
+                mem.neighbors.fill(0);
+            }
+            const counts = mem.neighbors;
+            for(let i=0; i<indexed.length; i+=4) counts[indexed[i]]++;
+            
+            let maxC = 0, bgIdx = 0;
+            for(let i=0; i<palette.length; i++) {
+                if(counts[i] > maxC) { maxC = counts[i]; bgIdx = i; }
+            }
+            const bgColor = palette[bgIdx];
+
+            // PASS 2: TRACE WITH ADAPTIVE SMOOTHING
+            mem.visited.fill(0);
+            const shapes = traceContours(indexed, width, height, palette, settings, mem.visited, mem.stack);
+            shapes.sort((a,b) => b.area - a.area);
+
+            self.postMessage({ type: 'render', shapes, bg: bgColor });
+        }
+        else if (type === 'optimize') {
+            const { buffer, width, height } = e.data;
+            const data = new Uint8ClampedArray(buffer);
+            const bestSettings = runGA(data, width, height);
+            self.postMessage({ type: 'optimize', settings: bestSettings });
+        }
+    };
+
+    function colorDistSq(c1, c2) {
+        const r = c1.r - c2.r;
+        const g = c1.g - c2.g;
+        const b = c1.b - c2.b;
+        const rmean = (c1.r + c2.r) >> 1;
+        return (((512+rmean)*r*r)>>8) + 4*g*g + (((767-rmean)*b*b)>>8);
+    }
+
+    function mergeRegionsAdaptive(data, w, h, minArea, palette, threshold) {
+        const visited = mem.visited;
+        const stack = mem.stack;
+        const numColors = palette.length;
+        const distThreshold = threshold * 200; 
+        
+        visited.fill(0);
+        
+        if (!mem.neighbors || mem.neighbors.length < numColors) mem.neighbors = new Int32Array(numColors);
+        const neighbors = mem.neighbors;
+
+        for (let i = 0; i < w * h; i++) {
+            if (visited[i]) continue;
+            
+            let stackPtr = 0;
+            stack[stackPtr++] = i;
+            visited[i] = 1;
+            
+            const cIdx = data[i];
+            let count = 0;
+            neighbors.fill(0);
+            let hasNeighbors = false;
+            
+            let localPtr = 0;
+            while (localPtr < stackPtr) {
+                const cur = stack[localPtr++];
+                count++;
+                
+                const cx = cur % w;
+                const cy = (cur / w) | 0;
+
+                const nIdxs = [];
+                if (cx < w - 1) nIdxs.push(cur + 1);
+                if (cx > 0) nIdxs.push(cur - 1);
+                if (cy < h - 1) nIdxs.push(cur + w);
+                if (cy > 0) nIdxs.push(cur - w);
+
+                for(let k=0; k<nIdxs.length; k++) {
+                    const nIdx = nIdxs[k];
+                    if (data[nIdx] === cIdx) {
+                        if (!visited[nIdx]) { visited[nIdx] = 1; stack[stackPtr++] = nIdx; }
+                    } else {
+                        neighbors[data[nIdx]]++; 
+                        hasNeighbors = true;
+                    }
+                }
+            }
+            
+            if (count < minArea && hasNeighbors) {
+                let bestN = -1;
+                let minColorDist = Infinity;
+                const myColor = palette[cIdx];
+
+                for(let k=0; k<numColors; k++) {
+                    if(neighbors[k] > 0) {
+                        const dist = colorDistSq(myColor, palette[k]);
+                        if (dist < minColorDist) {
+                            minColorDist = dist;
+                            bestN = k;
+                        }
+                    }
+                }
+                
+                // Only merge if very small OR colors are similar
+                if (bestN !== -1) {
+                    // Force merge only if tiny (<=2) or color match is close
+                    if (count <= 2 || minColorDist < distThreshold) {
+                        for(let k=0; k<stackPtr; k++) data[stack[k]] = bestN;
+                    } 
+                }
+            }
+        }
+    }
+
+    function quantize(data, w, h, k, seedPalette) {
+        const len = data.length/4;
+        const samples = [];
+        const step = Math.max(1, Math.floor(len/4000));
+        for(let i=0; i<len; i+=step) samples.push({r:data[i*4], g:data[i*4+1], b:data[i*4+2]});
+        
+        let palette = [];
+        if (seedPalette && seedPalette.length === k) {
+            palette = seedPalette.map(c => ({...c}));
+        } else {
+            if (samples.length > 0) {
+                for(let i=0; i<k; i++) palette.push(samples[Math.floor(Math.random() * samples.length)]);
+            } else {
+                for(let i=0; i<k; i++) palette.push({r:128,g:128,b:128});
+            }
+        }
+
+        for(let iter=0; iter<3; iter++) {
+            const sums = new Int32Array(k * 4);
+            for(let s of samples) {
+                let min=Infinity, best=0;
+                for(let i=0; i<k; i++) {
+                    const d = colorDistSq(s, palette[i]);
+                    if(d<min) { min=d; best=i; }
+                }
+                const base = best*4;
+                sums[base]+=s.r; sums[base+1]+=s.g; sums[base+2]+=s.b; sums[base+3]++;
+            }
+            for(let i=0; i<k; i++) {
+                const base = i*4;
+                const c = sums[base+3];
+                if(c > 0) palette[i] = {r:sums[base]/c|0, g:sums[base+1]/c|0, b:sums[base+2]/c|0};
+            }
+        }
+
+        const indexed = new Int32Array(len);
+        for(let i=0; i<len; i++) {
+            let min=Infinity, best=0;
+            const r=data[i*4], g=data[i*4+1], b=data[i*4+2];
+            const p = {r,g,b};
+            for(let j=0; j<k; j++) {
+                const d = colorDistSq(p, palette[j]);
+                if(d<min) { min=d; best=j; }
+                if(d<100) break;
+            }
+            indexed[i] = best;
+        }
+        return { palette, indexed };
+    }
+
+    function traceContours(data, w, h, palette, opts, visited, stack) {
+        const shapes = [];
+        const sx = 100 / w;
+        const sy = sx; 
+        
+        const smooth = opts.smoothing;
+        const simp = opts.simplify;
+
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                const idx = y * w + x;
+                if (visited[idx]) continue;
+
+                const cIdx = data[idx];
+                let stackPtr = 0;
+                stack[stackPtr++] = idx;
+                visited[idx] = 1;
+                
+                let count = 0;
+                let localPtr = 0;
+                // Track min/max
+                let minX = x, maxX = x, minY = y, maxY = y;
+
+                while (localPtr < stackPtr) {
+                    const cur = stack[localPtr++];
+                    count++;
+                    const cx = cur % w;
+                    const cy = (cur / w) | 0;
+                    
+                    if(cx<minX) minX=cx; if(cx>maxX) maxX=cx;
+                    if(cy<minY) minY=cy; if(cy>maxY) maxY=cy;
+
+                    const nIdxs = [cur+1, cur-1, cur+w, cur-w];
+                    if (cx < w - 1) { const n=cur+1; if(data[n]===cIdx && !visited[n]) { visited[n]=1; stack[stackPtr++]=n; } }
+                    if (cx > 0) { const n=cur-1; if(data[n]===cIdx && !visited[n]) { visited[n]=1; stack[stackPtr++]=n; } }
+                    if (cy < h - 1) { const n=cur+w; if(data[n]===cIdx && !visited[n]) { visited[n]=1; stack[stackPtr++]=n; } }
+                    if (cy > 0) { const n=cur-w; if(data[n]===cIdx && !visited[n]) { visited[n]=1; stack[stackPtr++]=n; } }
+                }
+
+                // HYBRID RENDERING LOGIC
+                // Small blobs (Texture) -> Sharp (Linear)
+                // Large blobs (Shapes) -> Smooth
+                
+                const points = getContour(x, y, data, w, h, cIdx);
+                
+                if (points.length < 3) {
+                    // Fallback for single pixels: Draw a tiny rect
+                    const rw = sx; const rh = sy;
+                    const rx = minX * sx; const ry = minY * sy;
+                    const d = \`M\${rx.toFixed(2)},\${ry.toFixed(2)}h\${rw.toFixed(2)}v\${rh.toFixed(2)}h-\${rw.toFixed(2)}z\`;
+                    shapes.push({ color: palette[cIdx], d: d, area: count });
+                    continue;
+                }
+
+                // Adaptive Simplify: Less simplify for small details
+                const adaptiveSimp = count < 50 ? simp * 0.5 : simp;
+                const sim = simplifyPoly(points, adaptiveSimp);
+                
+                let d = "";
+                // Adaptive Smooth: No smooth for small details to avoid bubbles
+                if (smooth > 0 && count > 20) {
+                    d = getSmoothPath(sim, sx, sy); 
+                } else {
+                    d = getLinearPath(sim, sx, sy);
+                }
+
+                shapes.push({ color: palette[cIdx], d: d, area: count });
+            }
+        }
+        return shapes;
+    }
+
+    function getContour(sx, sy, data, w, h, cIdx) {
+        const points = [];
+        const MX = [0, 1, 1, 1, 0, -1, -1, -1];
+        const MY = [-1, -1, 0, 1, 1, 1, 0, -1];
+        let cx = sx, cy = sy;
+        let entry = 0;
+        points.push({x:cx, y:cy});
+        let iter = 0; const limit = w*h;
+        
+        while(iter++ < limit) {
+            let found = false;
+            for(let i=0; i<8; i++) {
+                const idx = (entry + i) & 7;
+                const nx = cx + MX[idx];
+                const ny = cy + MY[idx];
+                if(nx>=0 && nx<w && ny>=0 && ny<h && data[ny*w+nx] === cIdx) {
+                    cx = nx; cy = ny;
+                    points.push({x:cx, y:cy});
+                    entry = (idx + 5) & 7;
+                    found = true;
+                    break;
+                }
+            }
+            if(!found || (cx===sx && cy===sy)) break;
+        }
+        return points;
+    }
+
+    function simplifyPoly(points, epsilon) {
+        if(points.length < 5) return points;
+        const first = points[0];
+        const last = points[points.length-1];
+        const closed = (first.x===last.x && first.y===last.y);
+        return rdp(points, epsilon, closed);
+    }
+
+    function rdp(points, epsilon, closed) {
+        if (points.length < 3) return points;
+        let dmax = 0; let index = 0;
+        const end = points.length - 1;
+        const a = points[0]; const b = points[end];
+        const dx = b.x - a.x; const dy = b.y - a.y;
+        const den = dx*dx + dy*dy;
+        
+        for (let i = 1; i < end; i++) {
+            const p = points[i];
+            let d = 0;
+            if (closed) d = (p.x-a.x)*(p.x-a.x) + (p.y-a.y)*(p.y-a.y);
+            else {
+                if(den === 0) d = (p.x-a.x)*(p.x-a.x) + (p.y-a.y)*(p.y-a.y);
+                else {
+                    const num = Math.abs(dy*p.x - dx*p.y + b.x*a.y - b.y*a.x);
+                    d = (num*num) / den;
+                }
+            }
+            if (d > dmax) { index = i; dmax = d; }
+        }
+        
+        if (dmax > (epsilon*epsilon)) {
+            const r1 = rdp(points.slice(0, index + 1), epsilon, false);
+            const r2 = rdp(points.slice(index), epsilon, false);
+            return r1.slice(0, -1).concat(r2);
+        }
+        return [points[0], points[end]];
+    }
+
+    function getLinearPath(pts, sx, sy) {
+        let d = "M"+(pts[0].x*sx).toFixed(1)+","+(pts[0].y*sy).toFixed(1);
+        for(let i=1; i<pts.length; i++) d += "L"+(pts[i].x*sx).toFixed(1)+","+(pts[i].y*sy).toFixed(1);
+        return d + "Z";
+    }
+
+    function getSmoothPath(pts, sx, sy) {
+        let d = "M"+(pts[0].x*sx).toFixed(1)+","+(pts[0].y*sy).toFixed(1);
+        const len = pts.length;
+        for (let i = 0; i < len; i++) {
+            const cur = pts[i];
+            const next = pts[(i + 1) % len];
+            const mx = (cur.x + next.x) * 0.5 * sx;
+            const my = (cur.y + next.y) * 0.5 * sy;
+            const cx = cur.x * sx;
+            const cy = cur.y * sy;
+            if(i===0) d = "M"+mx.toFixed(1)+","+my.toFixed(1);
+            else d += "Q"+cx.toFixed(1)+","+cy.toFixed(1)+" "+mx.toFixed(1)+","+my.toFixed(1);
+        }
+        return d + "Z";
+    }
+
+    // GA Logic
+    function runGA(refData, w, h) {
+        const POPULATION_SIZE = 8;
+        const GENERATIONS = 2;
+        const ELITISM = 2;
+        const randomGenome = () => ({
+            colors: Math.floor(Math.random() * 40) + 24,
+            resolution: Math.floor(Math.random() * 40) + 60,
+            simplify: Math.random() * 0.5 + 0.2, 
+            minArea: Math.floor(Math.random() * 3) + 1,
+            gap: 0.6, smoothing: 0.4
+        });
+        let population = Array(POPULATION_SIZE).fill(0).map(randomGenome);
+        const evalVisited = new Uint8Array(w * h);
+        const evalStack = new Int32Array(w * h);
+
+        for (let gen = 0; gen < GENERATIONS; gen++) {
+            const rankedParams = population.map(genome => {
+                const fitness = calculateFitness(genome, refData, w, h, evalVisited, evalStack);
+                return { genome, fitness };
+            });
+            rankedParams.sort((a, b) => a.fitness.cost - b.fitness.cost);
+            const nextGen = [];
+            for(let i=0; i<ELITISM; i++) nextGen.push(rankedParams[i].genome);
+            while(nextGen.length < POPULATION_SIZE) {
+                const p1 = rankedParams[Math.floor(Math.random() * (POPULATION_SIZE/2))].genome;
+                const p2 = rankedParams[Math.floor(Math.random() * (POPULATION_SIZE/2))].genome;
+                const child = { ...p1 };
+                if(Math.random() > 0.5) child.colors = p2.colors;
+                if(Math.random() > 0.5) child.resolution = p2.resolution;
+                if(Math.random() < 0.3) child.colors = Math.max(16, Math.min(80, child.colors + (Math.random()*10-5)));
+                if(Math.random() < 0.3) child.resolution = Math.max(40, Math.min(100, child.resolution + (Math.random()*20-10)));
+                nextGen.push(child);
+            }
+            population = nextGen;
+        }
+        const finalRanked = population.map(g => ({g, f: calculateFitness(g, refData, w, h, evalVisited, evalStack)}));
+        finalRanked.sort((a,b) => a.f.cost - b.f.cost);
+        return finalRanked[0].g;
+    }
+
+    function calculateFitness(genome, data, w, h, visited, stack) {
+        visited.fill(0);
+        const { palette, indexed } = quantize(data, w, h, Math.floor(genome.colors), null);
+        // We use a simplified tracer for fitness
+        const shapes = traceContours(indexed, w, h, palette, genome, visited, stack);
+        let errorSum = 0; let count = 0;
+        for(let i=0; i<indexed.length; i+=10) {
+            const p = palette[indexed[i]];
+            const r = data[i*4], g = data[i*4+1], b = data[i*4+2];
+            errorSum += colorDistSq(p, {r,g,b});
+            count++;
+        }
+        const mse = count ? errorSum/count : 0;
+        let pts = 0;
+        for(let i=0; i<shapes.length; i++) pts += shapes[i].d.length;
+        const cost = Math.pow(mse, 2.0) * Math.pow(pts, 0.1); 
+        return { cost };
+    }
+`;
+
+        // --- Main App Logic ---
+
+        const settings = {
+            colors: 64,
+            resolution: 75,
+            gap: 0.5,
+            smoothing: 0.4,
+            simplify: 0.2,
+            minArea: 2,
+            wireframe: false
+        };
+
+        const els = {
+            video: document.getElementById('video'),
+            canvas: document.getElementById('temp-canvas'),
+            svg: document.getElementById('svg-output'),
+            stats: document.getElementById('stats'),
+            loader: document.getElementById('loader'),
+            controls: document.getElementById('controls'),
+            gaBtn: document.getElementById('ga-btn'),
+            gaBar: document.getElementById('ga-bar'),
+            gaStatus: document.getElementById('ga-status'),
+            startBtn: document.getElementById('start-btn'),
+            errorMsg: document.getElementById('error-msg')
+        };
+        const ctx = els.canvas.getContext('2d', { willReadFrequently: true });
+
+        // Initialize Worker
+        const blob = new Blob([workerScript], { type: 'application/javascript' });
+        state.worker = new Worker(URL.createObjectURL(blob));
+
+        state.worker.onmessage = function (e) {
+            const { type } = e.data;
+            if (type === 'render') {
+                const { shapes, bg } = e.data;
+                updateDOM(shapes, bg);
+                if (state.running) requestAnimationFrame(processFrame);
+            } else if (type === 'optimize') {
+                const { settings: best } = e.data;
+                applySettings(best);
+            }
+        };
+
+        function applySettings(newSettings) {
+            settings.colors = Math.floor(newSettings.colors);
+            settings.resolution = Math.floor(newSettings.resolution);
+            settings.simplify = parseFloat(newSettings.simplify.toFixed(2));
+            settings.minArea = Math.floor(newSettings.minArea);
+
+            // Update UI
+            updateControl('opt-colors', settings.colors);
+            updateControl('opt-res', settings.resolution);
+            updateControl('opt-simp', settings.simplify);
+            updateControl('opt-area', settings.minArea);
+
+            // Reset UI State
+            els.gaBtn.disabled = false;
+            els.gaBtn.innerText = "Restore Texture AI";
+            els.gaStatus.innerText = "Optimization Complete";
+            els.gaBar.style.width = '0%';
+        }
+
+        function updateControl(id, val) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.value = val;
+                el.dispatchEvent(new Event('input'));
+            }
+        }
+
+        // --- Initialization ---
+
+        els.startBtn.addEventListener('click', async () => {
+            els.errorMsg.classList.add('hidden');
+            els.startBtn.disabled = true;
+            els.startBtn.innerText = "Connecting...";
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showError("API Error"); return;
+            }
+
+            try {
+                let stream;
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+                    });
+                } catch {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                }
+
+                els.video.srcObject = stream;
+                els.video.onloadedmetadata = async () => {
+                    await els.video.play();
+                    state.aspectRatio = els.video.videoWidth / els.video.videoHeight || 1.33;
+                    // Fix SVG viewBox
+                    els.svg.setAttribute('viewBox', `0 0 100 ${100 / state.aspectRatio}`);
+                    state.running = true;
+                    els.loader.style.opacity = '0';
+                    setTimeout(() => els.loader.style.display = 'none', 500);
+
+                    // Kickoff loop
+                    processFrame();
+                };
+            } catch (err) {
+                console.error(err);
+                showError("Camera Access Failed");
+                els.startBtn.disabled = false;
+                els.startBtn.innerText = "RETRY";
+            }
+        });
+
+        function showError(msg) {
+            els.errorMsg.innerText = msg;
+            els.errorMsg.classList.remove('hidden');
+        }
+
+        // --- Frame Processing ---
+
+        let lastTime = 0;
+
+        function processFrame() {
+            if (!state.running) return;
+
+            const now = performance.now();
+            if (now - lastTime < 33) {
+                requestAnimationFrame(processFrame);
+                return;
+            }
+            lastTime = now;
+
+            const w = Math.floor(100 + (settings.resolution / 100) * 300);
+            const h = Math.floor(w / state.aspectRatio);
+
+            if (els.canvas.width !== w) { els.canvas.width = w; els.canvas.height = h; }
+
+            // Detail Boosting Filter
+            ctx.filter = 'contrast(1.1) saturate(1.1)';
+            ctx.drawImage(els.video, 0, 0, w, h);
+            ctx.filter = 'none';
+
+            const imgData = ctx.getImageData(0, 0, w, h);
+
+            state.worker.postMessage({
+                type: 'render',
+                buffer: imgData.data.buffer,
+                width: w,
+                height: h,
+                settings: settings,
+                resetPalette: false
+            }, [imgData.data.buffer]);
+        }
+
+        function updateDOM(shapes, bg) {
+            if (!shapes) return;
+            const bgStr = bg ? `rgb(${bg.r},${bg.g},${bg.b})` : "#111";
+            let html = `<rect width="100%" height="100%" fill="${bgStr}"/>`;
+
+            const gap = settings.gap;
+            const isWire = settings.wireframe;
+            const limit = shapes.length > 3000 ? 3000 : shapes.length;
+
+            for (let i = 0; i < limit; i++) {
+                const s = shapes[i];
+                const color = `rgb(${s.color.r},${s.color.g},${s.color.b})`;
+                if (isWire) {
+                    html += `<path d="${s.d}" fill="none" stroke="${color}" stroke-width="0.3" />`;
+                } else {
+                    html += `<path d="${s.d}" fill="${color}" stroke="${color}" stroke-width="${gap}" stroke-linejoin="round" stroke-linecap="round" />`;
+                }
+            }
+            els.svg.innerHTML = html;
+
+            const t = performance.now();
+            const dur = Math.round(t - lastTime);
+            els.stats.innerText = `${shapes.length} paths | ${Math.round(1000 / dur)} FPS`;
+        }
+
+        // --- UI Binding ---
+        document.getElementById('toggle-controls').onclick = () => els.controls.classList.toggle('collapsed');
+        const bind = (id, k) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const disp = document.getElementById(id.replace('opt', 'v'));
+            el.addEventListener('input', e => {
+                const v = e.target.type === 'checkbox' ? e.target.checked : parseFloat(e.target.value);
+                settings[k] = v;
+                if (disp) disp.innerText = v;
+            });
+        };
+        bind('opt-colors', 'colors');
+        bind('opt-res', 'resolution');
+        bind('opt-smooth', 'smoothing');
+        bind('opt-simp', 'simplify');
+        bind('opt-area', 'minArea');
+        bind('opt-gap', 'gap');
+        bind('opt-wire', 'wireframe');
+
+        document.getElementById('download-btn').onclick = () => {
+            const blob = new Blob([els.svg.outerHTML], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `vector-${Date.now()}.svg`;
+            a.click();
+        };
+
+        // GA Handler
+        els.gaBtn.addEventListener('click', () => {
+            if (!state.running) return;
+
+            els.gaBtn.disabled = true;
+            els.gaBtn.innerText = "Analyzing...";
+            els.gaBar.style.width = "100%"; // Indeterminate
+            els.gaStatus.innerText = "Running genetic evolution...";
+
+            const w = 160;
+            const h = Math.floor(w / state.aspectRatio);
+            const tCtx = document.createElement('canvas').getContext('2d');
+            tCtx.canvas.width = w; tCtx.canvas.height = h;
+            tCtx.drawImage(els.video, 0, 0, w, h);
+            const imgData = tCtx.getImageData(0, 0, w, h);
+
+            state.worker.postMessage({
+                type: 'optimize',
+                buffer: imgData.data.buffer,
+                width: w,
+                height: h
+            }, [imgData.data.buffer]);
+        });
+
+    </script>
+</body>
+
+</html>
