@@ -1,0 +1,5925 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Каталог программ Mac OS</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <!-- Lucide Icons (via CDN) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.7);
+      --bg-sidebar: rgba(17, 24, 39, 0.9);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(99, 102, 241, 0.4);
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+
+      --accent-indigo: #6366f1;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-teal: #14b8a6;
+      --accent-blue: #0ea5e9;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+
+      --font-sans: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --transition-fast: 0.2s ease;
+      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Background Blobs */
+    .bg-blobs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.15;
+    }
+
+    .blob-1 {
+      top: -10%;
+      left: -10%;
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle, var(--accent-indigo) 0%, rgba(99, 102, 241, 0) 70%);
+    }
+
+    .blob-2 {
+      bottom: -10%;
+      right: -10%;
+      width: 60vw;
+      height: 60vw;
+      background: radial-gradient(circle, var(--accent-purple) 0%, rgba(139, 92, 246, 0) 70%);
+    }
+
+    .blob-3 {
+      top: 40%;
+      left: 50%;
+      width: 30vw;
+      height: 30vw;
+      background: radial-gradient(circle, var(--accent-pink) 0%, rgba(236, 72, 153, 0) 70%);
+      opacity: 0.08;
+    }
+
+    /* Sidebar Layout */
+    aside {
+      width: 320px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .sidebar-header {
+      padding: 30px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .logo-text h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #ffffff, #d1d5db);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-text p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 1px;
+    }
+
+    .sidebar-content {
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    /* Category Buttons */
+    .category-section h3,
+    .stats-section h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .category-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .category-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: var(--transition-fast);
+      gap: 10px;
+    }
+
+    .category-btn:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+      color: var(--text-primary);
+    }
+
+    .category-btn.active {
+      background-color: rgba(99, 102, 241, 0.1);
+      color: var(--accent-indigo);
+      font-weight: 600;
+    }
+
+    .category-btn .cat-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .category-btn .cat-name {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .category-btn .cat-count {
+      font-size: 0.75rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 2px 8px;
+      border-radius: 12px;
+      color: var(--text-secondary);
+      transition: var(--transition-fast);
+    }
+
+    .category-btn.active .cat-count {
+      background-color: rgba(99, 102, 241, 0.2);
+      color: var(--accent-indigo);
+    }
+
+    /* Stats Panel */
+    .stats-panel {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-value {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .sidebar-footer {
+      padding: 20px 30px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* Main Content Layout */
+    main {
+      flex-grow: 1;
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      min-width: 0;
+      /* Prevents overflow inside flex container */
+    }
+
+    /* Header controls */
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .search-bar-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 20px;
+      color: var(--text-muted);
+      pointer-events: none;
+      width: 20px;
+      height: 20px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 16px 20px 16px 52px;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      outline: none;
+      transition: var(--transition-normal);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-indigo);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 8px 30px rgba(0, 0, 0, 0.3);
+      background-color: rgba(17, 24, 39, 0.85);
+    }
+
+    .search-shortcut {
+      position: absolute;
+      right: 20px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      padding: 4px 8px;
+      border-radius: 6px;
+      pointer-events: none;
+      font-weight: 700;
+    }
+
+    /* Controls: Sort and Actions */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .sort-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sort-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+
+    .select-wrapper select {
+      appearance: none;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 10px 36px 10px 16px;
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+      transition: var(--transition-fast);
+      font-family: var(--font-sans);
+    }
+
+    .select-wrapper select:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .select-wrapper select:focus {
+      border-color: var(--accent-indigo);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    }
+
+    .select-wrapper::after {
+      content: '';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 4px solid transparent;
+      border-top-color: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .results-info {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 20px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: var(--transition-normal);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: transparent;
+      transition: var(--transition-fast);
+    }
+
+    .card.cat-video::before {
+      background: linear-gradient(90deg, var(--accent-indigo), var(--accent-purple));
+    }
+
+    .card.cat-graphics::before {
+      background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple));
+    }
+
+    .card.cat-adobe::before {
+      background: linear-gradient(90deg, var(--accent-red), var(--accent-amber));
+    }
+
+    .card.cat-audio::before {
+      background: linear-gradient(90deg, var(--accent-teal), var(--accent-blue));
+    }
+
+    .card.cat-system::before {
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-indigo));
+    }
+
+    .card.cat-office::before {
+      background: linear-gradient(90deg, var(--accent-emerald), var(--accent-teal));
+    }
+
+    .card.cat-networks::before {
+      background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink));
+    }
+
+    .card.cat-others::before {
+      background: linear-gradient(90deg, var(--accent-amber), var(--accent-red));
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: var(--border-hover);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(99, 102, 241, 0.05);
+    }
+
+    .card-top {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-badges {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-cat {
+      background-color: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      max-width: 170px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    /* Colored badge categories */
+    .card.cat-video .badge-cat {
+      background-color: rgba(99, 102, 241, 0.08);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    .card.cat-graphics .badge-cat {
+      background-color: rgba(236, 72, 153, 0.08);
+      color: #f9a8d4;
+      border-color: rgba(236, 72, 153, 0.2);
+    }
+
+    .card.cat-adobe .badge-cat {
+      background-color: rgba(239, 68, 68, 0.08);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .card.cat-audio .badge-cat {
+      background-color: rgba(20, 184, 166, 0.08);
+      color: #99f6e4;
+      border-color: rgba(20, 184, 166, 0.2);
+    }
+
+    .card.cat-system .badge-cat {
+      background-color: rgba(14, 165, 233, 0.08);
+      color: #bae6fd;
+      border-color: rgba(14, 165, 233, 0.2);
+    }
+
+    .card.cat-office .badge-cat {
+      background-color: rgba(16, 185, 129, 0.08);
+      color: #a7f3d0;
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .card.cat-networks .badge-cat {
+      background-color: rgba(139, 92, 246, 0.08);
+      color: #c7d2fe;
+      border-color: rgba(139, 92, 246, 0.2);
+    }
+
+    .card.cat-others .badge-cat {
+      background-color: rgba(245, 158, 11, 0.08);
+      color: #fde68a;
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .badge-pop {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+
+    .pop-high {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .pop-med {
+      background-color: rgba(245, 158, 11, 0.08);
+      color: #fde68a;
+      border: 1px solid rgba(245, 158, 11, 0.15);
+    }
+
+    .pop-low {
+      background-color: rgba(255, 255, 255, 0.02);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.5;
+      color: var(--text-primary);
+      cursor: pointer;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      transition: var(--transition-fast);
+      user-select: all;
+    }
+
+    .card-title:hover {
+      color: var(--accent-indigo);
+    }
+
+    .card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .card-size {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-size i {
+      color: var(--text-muted);
+    }
+
+    .btn-copy {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-copy:hover {
+      color: var(--text-primary);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-copy:active {
+      transform: scale(0.92);
+    }
+
+    /* Highlight matching search text */
+    .highlight {
+      background-color: rgba(250, 204, 21, 0.2);
+      color: #fef08a;
+      padding: 1px 3px;
+      border-radius: 4px;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border-radius: 12px;
+      padding: 14px 20px;
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 500;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    #toast i {
+      color: var(--accent-emerald);
+    }
+
+    /* No Results state */
+    .no-results {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      background-color: rgba(255, 255, 255, 0.01);
+      border: 1px dashed var(--border-color);
+      border-radius: 16px;
+      gap: 16px;
+    }
+
+    .no-results i {
+      width: 48px;
+      height: 48px;
+      color: var(--text-muted);
+    }
+
+    .no-results h4 {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    /* Quick stats container in header */
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .header-title h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .header-title p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 1024px) {
+      body {
+        flex-direction: column;
+      }
+
+      aside {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .sidebar-content {
+        padding: 20px;
+        gap: 15px;
+      }
+
+      .category-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .category-btn {
+        flex-shrink: 0;
+        padding: 8px 14px;
+      }
+
+      .stats-section {
+        display: none;
+        /* Hide stats in sidebar on mobile */
+      }
+
+      main {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Background Blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside>
+    <div class="sidebar-header">
+      <div class="logo-icon">
+        <i data-lucide="compass" style="width: 22px; height: 22px;"></i>
+      </div>
+      <div class="logo-text">
+        <h1>program Walker</h1>
+        <p>Каталог программ для macOS</p>
+      </div>
+    </div>
+
+    <div class="sidebar-content">
+      <!-- Categories Filter -->
+      <div class="category-section">
+        <h3>Категории</h3>
+        <div class="category-list" id="categoryList">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Stats Summary -->
+      <div class="stats-section">
+        <h3>Статистика каталога</h3>
+        <div class="stats-panel">
+          <div class="stat-row">
+            <span class="stat-label"><i data-lucide="archive" style="width: 14px; height: 14px;"></i> Всего
+              программ</span>
+            <span class="stat-value" id="statTotalCount">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label"><i data-lucide="hard-drive" style="width: 14px; height: 14px;"></i> Общий
+              объем</span>
+            <span class="stat-value" id="statTotalSize">0 GB</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label"><i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> Ср.
+              популярность</span>
+            <span class="stat-value" id="statAvgPopularity">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label"><i data-lucide="flame" style="width: 14px; height: 14px;"></i> Топ
+              популярных</span>
+            <span class="stat-value" id="statTopPopCount">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <span>program Walker © 2026</span>
+    </div>
+  </aside>
+
+  <!-- Main Area -->
+  <main>
+    <header>
+      <div class="header-top">
+        <div class="header-title">
+          <h2 id="currentCategoryTitle">Все программы</h2>
+          <p id="currentCategorySub">Общий список доступного софта</p>
+        </div>
+        <div class="results-info" id="resultsCount">Показано: 0 из 0</div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-bar-container">
+        <div class="search-input-wrapper">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" class="search-input" id="searchInput"
+            placeholder="Поиск по названию или ключевым словам... (Нажмите / для фокуса)" autocomplete="off">
+          <span class="search-shortcut">/</span>
+        </div>
+      </div>
+
+      <!-- Sort Selection -->
+      <div class="controls">
+        <div class="sort-group">
+          <span class="sort-label">Сортировка:</span>
+          <div class="select-wrapper">
+            <select id="sortSelect">
+              <option value="popularity-desc">По популярности (убывание) 🔥</option>
+              <option value="popularity-asc">По популярности (возрастание)</option>
+              <option value="size-desc">По размеру (убывание) 💾</option>
+              <option value="size-asc">По размеру (возрастание)</option>
+              <option value="name-asc">По названию (А-Я)</option>
+              <option value="name-desc">По названию (Я-А)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Cards Container -->
+    <div class="cards-grid" id="cardsGrid">
+      <!-- Populated by JS -->
+    </div>
+  </main>
+
+  <!-- Toast Toast Notification -->
+  <div id="toast">
+    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+    <span id="toastText">Название программы скопировано!</span>
+  </div>
+
+  <!-- Javascript Logic -->
+  <script>
+    // Embedded Program Data
+    const PROGRAMS = [
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Adobe Premiere Pro 2026 26.2.2 [Apple Silicon] [K-ed]",
+        "size": "5.78 GB",
+        "popularity": 0
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Creator Studio Final Cut Pro 12.2 [Intel/Apple] [ATB]",
+        "size": "5.47 GB",
+        "popularity": 156
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] DaVinci Resolve Studio 21 beta 3 [Intel/Apple]",
+        "size": "7.45 GB",
+        "popularity": 300
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Infuse Pro 8.4.3 [Apple Silicon] [EDiSO]",
+        "size": "107.8 MB",
+        "popularity": 110
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Motion 5.11.0 [Intel/Apple] [TNT]",
+        "size": "2.77 GB",
+        "popularity": 468
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Compressor 4.11.1 [Intel/Apple] [TNT]",
+        "size": "104.8 MB",
+        "popularity": 709
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "SeeMusic 7.3 (No Watermark Patch) macOS [2025, ENG]",
+        "size": "389.9 MB",
+        "popularity": 102
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Final Cut Pro 11.2.0 [Intel/Apple] [TNT]",
+        "size": "5.54 GB",
+        "popularity": 0
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "VRay 1.2.6 для Cinema4D R11-11.5",
+        "size": "49.2 MB",
+        "popularity": 70
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "ScreenFlow v10.0.9 [MAC]",
+        "size": "85.8 MB",
+        "popularity": 355
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "ScreenFlow 10.0.10 [MAC]",
+        "size": "94.6 MB",
+        "popularity": 503
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] TechSmith Camtasia 2024.1.0 [Intel/Apple] [TNT]",
+        "size": "479.4 MB",
+        "popularity": 799
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Blackmagic Design - DaVinci Resolve Studio 19.0B build 33 [Intel/Apple] [K-ed]",
+        "size": "5.62 GB",
+        "popularity": 4840
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Camtasia 2023.2.2 [Intel/Apple] [TNT]",
+        "size": "368.2 MB",
+        "popularity": 1352
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Avid Media Composer 2023.3.1 [Intel/Apple]",
+        "size": "2.6 GB",
+        "popularity": 1300
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Camtasia 2022 2022.6.8[Intel/Apple] [TNT]",
+        "size": "445.2 MB",
+        "popularity": 1292
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Wondershare UniConverter 14.2.14.205 [Intel] [HCiSO]",
+        "size": "283.9 MB",
+        "popularity": 5869
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Airflow 3.3.5 [Intel] [TNT]",
+        "size": "68.8 MB",
+        "popularity": 681
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "DaVinci Resolve Studio 18.1 [Intel/Apple] [K-ed]",
+        "size": "3.6 GB",
+        "popularity": 5790
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "OmniPlayer Pro 2.0.17 [MAS] [Intel/Apple] [HCiSO]",
+        "size": "129.7 MB",
+        "popularity": 976
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Aiseesoft Mac Video Converter Ultimate 10.3.52 [Intel] [TNT]",
+        "size": "136.7 MB",
+        "popularity": 2147
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Apeaksoft Screen Recorder 2.1.32 [Intel] [TNT]",
+        "size": "33.9 MB",
+        "popularity": 660
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Filmora X 12.0.6 [Intel] [TNT]",
+        "size": "707.8 MB",
+        "popularity": 566
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Media Encoder 2022 22.6.1 [Intel/Apple] [K-ed]",
+        "size": "1.05 GB",
+        "popularity": 2839
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Kigo VideoConverter",
+        "size": "32.8 MB",
+        "popularity": 244
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Aimersoft DVD Creator for Mac v3.0",
+        "size": "35.3 MB",
+        "popularity": 195
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Movavi Screen Recorder 22.2.0 [macOS] [TNT]",
+        "size": "92.6 MB",
+        "popularity": 7881
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Permute 3.8.9 [macOS] [TNT]",
+        "size": "81.3 MB",
+        "popularity": 974
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "VideoSolo BD-DVD Ripper 2.0.12 [macOS] [TNT]",
+        "size": "113.3 MB",
+        "popularity": 906
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Elmedia Player Pro 8.4 [macOS] [TNT]",
+        "size": "95 MB",
+        "popularity": 0
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "SecuritySpy 5.4.1 [macOS] [SN]",
+        "size": "99.7 MB",
+        "popularity": 240
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Aiseesoft Mac Video Converter Ultimate 10.2.30 [macOS] [TNT]",
+        "size": "131.8 MB",
+        "popularity": 2176
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Mitti 2.1.1 [macOS] [TNT]",
+        "size": "12.8 MB",
+        "popularity": 168
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Filmage Converter 1.1.6 [macOS] [TNT]",
+        "size": "38.3 MB",
+        "popularity": 268
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Filmage Editor 1.2.1 [macOS] [TNT]",
+        "size": "48 MB",
+        "popularity": 120
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Screen Record It - Capturer 2.6 [macOS] [TNT]",
+        "size": "4.7 MB",
+        "popularity": 641
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Vidmore Player 1.022 [macOS] [TNT]",
+        "size": "42.7 MB",
+        "popularity": 705
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "BorisFX Mocha Pro 2019 BorisFX Mocha Pro 2019 6.0.0.1882 Mac Full Version [Universal] [Lic]",
+        "size": "156 MB",
+        "popularity": 1394
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Capto: Screen Capture & Record 1.2.28 [macOS] [TNT]",
+        "size": "53.7 MB",
+        "popularity": 738
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Mirror for LG TV 3.7.3 [macOS] [TNT]",
+        "size": "16.9 MB",
+        "popularity": 440
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "VideoSolo Blu-ray Player 1.1.22 [macOS] [TNT]",
+        "size": "43.6 MB",
+        "popularity": 982
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "VideoDuke 2.2 [macOS] [TNT]",
+        "size": "58.5 MB",
+        "popularity": 533
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "WinX DVD Ripper 2.7 for Mac — мощный DVD риппер",
+        "size": "9.3 MB",
+        "popularity": 494
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Movist Pro 2.8.1 [TNT] [macOS]",
+        "size": "69 MB",
+        "popularity": 2600
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Tipard Blu-ray Converter 10.0.10 [macOS] [TNT]",
+        "size": "116.2 MB",
+        "popularity": 389
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "iShowU Instant Advanced 1.4.3 [macOS] [TNT]",
+        "size": "38.9 MB",
+        "popularity": 191
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "ePlayer Pro 5.2.6 [macOS] [HCiSO]",
+        "size": "103 MB",
+        "popularity": 307
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Cisdem Video Player 5.5.1 [macOS] [TNT]",
+        "size": "21 MB",
+        "popularity": 730
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] iFlicks 3.8.1 [macOS] [TNT]",
+        "size": "25.8 MB",
+        "popularity": 344
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "CrumplePop Grain35 (35mm)",
+        "size": "5.87 GB",
+        "popularity": 142
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "iMacsoft DVD Creator for Mac",
+        "size": "14.6 MB",
+        "popularity": 142
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "MacX Video Converter Pro 6.5.5 [macOS] [TNT]",
+        "size": "42.4 MB",
+        "popularity": 1653
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "iShowU Studio 2.3.6 [macOS] [TNT]",
+        "size": "42.1 MB",
+        "popularity": 137
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "iSubtitle 3.4.5 [macOS] [TNT]",
+        "size": "28.5 MB",
+        "popularity": 106
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Playr 2.7 [macOS] [TNT]",
+        "size": "23.8 MB",
+        "popularity": 143
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Filmage Screen 1.3.2 [macOS] [TNT]",
+        "size": "35.1 MB",
+        "popularity": 138
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Cinematize2pro 2.0.6 - профессиональное издание для работы с DVD",
+        "size": "5.8 MB",
+        "popularity": 50
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "FxFactory Pro 7.2.5 [macOS] [Monter Group]",
+        "size": "33.8 MB",
+        "popularity": 2283
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "ScreenFlow 9.0.7 [macOS] [TNT]",
+        "size": "62.8 MB",
+        "popularity": 759
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Vidmore Video Converter 2.1.12 [macOS] [TNT]",
+        "size": "110.7 MB",
+        "popularity": 1940
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Gifox Pro 2.2.5 [macOS] [TNT]",
+        "size": "24.1 MB",
+        "popularity": 265
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[MULTi+RUS] Adobe - Premiere Pro CC 2021 v15.1.0.48 [iNTEL] [TNT]",
+        "size": "2.18 GB",
+        "popularity": 6478
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Screenium 3.2.17 [macOS] [TNT]",
+        "size": "36.7 MB",
+        "popularity": 115
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Apple iMovie 10.2.3 [Intel/Apple]",
+        "size": "2.2 GB",
+        "popularity": 4806
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Record It Pro 1.5.4 [macOS] [TNT]",
+        "size": "9.4 MB",
+        "popularity": 120
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Macgo Mac Blu-ray Player 2.10.3 [Intel] [SN + инструкция по установке]",
+        "size": "112.3 MB",
+        "popularity": 887
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Subtitle Studio 1.5.4 [macOS] [TNT]",
+        "size": "32.5 MB",
+        "popularity": 540
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "SnapMotion 4.4.5 [macOS X] [K'ed by TNT]",
+        "size": "17.2 MB",
+        "popularity": 123
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "iVI 4.726 [macOS X] [K'ed by TNT]",
+        "size": "93.8 MB",
+        "popularity": 108
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "DRmare M4V Converter 3.1.0.7 [macOS] [TNT]",
+        "size": "58.7 MB",
+        "popularity": 368
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Screencast 1.9.2 [macOS X] [K'ed by HCiSO]",
+        "size": "18.5 MB",
+        "popularity": 242
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Mac DVDRipper Pro 9.0.2 [macOS] [K'ed by HCiSO]",
+        "size": "172.9 MB",
+        "popularity": 151
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "VideoScan 1.0.2 [macOS X] [K'ed by TNT]",
+        "size": "15.4 MB",
+        "popularity": 87
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Screenflick 2.7.45 [macOS X] [K'ed by TNT]",
+        "size": "15.9 MB",
+        "popularity": 506
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Cisdem DVDBurner 4.2.0 [macOS X] [K'ed by TNT]",
+        "size": "72.5 MB",
+        "popularity": 177
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "MacX DVD Ripper Pro 6.5.3 (build 20200630) [macOS X] [K'ed by TNT]",
+        "size": "56.4 MB",
+        "popularity": 932
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Swift Converter 3 v4.0.3 [macOS X] [Intel] [K'ed by TNT]",
+        "size": "24.5 MB",
+        "popularity": 197
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Macgo Blu-ray Player Pro 3.3.19 [macOS X] [Intel] [K'ed by TNT]",
+        "size": "46.3 MB",
+        "popularity": 1969
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "AnyMP4 Mac Blu-ray Player 6.3.12 [macOS X] [Intel] [K'ed by TNT]",
+        "size": "41.8 MB",
+        "popularity": 1580
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Movie Explorer 2.0.2 [macOS] [TNT]",
+        "size": "13.7 MB",
+        "popularity": 170
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Movist Pro 2.2.13 [Intel] [K-ed]",
+        "size": "54.7 MB",
+        "popularity": 1075
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "HD Video Converter Movavi 6.1.0 [macOS X] [K'ed]",
+        "size": "53.3 MB",
+        "popularity": 2742
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Camtasia 2019.0.0 [Intel] [K-Gen]",
+        "size": "490.9 MB",
+        "popularity": 2916
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "ScreenFlow 8.2.1 [Intel] [K-ed]",
+        "size": "63.2 MB",
+        "popularity": 3423
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Adobe Prelude CC 2019 v8.0.129 [iNTEL] [Patcher] [Multi + RUS]",
+        "size": "805.5 MB",
+        "popularity": 424
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Sorenson Squeeze 5.0 & Sorenson Video 3.3 Pro Codec for Mac OSX",
+        "size": "92 MB",
+        "popularity": 405
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Flip4Mac WMV Studio Pro HD 2.2.3.7 [k'ed]",
+        "size": "10.6 MB",
+        "popularity": 395
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "CloneDVD2 2.5.3.3 [MacOS]",
+        "size": "14 MB",
+        "popularity": 248
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "ScreenFlow 7.2 [Multi] 7.2 [Intel] [K-ed]",
+        "size": "57.6 MB",
+        "popularity": 2868
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Elmedia Player PRO 6.8 [SWF & FLV Player] [Intel] [Shark]",
+        "size": "34.6 MB",
+        "popularity": 11702
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "ScreenFlow 6.2.1 [Multi]",
+        "size": "58.6 MB",
+        "popularity": 2408
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "FCPeffects 27 Plugins Bundle for FCPX [Intel]",
+        "size": "3.93 GB",
+        "popularity": 6501
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Camtasia 3.0.4 for Mac Camtasia 3.0.4 [Intel] [K-Gen]",
+        "size": "106.9 MB",
+        "popularity": 4221
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Apple iMovie 10.1.1 [Multi/Ru]",
+        "size": "1.81 GB",
+        "popularity": 7490
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "ClipWrap 2.6.9 [Intel] [K-ed]",
+        "size": "4 MB",
+        "popularity": 972
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] iMovie 10.1.3 [Intel] [K-ed]",
+        "size": "1.84 GB",
+        "popularity": 2228
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Apple Compressor 4.3 [Multi]",
+        "size": "409.6 MB",
+        "popularity": 6538
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "Apple Motion 5.3 [Multi]",
+        "size": "2.04 GB",
+        "popularity": 7716
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "[RUS] Ace Stream Media Player 3.1.6 [Intel] [CrossOver]",
+        "size": "271.5 MB",
+        "popularity": 10727
+      },
+      {
+        "category": "Программы для просмотра и обработки видео (Mac OS)",
+        "name": "ScreenFlow 5.0.6 [Multi]",
+        "size": "47.8 MB",
+        "popularity": 1797
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Autodesk AutoCAD for Mac 2025 Russian Language Pack [Intel/Apple]",
+        "size": "19 MB",
+        "popularity": 75
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Pixea Plus 8.1 [Intel/Apple] [TNT]",
+        "size": "223.8 MB",
+        "popularity": 19
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] GRAPHISOFT ArchiCAD 27 5006 [Apple Silicon] [Patch]",
+        "size": "5.07 GB",
+        "popularity": 445
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Pixelmator Pro Creator Studio 4.2 [Intel/Apple] [K-ed]",
+        "size": "587.6 MB",
+        "popularity": 391
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Horos 4.0.1 [Apple Silicon] [K-ed]",
+        "size": "67.4 MB",
+        "popularity": 41
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Rhino 8 8.24.25281.15002 [Intel/Apple] [TNT]",
+        "size": "759.9 MB",
+        "popularity": 430
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] SketchUp Pro 26.1.188 [Intel/Apple] [TNT]",
+        "size": "1.51 GB",
+        "popularity": 0
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Capture One Pro 16.6.4.6 [Intel/Apple] [TNT]",
+        "size": "1.19 GB",
+        "popularity": 0
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 2025.1.2 [macOS TNT]",
+        "size": "94 MB",
+        "popularity": 0
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Pixelstyle Photo Editor 4.3.1 [Intel/Apple] [TNT]",
+        "size": "69.9 MB",
+        "popularity": 152
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Pixelmator Pro v3.3.2 [MAC]",
+        "size": "549.8 MB",
+        "popularity": 527
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Luminar Neo 1.23.1 (19140) [Intel/Apple] [TNT]",
+        "size": "5.24 GB",
+        "popularity": 1553
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Luxology modo 601 SP1 build 49611 [Intel] [Lic]",
+        "size": "1.47 GB",
+        "popularity": 38
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] ON1 Photo RAW MAX 2025 19.1.0 (16236) [Intel/Apple] [TNT]",
+        "size": "726.8 MB",
+        "popularity": 494
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "PhotosCollage 1.4.1 [Intel] [TNT]",
+        "size": "960 KB",
+        "popularity": 66
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Boxy SVG 4.32.0 [MAS] [Intel/Apple] [TNT]",
+        "size": "182.4 MB",
+        "popularity": 151
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "JixiPix Artista Impresso Pro 1.8.26 [Intel] [TNT]",
+        "size": "121.3 MB",
+        "popularity": 96
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "DxO ViewPoint 4.14.0.288 [Intel] [TNT]",
+        "size": "1012.7 MB",
+        "popularity": 295
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "DxO FilmPack 7.4.0.508 [Intel/Apple] [TNT]",
+        "size": "1020.2 MB",
+        "popularity": 522
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "DxO PureRAW 3.9.0.33 [Intel/Apple] [TNT]",
+        "size": "702.4 MB",
+        "popularity": 1203
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "DrawIt 3.10.6",
+        "size": "3.9 MB",
+        "popularity": 44
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] HitPaw Video Converter 3.2.0 [Intel] [TNT]",
+        "size": "648 MB",
+        "popularity": 1302
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Abvent Artlantis Studio 3 Full UB Multilanguage (Russian incl.)",
+        "size": "399 MB",
+        "popularity": 120
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[UB]/[K] HighDesign Pro 1.8.4 - профессиональное решение для двухмерного моделирования и черчения",
+        "size": "75.2 MB",
+        "popularity": 74
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Unity 3D Pro 3.1. Программа для создания 3D игр. Mac OS X [2010, ENG]",
+        "size": "618.6 MB",
+        "popularity": 228
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Photoshop 2023 24.4.1 [Intel/Apple]",
+        "size": "3.93 GB",
+        "popularity": 16616
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Aurora HDR 1.0.2 [Intel] [TNT]",
+        "size": "243.2 MB",
+        "popularity": 392
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Coherence X 4.4 [Intel/Apple] [TNT]",
+        "size": "12.6 MB",
+        "popularity": 128
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 96.1 [Intel/Apple] [TNT]",
+        "size": "68.6 MB",
+        "popularity": 1714
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Cadintosh 8.8.4 (675) Beta [Intel/Apple] [TNT]",
+        "size": "68.7 MB",
+        "popularity": 97
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "ImageRanger Pro 1.9.3.1858 [Intel] [TNT]",
+        "size": "102.7 MB",
+        "popularity": 127
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Live Home 3D Pro 4.5.3 [Intel/Apple] [TNT]",
+        "size": "459.4 MB",
+        "popularity": 1551
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Artstudio Pro 5.1.2 [MAS] [Intel/Apple] [TNT]",
+        "size": "242.6 MB",
+        "popularity": 199
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "DreamPlan Plus 8.01 [Intel] [SN]",
+        "size": "8.2 MB",
+        "popularity": 232
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] GraphicConverter 11.8.1 (5764) Beta [Intel/Apple] [TNT]",
+        "size": "243.8 MB",
+        "popularity": 194
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Acorn 7.3.2 [Intel/Apple] [TNT]",
+        "size": "18 MB",
+        "popularity": 268
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "AI Photo 1.9 [Intel/Apple] [HCiSO]",
+        "size": "2.33 GB",
+        "popularity": 362
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 95 [Intel/Apple] [TNT]",
+        "size": "68.7 MB",
+        "popularity": 846
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "AssetsGen 4.0 [MAS] [Intel/Apple] [TNT]",
+        "size": "9.4 MB",
+        "popularity": 56
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Claydo 1.8 [Intel/Apple] [HCiSO]",
+        "size": "272.6 MB",
+        "popularity": 58
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "PowerPhotos 2.1.1 [Intel/Apple] [TNT]",
+        "size": "33.2 MB",
+        "popularity": 367
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Artlantis Studio 3 for MAC",
+        "size": "63.3 MB",
+        "popularity": 79
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 91 [macOS] [TNT]",
+        "size": "75.9 MB",
+        "popularity": 2108
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 90 [macOS] [TNT]",
+        "size": "72.9 MB",
+        "popularity": 503
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 89 [macOS] [TNT]",
+        "size": "71.3 MB",
+        "popularity": 494
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 88.1 [macOS] [TNT]",
+        "size": "70.2 MB",
+        "popularity": 364
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 87.1 [macOS] [TNT]",
+        "size": "71 MB",
+        "popularity": 249
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 86 [macOS] [TNT]",
+        "size": "70.1 MB",
+        "popularity": 366
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Lyn 2.1.12 [macOS] [TNT]",
+        "size": "34.6 MB",
+        "popularity": 572
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "EdgeView 3.4.3 [macOS] [TNT]",
+        "size": "28 MB",
+        "popularity": 232
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Pano2VR Pro 6.0.1 [Multi/Ru] 6.0.1 [Intel/Apple] [SN]",
+        "size": "294.4 MB",
+        "popularity": 912
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Exposure X7 Bundle 7.1.3.95 [macOS] [TNT]",
+        "size": "647.7 MB",
+        "popularity": 1057
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Super PhotoCut Pro 2.8.6 [macOS] [HCiSO]",
+        "size": "24.9 MB",
+        "popularity": 198
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Image Resizer - Resize Photos 2.3 [macOS] [TNT]",
+        "size": "3.3 MB",
+        "popularity": 322
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Luminar Neo 1.0.4 (11206) U2B [macOS] [HCiSO]",
+        "size": "1.78 GB",
+        "popularity": 1134
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 85.1 [macOS] [TNT]",
+        "size": "70.3 MB",
+        "popularity": 597
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] CorelDRAW 2022 Corporate 24.0.0.301 + Extras [macOS] [TNT]",
+        "size": "7.25 GB",
+        "popularity": 22841
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Iridient Developer 3.6.4 [macOS] [HCiSO]",
+        "size": "33.3 MB",
+        "popularity": 154
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Affinity Photo 1.10.5 [macOS] [SN]",
+        "size": "754.7 MB",
+        "popularity": 2077
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "EPSViewer Pro 1.5 [macOS] [HCiSO]",
+        "size": "31.6 MB",
+        "popularity": 92
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 84 [macOS] [TNT]",
+        "size": "71.7 MB",
+        "popularity": 609
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Aerate Pro 2.0.1 fix [macOS] [TNT]",
+        "size": "15.5 MB",
+        "popularity": 87
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Image Optimizer - Compression 2.4 [macOS] [TNT]",
+        "size": "7.5 MB",
+        "popularity": 301
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Darkroom 5.8.4 [macOS] [TNT]",
+        "size": "25.3 MB",
+        "popularity": 280
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Art Text 4.1.2 [macOS] [TNT]",
+        "size": "764.2 MB",
+        "popularity": 309
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Amadine 1.2.8 [macOS] [TNT]",
+        "size": "38.1 MB",
+        "popularity": 143
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] TouchRetouch 2.3.5 [macOS] [HCiSO]",
+        "size": "17.2 MB",
+        "popularity": 202
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "ImageFramer — рамки для фото",
+        "size": "37.8 MB",
+        "popularity": 116
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] TeoreX Inpaint 9.1 [macOS] [HCiSO]",
+        "size": "14.3 MB",
+        "popularity": 215
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Principle 6.15 [macOS] [TNT]",
+        "size": "7.8 MB",
+        "popularity": 799
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "PhotoScape X Pro 4.2.1 [macOS] [TNT]",
+        "size": "348.8 MB",
+        "popularity": 1078
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 83.2 [macOS] [TNT]",
+        "size": "69.4 MB",
+        "popularity": 621
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "SILKYPIX Developer Studio Pro 10.0.17.0 [macOS] [TNT]",
+        "size": "407.9 MB",
+        "popularity": 149
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "PhotoSweeper 4.2.0 [macOS] [TNT]",
+        "size": "48.7 MB",
+        "popularity": 433
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 82.1 [macOS] [TNT]",
+        "size": "69.4 MB",
+        "popularity": 486
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Sweet Home 3D 6.5.5 [macOS] [TNT]",
+        "size": "310 MB",
+        "popularity": 4422
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Planner 5D 4.6.3 [macOS] [TNT]",
+        "size": "172.9 MB",
+        "popularity": 2919
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] LilyView 1.5.1 fix [macOS] [TNT]",
+        "size": "11 MB",
+        "popularity": 1221
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "PowerPhotos 1.9.10 [macOS] [TNT]",
+        "size": "26.7 MB",
+        "popularity": 176
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Magic Hider PRO 1.4.3 [macOS] [HCiSO]",
+        "size": "3.6 MB",
+        "popularity": 76
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Maxon CINEMA 4D Studio R25.117 [macOS] [HCiSO]",
+        "size": "547.6 MB",
+        "popularity": 6763
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "PhotoMill X 2.1.1 [macOS] [TNT]",
+        "size": "52.1 MB",
+        "popularity": 107
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "PhotoBulk 2.4 [macOS] [TNT]",
+        "size": "16.8 MB",
+        "popularity": 361
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] WidsMob Image Viewer 2.15 [macOS] [TNT]",
+        "size": "8 MB",
+        "popularity": 650
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Xee 3.5.4 [macOS] [HCISO]",
+        "size": "18.3 MB",
+        "popularity": 843
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "EdgeView 2.930 [macOS] [TNT]",
+        "size": "18.4 MB",
+        "popularity": 121
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Artlantis 2021.2 v9.5.2.29009 [macOS] [TNT]",
+        "size": "3.91 GB",
+        "popularity": 680
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 81.1 [macOS] [TNT]",
+        "size": "69 MB",
+        "popularity": 627
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Templates for Keynote - DesiGN 7.3 [macOS] [TNT]",
+        "size": "20.8 MB",
+        "popularity": 968
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Art Directors Toolkit 5.2 (v.130)",
+        "size": "3.3 MB",
+        "popularity": 65
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "[RUS] Resume Templates - Design 3.1 [macOS] [TNT]",
+        "size": "17.8 MB",
+        "popularity": 709
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "PDFpen Pro 13.1 fix [macOS] [TNT]",
+        "size": "272.3 MB",
+        "popularity": 467
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 80.1 [macOS] [TNT]",
+        "size": "68.8 MB",
+        "popularity": 570
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Pixelmator Classic 3.9.9 [macOS] [TNT]",
+        "size": "121.7 MB",
+        "popularity": 736
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 79.1 [macOS] [TNT]",
+        "size": "68.9 MB",
+        "popularity": 399
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Aperture 2.1.2",
+        "size": "245.9 MB",
+        "popularity": 230
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "CADintosh 7.5.3 [Intel] [K-ed]",
+        "size": "21.9 MB",
+        "popularity": 64
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 78 [macOS] [TNT]",
+        "size": "68.8 MB",
+        "popularity": 487
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 77 [macOS] [TNT]",
+        "size": "70 MB",
+        "popularity": 390
+      },
+      {
+        "category": "Программы для создания и обработки графики (Mac OS)",
+        "name": "Sketch 76.1 [macOS] [TNT]",
+        "size": "69.7 MB",
+        "popularity": 362
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Flaming Pear LunarCell — плагин для Adobe Photoshop CS5",
+        "size": "4 MB",
+        "popularity": 200
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "TwistingPixels PixelEffects Bundle — набор набор фильтров и эффектов для Photoshop",
+        "size": "71.3 MB",
+        "popularity": 357
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[UB] Flaming Pear Flood Flexify Melancholytron - плагины для Adobe Photoshop",
+        "size": "17.9 MB",
+        "popularity": 350
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "DigiEffects Falloff Lighting — плагин для Adobe After Effects CS5 (64 бит)",
+        "size": "4 MB",
+        "popularity": 469
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Плагины для AE & FC",
+        "size": "1.03 GB",
+        "popularity": 212
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "PercepTool — плагин к Photoshop CS3/CS4 для корректировки светов и теней",
+        "size": "1 MB",
+        "popularity": 181
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Imagenomic Realgrain for PS 2.1.2 Build 2124 [macOS] [TNT]",
+        "size": "6.8 MB",
+        "popularity": 452
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[RUS] Nik Collection 3 by DxO 3.3.0 [macOS] [TNT]",
+        "size": "2.2 GB",
+        "popularity": 1389
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Cartoon Photoshop Action 27005606 [macOS X] [K-ed]",
+        "size": "734 KB",
+        "popularity": 1067
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "TK Actions V7 Panel for Photoshop",
+        "size": "4.5 MB",
+        "popularity": 985
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Motionboutique - Newton 1.0.52 for After Effects cs5, cs5.5 [2011, ENG]",
+        "size": "2.9 MB",
+        "popularity": 647
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Topaz Plugins for Photoshop CC2017 (mac)[Intel] [SN]",
+        "size": "859.1 MB",
+        "popularity": 4111
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Mercalli 2.0.121 [Intel] [SN]",
+        "size": "29 MB",
+        "popularity": 1163
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Q2ID v4.17 (QuarkXPress to Adobe InDesign) v4.17 [Intel] [K-ed]",
+        "size": "12 MB",
+        "popularity": 965
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Math Magic Pro Edition for Adobe InDesign for Mac OS X 9.1 x64 [19/04/2015, ENG]",
+        "size": "18.2 MB",
+        "popularity": 563
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "VideoCopilot Element 3D v 1.6 - Plugin for AE Mac OSX [Intel] [K-Gen]",
+        "size": "1.46 GB",
+        "popularity": 2827
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Imagenomic Pro Plugin Suit (Noiseware Pro RealGrain Portraiture) для PS 2015",
+        "size": "10.1 MB",
+        "popularity": 16529
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "FilmConvert Pro Photoshop Plugin 1.0.4 — плагин для эмуляции пленки",
+        "size": "142.1 MB",
+        "popularity": 4312
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Topaz ReStyle 1.0 Plugin for Photoshop",
+        "size": "66.1 MB",
+        "popularity": 2078
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Portraiture + Noiseware Plugins for Photoshop [MacOSX]",
+        "size": "7.7 MB",
+        "popularity": 5491
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Perfect Photo Suite Premium Edition 7.5",
+        "size": "903.7 MB",
+        "popularity": 1629
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Topaz Photoshop Plug-in Bundle (май 2013) - 13 плагинов для Photoshop, Photoshop Elements, Aperture, Lightroom, IPhoto",
+        "size": "739.3 MB",
+        "popularity": 16875
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Vertus Fluid Mask 3 v3.2.4 — плагин для Photoshop CS6 и Aperture",
+        "size": "40.5 MB",
+        "popularity": 4448
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "PTLens 1.6 — программа/плагин для PS и Aperture исправляющая искажения оптики",
+        "size": "3.3 MB",
+        "popularity": 1538
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "PhotoWiz B/W Styler 1.04 [Universal] [K-ed]",
+        "size": "1.5 MB",
+        "popularity": 400
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Nik Color Efex Pro 4.002 Complete Edition",
+        "size": "72.6 MB",
+        "popularity": 36542
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Noiseware Professional для PS CS5",
+        "size": "2.8 MB",
+        "popularity": 2873
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "PostworkShop Pro 2.1 Standalone & Photoshop Plugin",
+        "size": "128.9 MB",
+        "popularity": 1489
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "PixelGenius Photokit Analog Effects Toolkit 2.0.1 — плагин для фотошопа",
+        "size": "20.4 MB",
+        "popularity": 5671
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Primatte Photoshop 5.0 — мощный плагин для выполнения цветовой рирпроекции в Photoshop",
+        "size": "10.7 MB",
+        "popularity": 2247
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Mercalli v2 Plugs for AE/FCP",
+        "size": "12.1 MB",
+        "popularity": 6405
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Topaz Plug-In Bundle для Photoshop, Lightroom, iPhoto, Aperture (x32; x64)",
+        "size": "213.9 MB",
+        "popularity": 7671
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Knoll Light Factory for Photoshop 3.2",
+        "size": "13.5 MB",
+        "popularity": 9282
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "FILTERiT (плагин для Adobe Illustrator)",
+        "size": "37.4 MB",
+        "popularity": 2109
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Auto FX Mystical Suite 2 для CS5 (64 бит) — все, что нужно для создания визуальных эффектов",
+        "size": "198.1 MB",
+        "popularity": 1597
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "RollingShutter — совершенно новый плагин для After Effects CS5",
+        "size": "2.9 MB",
+        "popularity": 1694
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "onOne Software Plug-In Suite 5.1.1 для Adobe Photoshop CS2/CS3/CS4/CS5, LightRoom & Aperture (64 бит)",
+        "size": "1.69 GB",
+        "popularity": 14774
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Red Giants Warp 1.1 — плагин для After Effects и Premiere Pro CS5 (64 бит), Final Cut Pro, Motion и Avid",
+        "size": "34.2 MB",
+        "popularity": 3810
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "DigiEffects Aged Film — плагин для Adobe After Effects CS5 (64 бит)",
+        "size": "4.7 MB",
+        "popularity": 3895
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "DigiEffects Atmosphere — плагин для Adobe After Effects CS5 (64 бит)",
+        "size": "3.3 MB",
+        "popularity": 2913
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Trapcode Sound Keys — плагин для After Effects",
+        "size": "3.9 MB",
+        "popularity": 2921
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[RUS] PTLens — программа/плагин для PS и Aperture исправляющая искажения оптики",
+        "size": "2 MB",
+        "popularity": 1520
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Topaz Adjust 4.0.3 — плагин для Adobe Photoshop и Aperture",
+        "size": "36.9 MB",
+        "popularity": 7753
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Portraiture Plug-in for Adobe Photoshop CS3/CS4/CS5 64 Bit",
+        "size": "4.5 MB",
+        "popularity": 31948
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Trapcode 3D Stroke 2.6 for Adobe CS5 (only!)",
+        "size": "3.1 MB",
+        "popularity": 4003
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Trapcode Form 1.1 for Adobe AE CS5 (only!)",
+        "size": "6.4 MB",
+        "popularity": 4524
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "TrapCode Particular 2.1 for AE CS5x64",
+        "size": "29.7 MB",
+        "popularity": 18613
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Topaz Clean 3.0 — новая версия плагина для Adobe Photoshop и Aperture",
+        "size": "24.5 MB",
+        "popularity": 7388
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Topaz DeJPEG 4 — плагин для Adobe Photoshop и Aperture",
+        "size": "25.1 MB",
+        "popularity": 1937
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Topaz Simplify 3 — плагин для Adobe Photoshop и Aperture",
+        "size": "25.5 MB",
+        "popularity": 2470
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Plugin Galaxy 2 — набор из 21 плагина для Adobe Photoshop CS4",
+        "size": "4.2 MB",
+        "popularity": 3875
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Noise Ninja Pro 2.0.7 — плагин для Aperture 3 (64 бит)",
+        "size": "2.3 MB",
+        "popularity": 1775
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "FILTERiT 4.2 (for Adobe Illustrator)",
+        "size": "23.2 MB",
+        "popularity": 997
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Topaz Enhance 2.3 - плагин для AE и FCP - беспрецедентный скалинг видео",
+        "size": "7.4 MB",
+        "popularity": 1986
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Portraiture Plugin ver 2 для Lightroom и Aperture (работают на SnowLeopard 10-6-2)",
+        "size": "8.3 MB",
+        "popularity": 5432
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Boris XML Transfer — плагин для импорта в Adobe After Effects проекта из Final Cut Pro",
+        "size": "13.8 MB",
+        "popularity": 2138
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Composite Wizard 1.4 — набор фильтров для Adobe After Effects от Red Giant",
+        "size": "13.7 MB",
+        "popularity": 2583
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Boris Continuum Complete 6.04 AE — новая версия набора плагинов для создания видео-эффектов",
+        "size": "153.1 MB",
+        "popularity": 1689
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Holomatrix 1.0 — новый плагин от Red Giant Software для After Effects CS4/CS3",
+        "size": "26.3 MB",
+        "popularity": 2793
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Frischluft Lenscare 1.4.3 для After Effects",
+        "size": "1.7 MB",
+        "popularity": 4124
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Filter Forge Professional Edition 1.018 — плагины для PS с возможностью редактирования (перезалито 07/11)",
+        "size": "49.8 MB",
+        "popularity": 1138
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "tintii Photo Filter — программа и плагин для Adobe Photoshop, Elements и Corel Paint Shop",
+        "size": "9.4 MB",
+        "popularity": 4937
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Artlandia SymmetryWorks (плагин для Adobe Illustrator)",
+        "size": "12.8 MB",
+        "popularity": 1960
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Topaz Detail 2.0 — плагин для Adobe Photoshop и Aperture (обновлено 05/02)",
+        "size": "18.7 MB",
+        "popularity": 2738
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "MathMagic Pro Edition for Adobe InDesign — полезный редактор формул (приложение+плагин) обновлено 23/7",
+        "size": "69.3 MB",
+        "popularity": 1423
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "DigiEffects Simulate: Camera - плагин для Adobe After Effects, Adobe Premiere Pro, Apple Final Cut Pro и Autodesk Combustion",
+        "size": "118.6 MB",
+        "popularity": 5090
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[UB] Power Retouche Retouching Pro Suite - набор плагинов для Adobe Photoshop",
+        "size": "17 MB",
+        "popularity": 2759
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[UB] DigiEffects Aurorix - набор плагинов для Adobe After Effects",
+        "size": "64.8 MB",
+        "popularity": 2655
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[Intel] Topaz Adjust 3.2.5 HDR — плагин для Adobe Photoshop и Aperture!!! (обновлено 07/10)",
+        "size": "16.6 MB",
+        "popularity": 4908
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[UB] Noise Ninja Pro Plugin Bundle - плагины для Photoshop(v2.3.2) и Aperture(v2.0.6)",
+        "size": "70.8 MB",
+        "popularity": 6513
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[UB] onOne Software Plug-In Suite 4.5.2 для PS, LightRoom и Aperture — теперь работает и в 10.6 (обновлено 13/10)",
+        "size": "2.31 GB",
+        "popularity": 3719
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[UB] Trapcode Suite 2008.5 — полный набор плагинов для After Effects, AP, FC, Motion и Avid",
+        "size": "382.6 MB",
+        "popularity": 5883
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[UB] Red Giants Warp Radium Glow и Image Lounge - плагины для AE, AP, FC, Motion и Avid",
+        "size": "190.7 MB",
+        "popularity": 2517
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Pro Keying Suite (Key Correct и Primatte Keyer) плагины для Premier, AE, AVID, FC и Motion",
+        "size": "140.3 MB",
+        "popularity": 6127
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Backdrop Primatte Knoll ToonIt! - набор плагинов для Photoshop & Aperture",
+        "size": "152.9 MB",
+        "popularity": 2956
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Плагины от TRAPCODE для Adobe After Effects 7.xx, CS3, CS4",
+        "size": "29.6 MB",
+        "popularity": 8200
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Twitch plug-in for After Effects for MacOSX",
+        "size": "346.6 MB",
+        "popularity": 3085
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "[Mac] Noise Ninja Pro Bundle",
+        "size": "38.5 MB",
+        "popularity": 1854
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "ID2Q v.3 (Adobe InDesign to QuarkXPress)",
+        "size": "7.4 MB",
+        "popularity": 1584
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Photoshop CS2 & CS3 Plugin Collection",
+        "size": "5.07 GB",
+        "popularity": 6680
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Q2ID v3 (QuarkXPress to Adobe InDesign)",
+        "size": "7.7 MB",
+        "popularity": 2064
+      },
+      {
+        "category": "Плагины для программ компании Adobe (Mac OS)",
+        "name": "Genuine Fractals 5 Print Pro Photoshop plugin +5.0.4 patch (Leo/CS3)",
+        "size": "89.3 MB",
+        "popularity": 2887
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Wavetool3 Server 3.927 [Intel/Apple] [K-ed]",
+        "size": "20.7 MB",
+        "popularity": 34
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "QLab 5.5.10 [Intel/Apple] [K-ed]",
+        "size": "89.9 MB",
+        "popularity": 58
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "SuperLunar TS-440,EM-900 2026 [Apple Silicon] [WIN K-Gen]",
+        "size": "40.2 MB",
+        "popularity": 128
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Logic Pro Creator Studio 12.2 [Apple Silicon] [K-ed]",
+        "size": "1.27 GB",
+        "popularity": 0
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Apple - Logic Pro 12.2 [Intel/Apple] [K-ed]",
+        "size": "1.76 GB",
+        "popularity": 2954
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Audirvana Studio 3.0 + RUS",
+        "size": "34.3 MB",
+        "popularity": 586
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "iZotope Tonal Balance Control 3 v3.0.0 U2B Mac [MORiA] incl. STANDALONE 3.0 [Intel/Apple] [K-ed]",
+        "size": "264.9 MB",
+        "popularity": 1235
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Expressive E Imagine (GUISEPPE, Rev2) 1.0.7 [Intel/Apple] [K-ed]",
+        "size": "96.1 MB",
+        "popularity": 160
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Neural DSP - Fortin Nameless Suite X v1.0.1 STANDALONE, VST, VST3, AU [Intel/Apple] [Team FLARE]",
+        "size": "443.8 MB",
+        "popularity": 1819
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Fractal Audio Systems - ICONS Fullerton Complete v1.0.1 STANDALONE, VST, VST3, AU [Intel/Apple] [Team FLARE]",
+        "size": "1.32 GB",
+        "popularity": 709
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "HZE Pedal Series vol.1 & vol.2 1.0.1 [Intel/Apple] [K-ed]",
+        "size": "1.06 GB",
+        "popularity": 280
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "D16 Group Audio Software Pulsatec v1.1.0 [MORiA]",
+        "size": "51.5 MB",
+        "popularity": 371
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "MixWave Manuel Gardner Fernandes 1.0.0 [Team FLARE]",
+        "size": "237.8 MB",
+        "popularity": 0
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Kush Audio Bundle v2025.11 macOS [Intel/Apple] [U2B] [TEAM FLARE]",
+        "size": "1.28 GB",
+        "popularity": 579
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Audio Hertz Bundle v2025.11 [Intel/Apple] [U2B] [TEAM FLARE]",
+        "size": "821.3 MB",
+        "popularity": 420
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "SSG Audio Optimus v1.5.143 [Intel/Apple] [TEAM FLARE]",
+        "size": "57 MB",
+        "popularity": 203
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Serato Sample v2.1.0.3863 [Intel/Apple] [Team V.R]",
+        "size": "752.1 MB",
+        "popularity": 1393
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Farrago 2.1.4 [Intel/Apple] [TNT]",
+        "size": "46.3 MB",
+        "popularity": 92
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "oeksound - spiff v1.4.4 VST, VST3, AU [Intel/Apple] [Team FLARE]",
+        "size": "140 MB",
+        "popularity": 3892
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "oeksound - soothe2 v1.3.3 VST, VST3, AU [Intel/Apple] [Team FLARE]",
+        "size": "128.6 MB",
+        "popularity": 8162
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Beatsurfing - RANDOM Metal v1.0.4 [Intel/Apple] [K-ed]",
+        "size": "351.8 MB",
+        "popularity": 428
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Toontrack - EZmix 3.2.2 STANDALONE, VST3, AAX*, AU [Intel/Apple] [K-ed]",
+        "size": "977.3 MB",
+        "popularity": 923
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Wave Arts - Wave Arts Power Suite 7.01 VST3, AU x64 [MacOS] [22.08.2025]",
+        "size": "255.3 MB",
+        "popularity": 212
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Arturia Piano V3 v3.3.3 6106 U2B Mac [MORiA] [Intel/Apple] [K-ed]",
+        "size": "349.1 MB",
+        "popularity": 771
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "[RUS] Audirvana Plus 1.5.12 (Русская версия) 1.5.12.6 [Intel] [Lic]",
+        "size": "21.4 MB",
+        "popularity": 324
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Slate Digital Submerge 1.0.5 [Apple Silicon] [K-ed]",
+        "size": "37.9 MB",
+        "popularity": 672
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "iZotope - Nectar 4 Advanced 4.1.0 AU, VST3, AAX [25.06.2025] HCiSO",
+        "size": "545.4 MB",
+        "popularity": 4184
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "iZotope - Ozone 12 Advanced 12.0.2 AU, VST3, AAX (x64) [09.2025] HCiSO",
+        "size": "1.2 GB",
+        "popularity": 7523
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Aurora DSP L2 Aura 1.0.2 [Intel/Apple] [K-ed]",
+        "size": "88.5 MB",
+        "popularity": 348
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Cradle Orion 1.2.2 [Intel/Apple] [K-ed]",
+        "size": "81.3 MB",
+        "popularity": 1045
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Cradle The God Particle 1.2.4 [Intel/Apple] [K-ed]",
+        "size": "50.3 MB",
+        "popularity": 3071
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "DuAlt (Rmif Ti-5 Lite [Intel/Apple] [SN])",
+        "size": "316.8 MB",
+        "popularity": 142
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Yamaha Expanded Softsynth Plugin for MONTAGE M v3.0.0 macOS - V.R 3.0.0 [Intel/Apple] [K-ed]",
+        "size": "7.13 GB",
+        "popularity": 988
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Tone Empire EDYN K'ed by MORiA 1.0.2 [Intel/Apple] [K-ed]",
+        "size": "198.9 MB",
+        "popularity": 289
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Apple MainStage 3.7.1 [Intel/Apple] [TNT]",
+        "size": "1.13 GB",
+        "popularity": 1150
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Cableguys Snapback v1.0.0 U2B [GUSEPPE] [MAC] 1.0 [Intel/Apple] [K-ed]",
+        "size": "62.6 MB",
+        "popularity": 1806
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Eventide Audio Split FX Bundle v2025.04 (AU, VST3) [Intel/Apple] macOS",
+        "size": "171.4 MB",
+        "popularity": 1762
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Soundtheory Gullfoss 1.11.5 [Intel/Apple] [K-ed]",
+        "size": "101.9 MB",
+        "popularity": 3960
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Soundtheory Kraftur v1.0.7 (AU), (VST3-intel only) [Intel/Apple] macOS",
+        "size": "18.3 MB",
+        "popularity": 1068
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Audinate Dante Virtual Soundcard 4.4.1.3 [Intel/Apple] [Lic] [Win/Mac]",
+        "size": "119 MB",
+        "popularity": 1370
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Spectrasonics - Stylus RMX v1.10.2 [MAC] [AU, VST, VST3, APP]",
+        "size": "10.57 GB",
+        "popularity": 2649
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "iZotope - Neutron v4.4.0 [MAC] [AU, VST3, AAX]",
+        "size": "2.81 GB",
+        "popularity": 1574
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Antares - Vocal De-Esser 1.0 [MAC]",
+        "size": "51.5 MB",
+        "popularity": 1439
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Melodyne Studio 5.4.2 [MAC] [au, vst3, app]",
+        "size": "95.9 MB",
+        "popularity": 7458
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Izotope - iZotope Aurora 1.0.0 1 1.0.0 STANDALONE x64 [1.10.2024]",
+        "size": "219.1 MB",
+        "popularity": 2224
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Three-Body Technology - Heavier7Strings v1.7.0 Update [Intel/Apple] [K-ed]",
+        "size": "347.4 MB",
+        "popularity": 769
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "uJAM - Virtual Guitarist IRON 2 v2.3.0 [Intel/Apple] [K-ed]",
+        "size": "5.98 GB",
+        "popularity": 1331
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Overloud Mark Studio 2 v2.0.17 macOS-TRAZOR 2.0.17 [Intel/Apple] [K-ed]",
+        "size": "30.2 MB",
+        "popularity": 807
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "iZotope - Plasma v1.0.1 [MORiA] AU|AAX|VST3 [MAC] [12.09.2024]",
+        "size": "235 MB",
+        "popularity": 2640
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Guitar Rig 7 Pro 7.0.2 [Intel/Apple] [V.R]",
+        "size": "1.11 GB",
+        "popularity": 9053
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Antares - Autotune Pro 11 [AU, VST3] [Intel/Apple]",
+        "size": "175.5 MB",
+        "popularity": 0
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Antares - Auto-Tune Pro 11 VST3, AU x64 [29.07.2024]",
+        "size": "174 MB",
+        "popularity": 18002
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Kiive Audio - V-Comp v.1.0.1| AudioScape Mac 26.06.2024",
+        "size": "317.5 MB",
+        "popularity": 747
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "QLab Pro 5.4.1 [Intel/Apple] [TNT]",
+        "size": "38.9 MB",
+        "popularity": 2236
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Goodhertz - All Plugins Bundle v3.10.1 macOS [Keygen-R2R]",
+        "size": "318.3 MB",
+        "popularity": 1908
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "[RUS] Steinberg Cubase Pro 13 v13.0.40 U2B macOS 28.05.2024",
+        "size": "797.3 MB",
+        "popularity": 5236
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "uJAM - Finisher Mac U2B MORiA 2024",
+        "size": "1.8 GB",
+        "popularity": 1296
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Woodlands Studio - Voxillion v1.2.1 VST3, AAX, AU x64 [16.05.2024]",
+        "size": "111.4 MB",
+        "popularity": 576
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "KiloHearts Toolbox Ultimate & Slate Digital bundle v2.2.1 CE macOS-V.R 8.04.2024",
+        "size": "2.92 GB",
+        "popularity": 6671
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "DADA LIFE - bundle 2024.2.CE MacOS [Secrete Souce] 5v1",
+        "size": "99.7 MB",
+        "popularity": 4769
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "[RUS] Sibelius Ultimate [trial reset] 2023.8 build 2563 [Intel/Apple]",
+        "size": "791.7 MB",
+        "popularity": 1748
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "MeldaProduction - MCompleteBundle v16.11 Mac 13.02.2024",
+        "size": "596.7 MB",
+        "popularity": 3438
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "CableGuys - FilterShaper XL v1.0.1 Mac CE 23.02.2024",
+        "size": "57.5 MB",
+        "popularity": 1568
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Sonible PureEQ v1.0.1 U2B Mac [MORiA] 28.12.2023 v1.0.1 [Intel/Apple] [K-ed]",
+        "size": "430.6 MB",
+        "popularity": 1231
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Playbeat 3 v3.2.0 U2B [Intel/Apple] [K-ed]",
+        "size": "79.9 MB",
+        "popularity": 610
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Bassknob STD 1.0.0 [Intel/Apple] [K-ed]",
+        "size": "210.3 MB",
+        "popularity": 503
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Sonoris - Mastering Plugins v1.2.0 macOS [AU, VST, VST3] R2R 16.09.2023",
+        "size": "110.6 MB",
+        "popularity": 804
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Cytomic The Glue v1.7.0 Incl Patched and Keygen macOS-RET 16.01.2024",
+        "size": "15.1 MB",
+        "popularity": 3195
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Valhalla DSP - bundle 2023.12 macOS CE-V.R [28.12.2023]",
+        "size": "82.8 MB",
+        "popularity": 24050
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Arturia Efx REFRACT v1.0.0.5002 macOS 22.12.2023",
+        "size": "207.5 MB",
+        "popularity": 1755
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Reveal Sound Spire v1.5.16 5294 U2B Mac [MORiA] 17.12.2023",
+        "size": "473.8 MB",
+        "popularity": 5827
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Sonible SmartEQ4 v1.0.0 U2B Mac [MORiA] 20.12.2023",
+        "size": "426.8 MB",
+        "popularity": 2646
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "VoosteQ Model N Channel v1.0.0 U2B Mac [MORiA]21.12.2023",
+        "size": "266.7 MB",
+        "popularity": 957
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Yate 6.17.2 [Intel/Apple] [TNT]",
+        "size": "15.9 MB",
+        "popularity": 189
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "AmpKnob – RevC 1.2.1 [Intel/Apple] [K-ed]",
+        "size": "436.3 MB",
+        "popularity": 554
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "[RUS] Guitar Pro 8.1.0 [Intel] [M1] 8.1.0 - Build 48 [Intel/Apple] [HCiSO]",
+        "size": "1020 MB",
+        "popularity": 8890
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Klanghelm SDRR 2 saturation chameleon v2.4.1 MAC [29.05.2022]",
+        "size": "29 MB",
+        "popularity": 1557
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Cradle and Frank Dukes - The Prince v1.1.3 macOS-TRAZOR[18.11.2022]",
+        "size": "533.9 MB",
+        "popularity": 1634
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Black Rooster Audio - The ALL Bundle v2.6.4.macOS[11.06.2023]",
+        "size": "1.36 GB",
+        "popularity": 1007
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Tone2 - Gladiator v3.5.4 macOS Incl Patched and Keygen-RET[16.09.2022]",
+        "size": "80.5 MB",
+        "popularity": 1653
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Surreal Machines FX Bundle macOS Incl Keygen-R2R[02.09.2023] Modnetic v1.3.1+Diffuse v1.3.1+Impact v1.1.1+Crack v1.1.2",
+        "size": "211.6 MB",
+        "popularity": 573
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Heat Up 3 – Ultimate Edition 2023 3.5.4 [Intel/Apple] [WIN K-Gen]",
+        "size": "228.04 GB",
+        "popularity": 2111
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "illformed Glitch 2 v 2.1.3 Mac [RETAiL] 26.04.2023",
+        "size": "11.1 MB",
+        "popularity": 2997
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Antares - Bundle 2023 [AU, VST3] [Intel/Apple] [11.06.23]",
+        "size": "621.2 MB",
+        "popularity": 12061
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Wavesfactory Trackspacer v2.5.9 [U2B]-FLARE 2.5.9 [Intel/Apple] [K-ed]",
+        "size": "94 MB",
+        "popularity": 7808
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Arturia - Rev LX-24 v1.0.0.3771 [Intel/Apple] [K-ed] [MORiA]",
+        "size": "326 MB",
+        "popularity": 2324
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Sonible Pure Bundle 1.0 2023 [Intel/Apple] [K-ed] By MORiA",
+        "size": "213.8 MB",
+        "popularity": 2429
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "MetaPiano 1.1.1 [Intel/Apple] [SN]",
+        "size": "62.5 MB",
+        "popularity": 481
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Infinit Essentials – Urban Heat + Expansions Bundle 1.0.2 [Intel/Apple] [K-ed]",
+        "size": "8.53 GB",
+        "popularity": 363
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Output v1.2.1 Thermal+Portal+Movement+Keygen-R2R[15.03.2023]",
+        "size": "1.09 GB",
+        "popularity": 9440
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Overloud REmatrix Complete Bundle v1.2.11 [U2B] macOS-TRAZOR 3.07.2022",
+        "size": "1.09 GB",
+        "popularity": 1259
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Trackspacer v2.5.9 macOS [U2B]-FLARE 13.08.2022 [Intel/Apple]",
+        "size": "92.5 MB",
+        "popularity": 2450
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Kilohearts - Complete Bundle 2.0.14 VSTi, AAX, AUi [Intel] [K-ed] [TRAZOR]",
+        "size": "2.46 GB",
+        "popularity": 4790
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "GrooveAgent 5.1.10 macOS-V.R (Rosetta 2)",
+        "size": "287.2 MB",
+        "popularity": 320
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Output Movement v1.2.0 MAC[15.02.2023]",
+        "size": "464.3 MB",
+        "popularity": 2317
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "JMG Sound Retronaut v1.0.0 Mac [MORiA]11.02.2023",
+        "size": "15.4 MB",
+        "popularity": 527
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Celemony Melodyne 5 Studio v5.3.1.018 [Intel] [K-ed]",
+        "size": "96 MB",
+        "popularity": 10772
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Sektor v1.6.2 Incl Keygen [macOS]-R2R[2022.07.26]+Chiptune Sektor Expansion",
+        "size": "79.4 MB",
+        "popularity": 403
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Output Portal 1.2.0 Mac[15.02.2023]",
+        "size": "318.3 MB",
+        "popularity": 6629
+      },
+      {
+        "category": "Аудио редакторы и конвертеры (Mac OS)",
+        "name": "Output Thermal 1.2.0 Mac[15.02.2023]",
+        "size": "333.1 MB",
+        "popularity": 3917
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] App Cleaner & Uninstaller Pro 9.1.1 [Intel/Apple] [TNT]",
+        "size": "36.3 MB",
+        "popularity": 396
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "RecoveritLoader 14.0.15.2 [TNT]",
+        "size": "205.4 MB",
+        "popularity": 27
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] NTFS Paragon for Mac 17.0.364 [Intel/Apple] [MacKed]",
+        "size": "97.1 MB",
+        "popularity": 698
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "CleanMyMac 5.5.0 [Intel/Apple] [K-ed]",
+        "size": "152.9 MB",
+        "popularity": 1121
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Apple Remote Desktop 3.10 (1D25a) [Intel/Apple] 3.10 (1D25a) [Intel/Apple] [Demo]",
+        "size": "20.9 MB",
+        "popularity": 180
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "VMware Fusion Professional 25H2 [Intel/Apple] [Free for personal use]",
+        "size": "484.6 MB",
+        "popularity": 2126
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] Commander One Pro 3.17.2 3.17.2 [Intel/Apple] [TNT]",
+        "size": "53 MB",
+        "popularity": 909
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Find Any File (FAF) 2.5.6 [Intel/Apple] [K-ed]",
+        "size": "13.9 MB",
+        "popularity": 0
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] CrossOver 25.1.1 [Intel/Apple] [TNT]",
+        "size": "367.5 MB",
+        "popularity": 0
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] Path Finder 2197 [Intel/Apple] [TNT]",
+        "size": "25.3 MB",
+        "popularity": 429
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Wondershare Recoverit 13.5.20 [macOS] [TNT]",
+        "size": "127.6 MB",
+        "popularity": 1838
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Default Folder X 6.1.6 [TNT] [macOS]",
+        "size": "23 MB",
+        "popularity": 90
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] Sensei 1.6.1 [macOS] TNT",
+        "size": "28.3 MB",
+        "popularity": 0
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "CleanMyMac X 5.0.9 [Intel/Apple] [K-ed]",
+        "size": "168.7 MB",
+        "popularity": 9670
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[Multi / Ru] CrossOver Mac 25.0.1 [Intel] [TNT]",
+        "size": "379.8 MB",
+        "popularity": 6552
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] iStat Menus 7.1 [Intel/Apple] [K-ed]",
+        "size": "22.3 MB",
+        "popularity": 1882
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Magnet 2.13 [MAC]",
+        "size": "7 MB",
+        "popularity": 329
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] AlDente Pro 1.29 [Intel/Apple] [Lic]",
+        "size": "11.1 MB",
+        "popularity": 2508
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] CleanMyMac X 4.15.4 [Intel/Apple] [K-ed]",
+        "size": "113.3 MB",
+        "popularity": 16299
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "TablePlus 6.0.0 [Intel/Apple] [K-ed]",
+        "size": "78.6 MB",
+        "popularity": 813
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "RazorSQL 10.5.4 [Intel/Apple] [K-Gen]",
+        "size": "571 MB",
+        "popularity": 133
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "CAPS Wizard 5.3 [Intel/Apple] [K-Gen]",
+        "size": "8.5 MB",
+        "popularity": 34
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Scroll 2.4.3 [Intel/Apple] [K-Gen]",
+        "size": "3.9 MB",
+        "popularity": 54
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "DMG Canvas 4.0.9 [Intel/Apple] [TNT]",
+        "size": "14.9 MB",
+        "popularity": 309
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Dropzone 4 4.80.13 [Intel/Apple] [TNT]",
+        "size": "62.3 MB",
+        "popularity": 130
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Stellar Data Recovery 10 10 [Intel/Apple] [K-ed]",
+        "size": "68.4 MB",
+        "popularity": 2609
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Paragon ExtFS 11.8.605 [Intel/Apple] [Trial Reset]",
+        "size": "90.4 MB",
+        "popularity": 1601
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Dash 7.2.1 [Intel/Apple] [TNT]",
+        "size": "21 MB",
+        "popularity": 167
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "CrossOver 17.1 [RUS] [Intel] [K-ed]",
+        "size": "207.6 MB",
+        "popularity": 459
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] 4Easysoft iPhone Unlocker for Mac 1.0.18 [Intel/Apple] [K-ed]",
+        "size": "47.5 MB",
+        "popularity": 1259
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Parallels Desktop Business Edition 19.2.0 for Mac [Intel/Apple] [Patch]",
+        "size": "296 MB",
+        "popularity": 14636
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "MacCleaner 3 PRO 3.2.5 (535) [Intel/Apple] [TNT] [K-ed]",
+        "size": "131.1 MB",
+        "popularity": 7673
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Multitouch 1.27.24 [Intel/Apple] [TNT]",
+        "size": "11 MB",
+        "popularity": 215
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Snagit 2024.0.1 [Intel/Apple] [TNT]",
+        "size": "279.1 MB",
+        "popularity": 2623
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] Gemini 2 2.9.10 [Intel] [TNT]",
+        "size": "44.8 MB",
+        "popularity": 1994
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Snagit 2023 2023.2.2 [Intel/Apple] [TNT]",
+        "size": "219.3 MB",
+        "popularity": 474
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Codeweavers - CrossOver v23.0.0 [Intel/Apple] [TNT]",
+        "size": "376.6 MB",
+        "popularity": 4005
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Geekbench 6 6.0.3 [Intel] [TNT]",
+        "size": "308.5 MB",
+        "popularity": 1503
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] DaisyDisk 4.25 (5.0.9) [Intel] [TNT]",
+        "size": "7.2 MB",
+        "popularity": 4409
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Jump Desktop 8.9.16 [MAS] [Intel/Apple] [TNT]",
+        "size": "52.2 MB",
+        "popularity": 1109
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "BetterZip 5.3.1 [Intel/Apple] [TNT]",
+        "size": "25.2 MB",
+        "popularity": 1676
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Geekbench 5 5.5.1 [Intel] [TNT]",
+        "size": "141.4 MB",
+        "popularity": 517
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "zCommander 6.27 [MAS] [Intel/Apple] [HCiSO]",
+        "size": "6.5 MB",
+        "popularity": 528
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Smooze Pro 2.0.40 [Intel/Apple] [TNT]",
+        "size": "9.5 MB",
+        "popularity": 278
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "A Better Finder Rename 11.57 [Intel/Apple] [TNT]",
+        "size": "14.5 MB",
+        "popularity": 697
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "TotalFinder 1.15.0 [Intel/Apple] [HCiSO/Lic]",
+        "size": "6.5 MB",
+        "popularity": 359
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "uDock 3.4 (34002) [Intel] [TNT]",
+        "size": "14.8 MB",
+        "popularity": 111
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] BlueHarvest 8.1.4 [Intel/Apple] [K-ed]",
+        "size": "7.8 MB",
+        "popularity": 360
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "SuperDuper! 3.7.1 [Intel] [TNT]",
+        "size": "12.2 MB",
+        "popularity": 1087
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Downcast 2.11.19 [Intel/Apple] [TNT]",
+        "size": "24.3 MB",
+        "popularity": 90
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "SoundSource 5.5.6 [Intel/Apple] [HCiSO]",
+        "size": "28.4 MB",
+        "popularity": 2735
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "ForkLift 2.5.9",
+        "size": "18.3 MB",
+        "popularity": 515
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Rectangle Pro 2.6.3 [Intel/Apple] [TNT]",
+        "size": "16.2 MB",
+        "popularity": 684
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "FSMonitor 1.2 (137) [Intel] [Lic]",
+        "size": "11 MB",
+        "popularity": 155
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "iToolab FixGo 3.1.0 [Intel/Apple] [K-ed]",
+        "size": "7 MB",
+        "popularity": 517
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Dash 6.3.2 [Intel/Apple] [TNT]",
+        "size": "20 MB",
+        "popularity": 275
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Geekbench 2.2.3",
+        "size": "11.1 MB",
+        "popularity": 157
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Microsoft NTFS by Tuxera 2021.1",
+        "size": "99.6 MB",
+        "popularity": 26886
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "MacCleaner 2 PRO 2.8.1 U2B [macOS] [HCiSO]",
+        "size": "99 MB",
+        "popularity": 4786
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "start 5.6 [macOS] [HCiSO]",
+        "size": "14 MB",
+        "popularity": 124
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] ForkLift 3.5.6 [macOS] [TNT]",
+        "size": "49.4 MB",
+        "popularity": 2137
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "TG Pro 2.68 [macOS] [TNT]",
+        "size": "13.1 MB",
+        "popularity": 4679
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Lunar Pro 5.3.3 [macOS] [TNT]",
+        "size": "12.1 MB",
+        "popularity": 445
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Magnet Pro 2.7.0 [macOS] [TNT]",
+        "size": "6.2 MB",
+        "popularity": 2656
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] PhoneClean Pro 5.6.0 (20210629) [macOS] [TNT]",
+        "size": "14.9 MB",
+        "popularity": 541
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] Boom 3D 1.3.13 [macOS] [TNT]",
+        "size": "55.8 MB",
+        "popularity": 2432
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "TinkerTool System 7.86 [macOS] [HCiSO]",
+        "size": "27.8 MB",
+        "popularity": 450
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Alfred 4 Powerpack 4.6.4 [macOS] [HCiSO]",
+        "size": "6.1 MB",
+        "popularity": 1108
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "PlistEdit Pro 1.9.3 [macOS] [HCiSO]",
+        "size": "5.4 MB",
+        "popularity": 950
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "WiFi Explorer Pro 3.4.4 [macOS] [HCiSO]",
+        "size": "11.3 MB",
+        "popularity": 1529
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Bartender 4.1.40 [macOS] [HCiSO]",
+        "size": "9.2 MB",
+        "popularity": 2388
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Get Backup Pro 3.6.6 [macOS] [SN]",
+        "size": "12.9 MB",
+        "popularity": 560
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Carbon Copy Cloner 6.1 [macOS]",
+        "size": "17.9 MB",
+        "popularity": 5004
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] A-Zippr Pro: Better 1.3 [macOS] [HCiSO]",
+        "size": "25 MB",
+        "popularity": 752
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] MacBooster 8 Pro 8.2.0 [macOS] [TNT]",
+        "size": "36.2 MB",
+        "popularity": 1100
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] Batteries 2.2 [macOS] [TNT]",
+        "size": "7.2 MB",
+        "popularity": 303
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Clipboard Manager 2.3.5 [macOS] [HCiSO]",
+        "size": "13.9 MB",
+        "popularity": 200
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Network Kit 9.0.3 [macOS] [TNT]",
+        "size": "11.4 MB",
+        "popularity": 190
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Coriolis Systems DVD (Bootable iPartition + iDefrag Lite)",
+        "size": "284.8 MB",
+        "popularity": 206
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Airtool 22.3.6 [macOS] [TNT]",
+        "size": "9.4 MB",
+        "popularity": 276
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "App Icon Generator 1.4 [macOS] [HCiSO]",
+        "size": "6.7 MB",
+        "popularity": 142
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "WinZip Mac Pro 9.0.5554 [macOS] [SN]",
+        "size": "23.7 MB",
+        "popularity": 5814
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Geekbench 4.4.1 [macOS] [TNT]",
+        "size": "73.5 MB",
+        "popularity": 347
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "DCommander 3 Premium 3.9.1 [macOS] [HCiSO]",
+        "size": "9.2 MB",
+        "popularity": 862
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Scherlokk 4.5 (45007) [macOS] [HCISO]",
+        "size": "4.3 MB",
+        "popularity": 146
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "MenuBar Stats 3.6.1 [macOS] [TNT]",
+        "size": "21.8 MB",
+        "popularity": 198
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] Paste - Clipboard Manage 2.5.3 [macOS] [TNT]",
+        "size": "16.4 MB",
+        "popularity": 1241
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "NetSpot PRO – Wi-Fi Reporte 2.14.1033 [macOS] [TNT]",
+        "size": "13.5 MB",
+        "popularity": 2241
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] iStatistica Pro 4.1 [macOS] [TNT]",
+        "size": "14.8 MB",
+        "popularity": 1758
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Disk Space Analyzer Pro 3.7 [macOS] [TNT]",
+        "size": "13.9 MB",
+        "popularity": 985
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Pocket cleaner Pro 1.5.8 [macOS] [TNT]",
+        "size": "8 MB",
+        "popularity": 464
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Combo Cleaner Premium 1.3.7 [macOS] [TNT]",
+        "size": "8.7 MB",
+        "popularity": 845
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] PopClip 2021.11.1 [macOS] [TNT]",
+        "size": "5.7 MB",
+        "popularity": 454
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] AnyToISO Pro 3.9.6 fix [macOS] [TNT]",
+        "size": "13.7 MB",
+        "popularity": 1217
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "uBar 4.2.0 fix [macOS] [TNT]",
+        "size": "11.1 MB",
+        "popularity": 297
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Data Guardian 7.0.5 [macOS] [TNT]",
+        "size": "35.8 MB",
+        "popularity": 68
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "Malwarebytes 3.5.26 build 1796 [macOS] [SN]",
+        "size": "28.6 MB",
+        "popularity": 2525
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] Keka 1.2.50 [macOS] [TNT]",
+        "size": "33.6 MB",
+        "popularity": 8224
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "BetterTouchTool 3.562 [macOS] [MM]",
+        "size": "30 MB",
+        "popularity": 2256
+      },
+      {
+        "category": "Системные программы (Mac OS)",
+        "name": "[RUS] Archiver 4.0.0 fix [macOS] [TNT]",
+        "size": "17.3 MB",
+        "popularity": 1092
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Microsoft Office 2024 16.107 [Intel/Apple] [K-ed]",
+        "size": "3.25 GB",
+        "popularity": 0
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Cisdem PDF Converter OCR 9.7.0 [macOS] [TNT]",
+        "size": "501.5 MB",
+        "popularity": 42
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Vellum 3.9.3 [Intel/Apple] [TNT]",
+        "size": "104.1 MB",
+        "popularity": 60
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] TaskTracker 0.1b [Apple Silicon]",
+        "size": "527 KB",
+        "popularity": 30
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Reader Pro 5.2.1 [macOS] [TNT]",
+        "size": "275.5 MB",
+        "popularity": 0
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Navicat Premium 17.1.9 [Intel/Apple] [TNT]",
+        "size": "362.6 MB",
+        "popularity": 441
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] PDF Expert 3 3.10.8 [Intel/Apple] [K-ed]",
+        "size": "93.7 MB",
+        "popularity": 3422
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Texifier 1.9.27 [Intel] [TNT]",
+        "size": "35.4 MB",
+        "popularity": 84
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Glyphs 3 3.2.3 [Intel/Apple] [Lic]",
+        "size": "27.2 MB",
+        "popularity": 551
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "OmmWriter 1.67 [Intel/Apple] [TNT]",
+        "size": "200.4 MB",
+        "popularity": 194
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] iA Writer 7.0.6 [MAS] (60081) [Intel/Apple] [TNT]",
+        "size": "18.9 MB",
+        "popularity": 895
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Nova 11.8 [Intel] [TNT]",
+        "size": "58.3 MB",
+        "popularity": 191
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "GrandTotal 8.2.0 [Intel/Apple] [TNT]",
+        "size": "46 MB",
+        "popularity": 104
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Things 3 3.19.3 [MAS] [Intel/Apple] [TNT]",
+        "size": "41.2 MB",
+        "popularity": 1171
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Swift Publisher 5 5.6.9 [Intel/Apple] [TNT]",
+        "size": "458.4 MB",
+        "popularity": 216
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Keep It 2.3.3 [Intel/Apple] [TNT]",
+        "size": "31.6 MB",
+        "popularity": 77
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "PDF Search 13.6 [Intel/Apple] [TNT]",
+        "size": "12.1 MB",
+        "popularity": 96
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] XMind PRO 23.09.11172 [Intel/Apple] [HCiSO]",
+        "size": "222.2 MB",
+        "popularity": 2878
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "FSNotes 6.2.6 [MAS] [Intel/Apple] [TNT]",
+        "size": "26.3 MB",
+        "popularity": 106
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "SQLPro Studio 2023.35 [Intel/Apple] [TNT]",
+        "size": "66.8 MB",
+        "popularity": 433
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "BusyContacts 2023.1.1 (202310101) [Intel/Apple] [HCiSO]",
+        "size": "24.9 MB",
+        "popularity": 120
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] ABBYY FineReader PDF 15.2.9 [Intel/Apple] [HCiSO]",
+        "size": "804 MB",
+        "popularity": 16766
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Outline 3.2302.0 [MAS] [Intel/Apple] [TNT]",
+        "size": "81.1 MB",
+        "popularity": 167
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "WonderPen 2.2.4 [MAS] [Intel] [TNT]",
+        "size": "178.3 MB",
+        "popularity": 89
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Task Office 8.7 [Intel] [TNT]",
+        "size": "52.5 MB",
+        "popularity": 212
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] gTasks Pro - Tasks for Google 1.3.27 [MAS] [Intel] [TNT]",
+        "size": "9.8 MB",
+        "popularity": 152
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] iThoughtsX 9.2 [MAS] [Intel/Apple] [TNT]",
+        "size": "33.9 MB",
+        "popularity": 342
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "SQLPro for SQLite 2022.96 [Intel/Apple] [HCiSO]",
+        "size": "23.8 MB",
+        "popularity": 325
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "BusyCal 2022.4.5 (202240509) [Intel] [TNT]",
+        "size": "53.9 MB",
+        "popularity": 197
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] PDFelement Pro 9.1.7.4760 (OCR) [Intel/Apple] [K-ed]",
+        "size": "701.2 MB",
+        "popularity": 1617
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Nova 10 [macOS] [HCiSO]",
+        "size": "113.5 MB",
+        "popularity": 362
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "iWork '06",
+        "size": "1.69 GB",
+        "popularity": 222
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Nova 9.3 [macOS] [TNT]",
+        "size": "59.7 MB",
+        "popularity": 439
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] DjVu Reader Pro 2.6.2 [macOS] [HCiSO]",
+        "size": "32.5 MB",
+        "popularity": 7772
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "PCalc 4.9.2 [macOS] [TNT]",
+        "size": "33.7 MB",
+        "popularity": 188
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] GoodNotes 5.8.13 [macOS] [TNT]",
+        "size": "438.2 MB",
+        "popularity": 752
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "BusyContacts 1.6.5 [macOS] [TNT]",
+        "size": "22.1 MB",
+        "popularity": 139
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Chaos Control 1.14 [macOS] [TNT]",
+        "size": "72.5 MB",
+        "popularity": 184
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Glyphs 3.0.5 [macOS] [TNT]",
+        "size": "23 MB",
+        "popularity": 901
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Text Scanner - PDF & Document 1.5.3 [macOS] [TNT]",
+        "size": "28.1 MB",
+        "popularity": 355
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Murasaki 2.4.1 [macOS] [TNT]",
+        "size": "3.8 MB",
+        "popularity": 111
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Soulver 3.5.5 [macOS] [TNT]",
+        "size": "24.3 MB",
+        "popularity": 299
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "StarOffice 9 Multilang [Intel]",
+        "size": "517.8 MB",
+        "popularity": 113
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Byword 2.9.5 fix [macOS] [TNT]",
+        "size": "6 MB",
+        "popularity": 215
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "TaskPaper 3.8.17 [macOS] [HCiSO]",
+        "size": "9.8 MB",
+        "popularity": 117
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "SignFlow 1.1 [macOS] [TNT]",
+        "size": "23.5 MB",
+        "popularity": 104
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] SoftMaker Office Professional 2021 Rev S1034.0710 [macOS] [BTCR]",
+        "size": "462.8 MB",
+        "popularity": 2102
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Cisdem PDFMaster 4.1.0 fix [macOS] [TNT]",
+        "size": "9.9 MB",
+        "popularity": 354
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] NeoOffice 2017.31 [macOS] [TNT]",
+        "size": "268.8 MB",
+        "popularity": 195
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] ExactScan Pro 21.11 [macOS] [TNT]",
+        "size": "18.8 MB",
+        "popularity": 389
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Nova 7.5 [macOS] [TNT]",
+        "size": "64.4 MB",
+        "popularity": 105
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Storyist 4.2.4 [macOS] [TNT]",
+        "size": "22.1 MB",
+        "popularity": 371
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Yojimbo 2.1 — универсальный органайзер для пользователей Mac",
+        "size": "6.2 MB",
+        "popularity": 103
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "RightFont 3.1.2 [Intel] [Lic]",
+        "size": "8.7 MB",
+        "popularity": 96
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Smultron 12.5 [macOS] [TNT]",
+        "size": "7.2 MB",
+        "popularity": 110
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Notebooks 2.4.3 [macOS] [TNT]",
+        "size": "18.3 MB",
+        "popularity": 203
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] IBM SPSS Statistics 26.0 [Intel] [Lic]",
+        "size": "1.82 GB",
+        "popularity": 5246
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Cisdem Document Reader 5.5.1 [macOS] [TNT]",
+        "size": "26 MB",
+        "popularity": 485
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "GrandTotal 7.1.2 [macOS] [TNT]",
+        "size": "47.1 MB",
+        "popularity": 129
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Day One 2.5.6 [macOS] [TNT]",
+        "size": "38.7 MB",
+        "popularity": 291
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Mate Translate 7.1.0 [macOS] [TNT]",
+        "size": "28.1 MB",
+        "popularity": 1318
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] VueScan Pro 9.7.56 [macOS] [TNT]",
+        "size": "13.3 MB",
+        "popularity": 6841
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Notability 4.4.3 [macOS] [TNT]",
+        "size": "100.2 MB",
+        "popularity": 506
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Ulysses 22.1 [macOS] [HCiSO]",
+        "size": "28.1 MB",
+        "popularity": 1208
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] FSNotes 4.10.1 [macOS] [TNT]",
+        "size": "16.7 MB",
+        "popularity": 90
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "PDF Protector 1.5.1 [macOS] [TNT]",
+        "size": "10.7 MB",
+        "popularity": 100
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Translatium 13.5.0 [macOS] [TNT]",
+        "size": "74.1 MB",
+        "popularity": 373
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Note-C 2.0.7 [Intel] [K-ed]",
+        "size": "11.4 MB",
+        "popularity": 135
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "eBookBinder 1.5.1 [macOS X] [K'ed by TNT]",
+        "size": "7.9 MB",
+        "popularity": 217
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] PlainPad 1.0.0 [macOS X] [K'ed by TNT]",
+        "size": "4.7 MB",
+        "popularity": 115
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Record Lectures 3.1.4 [macOS] [TNT]",
+        "size": "5 MB",
+        "popularity": 101
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Vellum 2.6.3 [macOS] [TNT]",
+        "size": "14.6 MB",
+        "popularity": 217
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "PDF Squeezer 4.0.2 [macOS X] [K'ed]",
+        "size": "17.2 MB",
+        "popularity": 159
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] BookReader 5.14 [macOS] [TNT]",
+        "size": "15.5 MB",
+        "popularity": 3206
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "DjVu Reader Pro 2.3.7 [macOS X] [K'ed]",
+        "size": "27 MB",
+        "popularity": 1598
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Ulysses 2.8.2 [Intel] [K-ed]",
+        "size": "21 MB",
+        "popularity": 648
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] 2Do 2.6.13 2.6.13 [Intel] [K-ed]",
+        "size": "49.6 MB",
+        "popularity": 516
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "PDF Expert 2.4.30 [Intel] [K-ed] [RUS + ENG + 9]",
+        "size": "35.7 MB",
+        "popularity": 3341
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "WonderPen 1.7.1 [K'ed] - писателям",
+        "size": "65.9 MB",
+        "popularity": 134
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "PDF Checkpoint 1.8.9 [macOS X] [K'ed]",
+        "size": "4.8 MB",
+        "popularity": 130
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Cisdem PDFPasswordRemover 3.7.0 - снятие пароля с PDF [macOS X][K-ed]",
+        "size": "3 MB",
+        "popularity": 398
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Suite for MS Office - Templates for Microsoft Word, PowerPoint and Excel 2.0 [iNTEL] [K-ed] [MULTi + RUS]",
+        "size": "51.3 MB",
+        "popularity": 13411
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Cisdem DocumentReader 4.0.0 [macOS X] [K'ed]",
+        "size": "26.1 MB",
+        "popularity": 234
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Cisdem PDFManagerUltimate 3.1.0 - PDF-редактор/конвертор для macOS X [Intel] [K-ed]",
+        "size": "431.7 MB",
+        "popularity": 1380
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Cisdem PDFCreator 6.0.0 - маленький и бешенный PDF-принтер для macOS X [Intel] [K-ed]",
+        "size": "8.8 MB",
+        "popularity": 893
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Theme Lab 5.4.3 - Шаблоны для Keynote [Intel]",
+        "size": "10.3 MB",
+        "popularity": 1215
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Alungu Designs - Xpert Bundle - Templates for MS Office 3.1 [iNTEL] [K-ed]",
+        "size": "332.6 MB",
+        "popularity": 1328
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Jumsoft - Templates Lab for MS Office 3.5 [iNTEL] [K-ed]",
+        "size": "96.4 MB",
+        "popularity": 1350
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Graphic Node - Bundle for Office GN Templates 7.0 [iNTEL] [K-ed] [MULTi + RUS]",
+        "size": "18.4 MB",
+        "popularity": 2095
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "MindManager 11 for Mac 11.2.116 [Intel] [K-Gen]",
+        "size": "132.3 MB",
+        "popularity": 1425
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "PrintFab 2.11",
+        "size": "21.5 MB",
+        "popularity": 377
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "iWork :: Pages 6.3.1 • Numbers 4.3.1 • Keynote 7.3.1",
+        "size": "863.7 MB",
+        "popularity": 11417
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] OmniFocus Pro 2.11",
+        "size": "28.1 MB",
+        "popularity": 1462
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Office 2008 Home and Student Edition",
+        "size": "523.6 MB",
+        "popularity": 3803
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Money Pro 1.8.5 [Intel] [K-ed] [MAS]",
+        "size": "27.8 MB",
+        "popularity": 2373
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "[RUS] Проект ОБЪЕМНИК: Раскрой 3.5 [Intel] [K-ed]",
+        "size": "11.1 MB",
+        "popularity": 1667
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "iA Writer 4.0.2 [Intel] [MAS + iCloud]",
+        "size": "12.9 MB",
+        "popularity": 1844
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Apple Keynote 7.0.5 [Multi/Ru]",
+        "size": "455 MB",
+        "popularity": 3029
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Apple Numbers 4.0.5 [Multi/Ru]",
+        "size": "173 MB",
+        "popularity": 836
+      },
+      {
+        "category": "Офисные программы (Mac OS)",
+        "name": "Apple Pages 6.0.5 [Multi/Ru]",
+        "size": "227.6 MB",
+        "popularity": 1591
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "ZeroIRC 1.0 [Intel/Apple] [Demo]",
+        "size": "24 MB",
+        "popularity": 0
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Downie 4 Version 4.12 (build 5138) [TEAM EDiSO] 4.12 [Intel/Apple] [K-ed]",
+        "size": "55.6 MB",
+        "popularity": 168
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Little Snitch 6 6.3.3 [Intel/Apple] [SN]",
+        "size": "35.1 MB",
+        "popularity": 2281
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] RYouTube 1.0.1 [Intel/Apple] [Demo] Плеер YouTube для рунета.",
+        "size": "147.3 MB",
+        "popularity": 0
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Ecamm Call Recorder 2.3.28 2.3.28 [Intel]",
+        "size": "3.2 MB",
+        "popularity": 23
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "RSS Menu v3.3.1 [MAC]",
+        "size": "10.8 MB",
+        "popularity": 25
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Downie 4.8.3 (4817) [Intel/Apple] [TNT]",
+        "size": "49.7 MB",
+        "popularity": 1381
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] CloudMounter 4.4 [Intel] [TNT]",
+        "size": "57.5 MB",
+        "popularity": 337
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "MAMP PRO 6.9 [Intel] [TNT]",
+        "size": "472.8 MB",
+        "popularity": 1015
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Airmail 5.6.16 [MAS] [Intel] [TNT]",
+        "size": "42.6 MB",
+        "popularity": 350
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Kaleidoscope 4.2.0 [Intel] [TNT]",
+        "size": "39.3 MB",
+        "popularity": 190
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Integrity Plus 12.7.10 [Intel/Apple] [TNT]",
+        "size": "6.5 MB",
+        "popularity": 61
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Integrity Pro 12.7.3 [Intel/Apple] [TNT]",
+        "size": "6.5 MB",
+        "popularity": 87
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Scrutiny 12 12.7.3 [Intel/Apple] [TNT]",
+        "size": "6.8 MB",
+        "popularity": 117
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "MarsEdit 5 5.0.5 [Intel/Apple] [TNT]",
+        "size": "22.8 MB",
+        "popularity": 89
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "iNet Network Scanner 2.9.6 [MAS] [Intel] [TNT]",
+        "size": "219.6 MB",
+        "popularity": 654
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "NAMO 2.0 [Intel] [TNT]",
+        "size": "29.5 MB",
+        "popularity": 115
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "BookMacster 3.0.12 [Intel] [TNT]",
+        "size": "21 MB",
+        "popularity": 84
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Valentina Studio Pro 12.7.0 [Intel] [TNT]",
+        "size": "153.6 MB",
+        "popularity": 243
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "goPanel 2 2.9.5 [Intel/Apple] [HCiSO]",
+        "size": "19.3 MB",
+        "popularity": 108
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Cookie 6.8.4 [Intel/Apple] [TNT]",
+        "size": "7.5 MB",
+        "popularity": 136
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Unite 4.2.2 [Intel/Apple] [TNT]",
+        "size": "21.9 MB",
+        "popularity": 154
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Coda 2.0.12 [Intel] [K-ed]",
+        "size": "41.9 MB",
+        "popularity": 336
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Integrity Plus 12.2.3 [macOS] [TNT]",
+        "size": "6.1 MB",
+        "popularity": 80
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] 4K YouTube to MP3 Pro 4.5.2 [macOS] [TNT]",
+        "size": "126.2 MB",
+        "popularity": 2026
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Postico 1.5.20 [macOS] [TNT]",
+        "size": "11.1 MB",
+        "popularity": 284
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Adguard 2.8.0 (1128) Beta [macOS] [TNT]",
+        "size": "89.9 MB",
+        "popularity": 2534
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Adguard 2.7.0.1094 [Intel] [TNT]",
+        "size": "83.7 MB",
+        "popularity": 2644
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Kaleidoscope 3.3 [macOS] [TNT]",
+        "size": "32.4 MB",
+        "popularity": 383
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "myTuner Radio Pro 2.1 [macOS] [TNT]",
+        "size": "27.5 MB",
+        "popularity": 638
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Grids for Instagram 7.0.20 [macOS] [TNT]",
+        "size": "39.6 MB",
+        "popularity": 743
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Softorino YouTube Converter 2 v4.0.21 [macOS] [HCiSO]",
+        "size": "16.3 MB",
+        "popularity": 1151
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "MarsEdit 4.5.7 [macOS] [TNT]",
+        "size": "23.9 MB",
+        "popularity": 77
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Transmit 5.7.6 [macOS] [TNT]",
+        "size": "37.8 MB",
+        "popularity": 1121
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "HyperImage 3.5.1",
+        "size": "2.9 MB",
+        "popularity": 79
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] BoxCryptor 1.2.3",
+        "size": "39.1 MB",
+        "popularity": 72
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Hype 1.6.2 [Intel] [SN]",
+        "size": "23.5 MB",
+        "popularity": 69
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Mellel 5.1.0 [macOS] [TNT]",
+        "size": "109.5 MB",
+        "popularity": 138
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Tower PRO 8.0 [macOS] [K-Gen]",
+        "size": "39.9 MB",
+        "popularity": 276
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Kaleidoscope 2.4.5 [macOS] [TNT]",
+        "size": "27.2 MB",
+        "popularity": 171
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "BBEdit 14.0.4 [macOS] [SN]",
+        "size": "23.4 MB",
+        "popularity": 1032
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Serviio Pro 2.2.1 CR2 [macOS] [HCiSO]",
+        "size": "121 MB",
+        "popularity": 1045
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Airy Pro 3.24 [macOS] [TNT]",
+        "size": "25.9 MB",
+        "popularity": 1435
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "System Toolkit 4.1.1 [macOS] [TNT]",
+        "size": "7 MB",
+        "popularity": 97
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Folx Pro 5.26.13983 [macOS] [TNT]",
+        "size": "19.1 MB",
+        "popularity": 11216
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Net Radar 1.3 fix [macOS] [TNT]",
+        "size": "4.6 MB",
+        "popularity": 91
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] VK Play 1.0",
+        "size": "3.7 MB",
+        "popularity": 125
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Serial 2.0.12 [macOS] [TNT]",
+        "size": "21.8 MB",
+        "popularity": 371
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Espresso 5.8 [macOS] [TNT]",
+        "size": "26.2 MB",
+        "popularity": 198
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Kiwi for Gmail 2.0.40 [macOS] [HCiSO]",
+        "size": "158 MB",
+        "popularity": 172
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "TextMate 2.0.22 [macOS] [TNT]",
+        "size": "22.9 MB",
+        "popularity": 282
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "CodeRunner 4.0.3 [macOS]",
+        "size": "125.9 MB",
+        "popularity": 541
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Reeder 5.0.8 [macOS] [TNT]",
+        "size": "12.7 MB",
+        "popularity": 564
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Feeder 4.2.4 [macOS] [TNT]",
+        "size": "12.9 MB",
+        "popularity": 73
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Leaf - RSS News Reader 5.2.2 [macOS] [TNT]",
+        "size": "10.7 MB",
+        "popularity": 170
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "TablePlus 3.11.0 [macOS] [TNT]",
+        "size": "53.4 MB",
+        "popularity": 848
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "LogTail 4.2 [macOS] [HCiSO]",
+        "size": "14.3 MB",
+        "popularity": 88
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Hype 4 Pro 4.1.7 [macOS] [TNT]",
+        "size": "17.6 MB",
+        "popularity": 209
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "ExpanDrive 2021.7.1 [macOS] [TNT]",
+        "size": "140.1 MB",
+        "popularity": 387
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Blocs 4.3.2 [macOS] [TNT]",
+        "size": "36.9 MB",
+        "popularity": 492
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "MAMP & MAMP PRO 6.3.2 [macOS] [TNT]",
+        "size": "467.4 MB",
+        "popularity": 1588
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Remote Desktop Manager Enterprise 2021.1.7.0 [macOS] [K-Gen]",
+        "size": "114.2 MB",
+        "popularity": 1818
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Viper FTP 5.7.2 [macOS] [TNT]",
+        "size": "16.2 MB",
+        "popularity": 423
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[App Store] Airmail 1.3",
+        "size": "25.8 MB",
+        "popularity": 74
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Viscosity 1.9.1 [macOS] [SN]",
+        "size": "21 MB",
+        "popularity": 1212
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Roadblock 1.8.8 [macOS] [HCiSO]",
+        "size": "7.2 MB",
+        "popularity": 156
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Remote Wake Up 1.4.1 [macOS] [TNT]",
+        "size": "14.8 MB",
+        "popularity": 112
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Network Radar 2.10 [macOS] [TNT]",
+        "size": "23.8 MB",
+        "popularity": 509
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Radio Silence 3.1 [macOS] [SN]",
+        "size": "647 KB",
+        "popularity": 6622
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Screens 4.8.5 [macOS] [TNT]",
+        "size": "34.7 MB",
+        "popularity": 163
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Tuner for YouTube music 4.10 [macOS] [TNT]",
+        "size": "8.4 MB",
+        "popularity": 379
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Unibox 1.2 (220) [MAC][Intel]",
+        "size": "1.6 MB",
+        "popularity": 149
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] MediaHuman YouTube Downloader 3.9.9.51 [Intel] [K-ed]",
+        "size": "80.5 MB",
+        "popularity": 5113
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Cyberduck 6.8.3 [macOS] [TNT]",
+        "size": "107.6 MB",
+        "popularity": 1921
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Website Watchman 2.10.0 [Intel] [K-ed]",
+        "size": "9 MB",
+        "popularity": 111
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Twixl Publisher Pro 11.6 [macOS X] [K'ed by TNT]",
+        "size": "305.5 MB",
+        "popularity": 99
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "ReadKit 2.6.5 [macOS X] [K'ed by TNT]",
+        "size": "10.2 MB",
+        "popularity": 117
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Scrutiny 9.8.4 [macOS] [K'ed by TNT]",
+        "size": "11.2 MB",
+        "popularity": 113
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Kingpin Private Browser 1.3.22 [macOS X] [K'ed by HCiSO]",
+        "size": "69.7 MB",
+        "popularity": 283
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Transfer 1.2.3 [macOS X] [K'ed by HCiSO]",
+        "size": "3.3 MB",
+        "popularity": 110
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Reeder 4.2.5 [macOS] [HCiSO]",
+        "size": "10.8 MB",
+        "popularity": 456
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] AirServer 7.2.6 [macOS X] [K'ed by TNT]",
+        "size": "14 MB",
+        "popularity": 2449
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "URL Manager Pro 5.4 [macOS] [K'ed by HCiSO]",
+        "size": "12 MB",
+        "popularity": 98
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] uTorrent Stable (1.8.7 build 45548) [macOS X] [HCiSO]",
+        "size": "5.3 MB",
+        "popularity": 12004
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] TripMode 2.2.1 [macOS X] [K'ed by TNT]",
+        "size": "17.3 MB",
+        "popularity": 735
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Ummy Video Downloader 1.72 [macOS X] [Intel] [K'ed by TNT]",
+        "size": "17.1 MB",
+        "popularity": 7068
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Marked 2.5.42 [macOS X] [Intel] [K'ed by TNT]",
+        "size": "65 MB",
+        "popularity": 90
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Shimo 4.1.5.1 [macOS] [TNT]",
+        "size": "13.7 MB",
+        "popularity": 1458
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "EventScripts 1.17 [macOS X] [Intel] [K'ed by HCiSO]",
+        "size": "8.7 MB",
+        "popularity": 89
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Hands Off! 4.4.2 [Intel] [HCiSO]",
+        "size": "9.7 MB",
+        "popularity": 2392
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Dark Reader for Safari 1.3.3 [macOS X] [Intel] [K'ed by HCiSO]",
+        "size": "5.7 MB",
+        "popularity": 434
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Sparkle Pro 2.8.11 [macOS X] [Intel] [K'ed by TNT]",
+        "size": "57.3 MB",
+        "popularity": 534
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Unite 3.0.1 [macOS] [TNT]",
+        "size": "14.3 MB",
+        "popularity": 334
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Downie 3 v3.9.11 [Intel] [HCiSO]",
+        "size": "37.9 MB",
+        "popularity": 227
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] Internet Speed Test 3.1 [macOS X] [Intel] [K'ed by TNT]",
+        "size": "5.5 MB",
+        "popularity": 350
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Coherence Pro 2.1.0 [macOS] [TNT]",
+        "size": "15.2 MB",
+        "popularity": 161
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "VirtualHostX 8.7.16 [macOS] [Intel] [K'ed by TNT]",
+        "size": "32.1 MB",
+        "popularity": 94
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "Dark Mode for Safari 2.6.0 [K'ed]",
+        "size": "5 MB",
+        "popularity": 388
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "HistoryHound 2.1.1 [macOS X] [K'ed] - наглядный поиск в истории браузеров",
+        "size": "7.1 MB",
+        "popularity": 84
+      },
+      {
+        "category": "Программы для интернета и сетей (Mac OS)",
+        "name": "[RUS] iCab - Internet Browser 5.9.2 - macOS [Intel] [K'ed by TNT]",
+        "size": "11.8 MB",
+        "popularity": 248
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Krisp 2.57.14 [Intel/Apple] [таблетка с открытым исходным кодом]",
+        "size": "393.2 MB",
+        "popularity": 178
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Style Master 5 — редактор каскадных таблиц стилей",
+        "size": "68.6 MB",
+        "popularity": 18
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "MacDroid 1.6.1 [MAC] 1.6.1",
+        "size": "23.2 MB",
+        "popularity": 1226
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Экзамен ПДД Ромашка 1.1.9 [Intel/Apple]",
+        "size": "194.3 MB",
+        "popularity": 230
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] OmniPlan Pro 4 4.9.0 [Intel/Apple] [TNT]",
+        "size": "97.8 MB",
+        "popularity": 509
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] OmniOutliner Pro 5.14.0 [Intel/Apple] [TNT]",
+        "size": "46 MB",
+        "popularity": 116
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] OmniGraffle Pro 7.24 [Intel/Apple] [TNT]",
+        "size": "73.2 MB",
+        "popularity": 715
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Disk Map: Visualize Disk Usage 2.7 [Intel] [TNT]",
+        "size": "7.5 MB",
+        "popularity": 149
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Mp3tag 1.8.13 [Intel/Apple] [TNT]",
+        "size": "11.3 MB",
+        "popularity": 2719
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Resolume Arena 7.15.0 rev 23381 [Intel/Apple] [WIN K-Gen]",
+        "size": "1.31 GB",
+        "popularity": 7935
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] iToolab AnyGo 6.6.1 [Intel/Apple] [TNT]",
+        "size": "108.1 MB",
+        "popularity": 726
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Tenorshare Music Cleanup for Mac 1.1.0.0",
+        "size": "15.2 MB",
+        "popularity": 175
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "DirEqual 5.3 (53001) [Intel] [TNT]",
+        "size": "4 MB",
+        "popularity": 134
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Project Office PRO 1.0.9 [Intel/Apple] [TNT]",
+        "size": "19.2 MB",
+        "popularity": 618
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Timemator 3.0.2 [Intel/Apple] [TNT]",
+        "size": "27.8 MB",
+        "popularity": 198
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "FontBook 5.3.1 (61) [Intel/Apple] [TNT]",
+        "size": "24.8 MB",
+        "popularity": 118
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Awaken 6.4.5 [Intel/Apple] [TNT]",
+        "size": "21 MB",
+        "popularity": 85
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Color UI 2.3 [MAS] [Intel/Apple] [TNT]",
+        "size": "8.8 MB",
+        "popularity": 104
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] MacFamilyTree 10 10.1.0 [Intel/Apple] [TNT]",
+        "size": "144.2 MB",
+        "popularity": 1335
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Omni Recover 3 3.4.4 [Intel] [TNT]",
+        "size": "23.7 MB",
+        "popularity": 280
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "AnyTrans 8.9.4.20221013 [Intel/Apple] [TNT]",
+        "size": "195.7 MB",
+        "popularity": 2279
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "VCE Player for Mac 1.6 [Intel] [K-ed]",
+        "size": "3 MB",
+        "popularity": 227
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "MacGourmet Deluxe",
+        "size": "32.7 MB",
+        "popularity": 75
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Typeface 3.5.2 [macOS] [TNT]",
+        "size": "26.5 MB",
+        "popularity": 479
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Speech 1.9.1 [macOS] [HCiSO]",
+        "size": "5.6 MB",
+        "popularity": 251
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] GoodTask 6.9.5 [macOS] [TNT]",
+        "size": "42.8 MB",
+        "popularity": 194
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "PhoneRescue for iOS 4.2.0.20211223 [macOS] [TNT]",
+        "size": "57.7 MB",
+        "popularity": 924
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Color Wheel 7.0 [macOS] [HCiSO]",
+        "size": "2.9 MB",
+        "popularity": 133
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Paw HTTP Client 3.3.3 [macOS] [TNT]",
+        "size": "18.4 MB",
+        "popularity": 198
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "iMazing 2.14.6 [macOS] [TNT]",
+        "size": "192.6 MB",
+        "popularity": 26779
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Be Focused Pro - Focus Timer 2.1.1 [macOS] [TNT]",
+        "size": "23.9 MB",
+        "popularity": 575
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Gestimer 1.2.6 [macOS] [TNT]",
+        "size": "11.8 MB",
+        "popularity": 298
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Wolfram Mathematica 13.0.1 [macOS] [K-Gen]",
+        "size": "2.16 GB",
+        "popularity": 1976
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Timer RH PRO 2.10.2 [macOS] [TNT]",
+        "size": "10.9 MB",
+        "popularity": 240
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Typora 1.1.5 [macOS] [TNT]",
+        "size": "14.5 MB",
+        "popularity": 573
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "WALTR PRO 4.0.114 [macOS] [TNT]",
+        "size": "23.1 MB",
+        "popularity": 2672
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Hyperkey 0.14 [macOS] [TNT]",
+        "size": "14.4 MB",
+        "popularity": 90
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Barcode 2.2.2 [macOS] [TNT]",
+        "size": "24.6 MB",
+        "popularity": 468
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] SyncMate Expert 8.4.501 [macOS] [TNT]",
+        "size": "65.2 MB",
+        "popularity": 383
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "24 Hour Wallpaper 5.0.1 [macOS] [TNT]",
+        "size": "290.7 MB",
+        "popularity": 567
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Mic Drop • Mute Manager 1.4.2 [macOS] [TNT]",
+        "size": "7.5 MB",
+        "popularity": 115
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Tidy Up! 3.0.11 [Intel] [SN] [RUS]",
+        "size": "60.4 MB",
+        "popularity": 76
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Master of Typing 3: Practice 3.13.2 [macOS] [TNT]",
+        "size": "128.4 MB",
+        "popularity": 523
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Fix My iPhone 2.0.6 [macOS] [TNT]",
+        "size": "15.2 MB",
+        "popularity": 829
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "VoodooPad 5.4.0 [macOS] [TNT]",
+        "size": "11.4 MB",
+        "popularity": 83
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "SnippetsLab 2.0.3 [macOS] [TNT]",
+        "size": "41.3 MB",
+        "popularity": 189
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] MacDroid 1.4 [macOS] [TNT]",
+        "size": "20.3 MB",
+        "popularity": 928
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Apeaksoft Android Toolkit 1.1.38 [macOS] [TNT]",
+        "size": "43.2 MB",
+        "popularity": 272
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] The Clock 4.6.3 [macOS] [TNT]",
+        "size": "20.7 MB",
+        "popularity": 132
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Duplicate Finder and Cleaner 1.0 [macOS] [HCiSO]",
+        "size": "10.1 MB",
+        "popularity": 459
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Metadata Converter 1.4 [macOS] [HCISO]",
+        "size": "13.4 MB",
+        "popularity": 201
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "PaintCode 3.5.1 [macOS] [TNT]",
+        "size": "10.8 MB",
+        "popularity": 187
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Jettison 1.8.4 [macOS] [TNT]",
+        "size": "6.2 MB",
+        "popularity": 221
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Airfoil 5.10.6 [macOS] [K-Gen]",
+        "size": "32.9 MB",
+        "popularity": 869
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "AnyDroid 7.4.1 (20210628) [macOS] [TNT]",
+        "size": "74.5 MB",
+        "popularity": 351
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Recordia 2.2.0 [macOS] [HCiSO]",
+        "size": "4.8 MB",
+        "popularity": 85
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Audiobook Builder 2 2.1.4 [Intel/Apple] [K-ed]",
+        "size": "23 MB",
+        "popularity": 2336
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "ToothFairy 2.7.6 [macOS] [TNT]",
+        "size": "12.9 MB",
+        "popularity": 365
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "MacGPS Pro 9.0",
+        "size": "81.2 MB",
+        "popularity": 70
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Timer Utility 5 1.0.1 [Intel] [TNT]",
+        "size": "10.7 MB",
+        "popularity": 159
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Deliveries 3.2.4 [macOS] [TNT]",
+        "size": "24.1 MB",
+        "popularity": 84
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Omni Plan",
+        "size": "41.6 MB",
+        "popularity": 146
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "LittleSnapper 1.6 - сделай скриншот одним кликом!",
+        "size": "13.5 MB",
+        "popularity": 163
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "aTV Flash (black) 2.5",
+        "size": "3 MB",
+        "popularity": 74
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Transmit 4.1.9 [Intel] [K-ed]",
+        "size": "21.7 MB",
+        "popularity": 130
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[AppStore] [RUS] Disk Diet 4.5.1 [Intel] [K-ed]",
+        "size": "2.2 MB",
+        "popularity": 84
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Tenorshare iPad Data Recovery for Mac 6.6.0.6",
+        "size": "22 MB",
+        "popularity": 637
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "CSS Edit [UB/Serial]",
+        "size": "8.8 MB",
+        "popularity": 89
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] iBarcoder 3.12.10 [macOS] [TNT]",
+        "size": "18.1 MB",
+        "popularity": 650
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Tenorshare iCareFone 7.1.0.2 [macOS] [TNT]",
+        "size": "69.5 MB",
+        "popularity": 6106
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "VideoTag 1.2 [macOS] [TNT]",
+        "size": "7.7 MB",
+        "popularity": 70
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Audio Playr 2.3.1 [macOS] [TNT]",
+        "size": "29.3 MB",
+        "popularity": 378
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] MindNode 5.0.1 [macOS] [TNT]",
+        "size": "28.9 MB",
+        "popularity": 1444
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Paprika Recipe Manager 3.2.1 [macOS] [TNT]",
+        "size": "15.7 MB",
+        "popularity": 316
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "DirEqual 3.6.1 [macOS] [TNT]",
+        "size": "4.4 MB",
+        "popularity": 110
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Cardhop 2.0.3 [macOS] [TNT]",
+        "size": "27.1 MB",
+        "popularity": 118
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Prizmo Pro 4.2 [macOS] [TNT]",
+        "size": "36.4 MB",
+        "popularity": 289
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Invisor 3.16 [macOS] [TNT]",
+        "size": "12.7 MB",
+        "popularity": 108
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Secret Folder Pro 10.5 [macOS] [HCiSO]",
+        "size": "3.9 MB",
+        "popularity": 205
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Sound Control 2.5.0 [macOS] [HCiSO]",
+        "size": "5.6 MB",
+        "popularity": 601
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "PhoneTrans 5.1.0 (build 20210113) [macOS] [TNT]",
+        "size": "86.7 MB",
+        "popularity": 416
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Rocket Typist Pro 2.3 [macOS] [TNT]",
+        "size": "24.5 MB",
+        "popularity": 116
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Sharecare You Pro (Mac Os) [30.06.2020]",
+        "size": "3.56 GB",
+        "popularity": 340
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Drop - Color Picker 1.6.4 [macOS] [TNT]",
+        "size": "9.5 MB",
+        "popularity": 169
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Cardhop 1.3.8 [macOS] [TNT]",
+        "size": "36.6 MB",
+        "popularity": 88
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "myTracks 3.5.1 3.5.1 [macOS] [TNT]",
+        "size": "47.2 MB",
+        "popularity": 94
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "3DWeather 3.7 [macOS] [TNT]",
+        "size": "28.4 MB",
+        "popularity": 146
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "DiskAid 4.69",
+        "size": "2.6 MB",
+        "popularity": 119
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "GhostReade‪r 2.4 [macOS] [TNT]",
+        "size": "30.3 MB",
+        "popularity": 181
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "MacFamilyTree 9.2 [MAS + iCloud] [Intel] [TNT] - Генеалогическое древо",
+        "size": "128.7 MB",
+        "popularity": 1792
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "JetBrains Full Pack 2020.2.3 - 2020.2.4 [Intel] [SN] (UPD.: 27.11.2020)",
+        "size": "5.66 GB",
+        "popularity": 1938
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Barcode Producer 6.8 [macOS] [TNT]",
+        "size": "30.1 MB",
+        "popularity": 948
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] iMazing 2.12.3 [macOS X] [K'ed by TNT]",
+        "size": "166.3 MB",
+        "popularity": 3726
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Doo - Get Things Done 2.4.0 [macOS X] [K'ed by TNT]",
+        "size": "6.5 MB",
+        "popularity": 148
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] MediaInfo 20.08 [macOS X] [K'ed by HCiSO]",
+        "size": "5.6 MB",
+        "popularity": 1450
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] iFinance 4.5.23 [macOS X] [K'ed by TNT]",
+        "size": "34.1 MB",
+        "popularity": 580
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "[RUS] Simple Recorder Pro 1.9 [macOS X] [K'ed by TNT]",
+        "size": "5.3 MB",
+        "popularity": 127
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "SyncTime 3.1.1 [macOS X] [K'ed by HCiSO]",
+        "size": "9.5 MB",
+        "popularity": 104
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "XYLIO future.dj pro 1.8.0.0 [macOS X] [K'ed by HCiSO]",
+        "size": "189 MB",
+        "popularity": 249
+      },
+      {
+        "category": "Другие программы (Mac OS)",
+        "name": "Rottenwood 1.2.6 [macOS X] [K'ed by TNT]",
+        "size": "11.8 MB",
+        "popularity": 86
+      }
+    ];
+
+    // Category mapping configurations for CSS styling and icons
+    const CATEGORY_MAP = {
+      "Программы для просмотра и обработки видео (Mac OS)": { class: "cat-video", short: "Видео", icon: "video" },
+      "Программы для создания и обработки графики (Mac OS)": { class: "cat-graphics", short: "Графика", icon: "image" },
+      "Плагины для программ компании Adobe (Mac OS)": { class: "cat-adobe", short: "Плагины Adobe", icon: "toy-brick" },
+      "Аудио редакторы и конвертеры (Mac OS)": { class: "cat-audio", short: "Аудио", icon: "music" },
+      "Системные программы (Mac OS)": { class: "cat-system", short: "Системные", icon: "cpu" },
+      "Офисные программы (Mac OS)": { class: "cat-office", short: "Офис", icon: "briefcase" },
+      "Программы для интернета и сетей (Mac OS)": { class: "cat-networks", short: "Сети", icon: "globe" },
+      "Другие программы (Mac OS)": { class: "cat-others", short: "Другое", icon: "box" }
+    };
+
+    let selectedCategory = "all";
+    let searchQuery = "";
+    let sortOption = "popularity-desc";
+
+    // Initialize Page
+    document.addEventListener("DOMContentLoaded", () => {
+      initCategories();
+      initStats();
+      filterAndRender();
+      initKeyboardShortcuts();
+      lucide.createIcons(); // Initialize Lucide Icons
+
+      // Event Listeners
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        searchQuery = e.target.value.toLowerCase().trim();
+        filterAndRender();
+      });
+
+      document.getElementById("sortSelect").addEventListener("change", (e) => {
+        sortOption = e.target.value;
+        filterAndRender();
+      });
+    });
+
+    // Parse size string (e.g. "5.78 GB", "107.8 MB", "960 KB") to bytes for numerical sorting
+    function parseSize(sizeStr) {
+      if (!sizeStr || sizeStr === "N/A" || sizeStr === "N/A ↓") return 0;
+      const clean = sizeStr.replace(/[↓\s]/g, "");
+      const match = clean.match(/^([\d.]+)\s*([KMGT]B|B)/i);
+      if (!match) return 0;
+      const val = parseFloat(match[1]);
+      const unit = match[2].toUpperCase();
+      const multipliers = {
+        'B': 1,
+        'KB': 1024,
+        'MB': 1024 * 1024,
+        'GB': 1024 * 1024 * 1024,
+        'TB': 1024 * 1024 * 1024 * 1024
+      };
+      return val * (multipliers[unit] || 1);
+    }
+
+    // Format Bytes back to human readable size
+    function formatBytes(bytes) {
+      if (bytes === 0) return "0 B";
+      const k = 1024;
+      const sizes = ["B", "KB", "MB", "GB", "TB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    }
+
+    // Initialize Categories filter buttons in Sidebar
+    function initCategories() {
+      const listContainer = document.getElementById("categoryList");
+
+      // Calculate category counters
+      const counts = { all: PROGRAMS.length };
+      PROGRAMS.forEach(p => {
+        counts[p.category] = (counts[p.category] || 0) + 1;
+      });
+
+      // Add "All Categories" button
+      const allBtn = document.createElement("button");
+      allBtn.className = "category-btn active";
+      allBtn.setAttribute("data-cat", "all");
+      allBtn.innerHTML = `
+        <div class="cat-info">
+          <i data-lucide="grid" style="width: 16px; height: 16px; min-width: 16px;"></i>
+          <span class="cat-name">Все категории</span>
+        </div>
+        <span class="cat-count">${counts.all}</span>
+      `;
+      allBtn.addEventListener("click", () => selectCategoryFilter("all", allBtn));
+      listContainer.appendChild(allBtn);
+
+      // Add individual category buttons
+      Object.keys(CATEGORY_MAP).forEach(cat => {
+        if (!counts[cat]) return; // Skip if no programs in category
+        const info = CATEGORY_MAP[cat];
+        const btn = document.createElement("button");
+        btn.className = "category-btn";
+        btn.setAttribute("data-cat", cat);
+        btn.innerHTML = `
+          <div class="cat-info">
+            <i data-lucide="${info.icon}" style="width: 16px; height: 16px; min-width: 16px;"></i>
+            <span class="cat-name">${info.short}</span>
+          </div>
+          <span class="cat-count">${counts[cat]}</span>
+        `;
+        btn.addEventListener("click", () => selectCategoryFilter(cat, btn));
+        listContainer.appendChild(btn);
+      });
+    }
+
+    // Handle Category change
+    function selectCategoryFilter(cat, activeBtn) {
+      selectedCategory = cat;
+
+      // Update UI buttons
+      document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
+      activeBtn.classList.add("active");
+
+      // Update Titles
+      const titleEl = document.getElementById("currentCategoryTitle");
+      const subEl = document.getElementById("currentCategorySub");
+
+      if (cat === "all") {
+        titleEl.textContent = "Все программы";
+        subEl.textContent = "Общий список доступного софта";
+      } else {
+        titleEl.textContent = cat;
+        subEl.textContent = `Программы из категории "${CATEGORY_MAP[cat].short}"`;
+      }
+
+      filterAndRender();
+    }
+
+    // Initialize Statistics block in sidebar
+    function initStats() {
+      document.getElementById("statTotalCount").textContent = PROGRAMS.length.toLocaleString("ru-RU");
+
+      let totalBytes = 0;
+      let totalPopularity = 0;
+      let topPopularityCount = 0;
+
+      PROGRAMS.forEach(p => {
+        totalBytes += parseSize(p.size);
+        totalPopularity += p.popularity;
+        if (p.popularity >= 1000) {
+          topPopularityCount++;
+        }
+      });
+
+      document.getElementById("statTotalSize").textContent = formatBytes(totalBytes);
+      document.getElementById("statAvgPopularity").textContent = Math.round(totalPopularity / PROGRAMS.length).toLocaleString("ru-RU");
+      document.getElementById("statTopPopCount").textContent = topPopularityCount.toLocaleString("ru-RU");
+    }
+
+    // Filter, Sort and Render cards list
+    function filterAndRender() {
+      const grid = document.getElementById("cardsGrid");
+      grid.innerHTML = "";
+
+      // 1. Filter
+      let filtered = PROGRAMS.filter(p => {
+        const matchesCat = (selectedCategory === "all" || p.category === selectedCategory);
+        const matchesSearch = (!searchQuery || p.name.toLowerCase().includes(searchQuery) || p.category.toLowerCase().includes(searchQuery));
+        return matchesCat && matchesSearch;
+      });
+
+      // Update counter
+      document.getElementById("resultsCount").textContent = `Показано: ${filtered.length} из ${PROGRAMS.length}`;
+
+      // 2. Sort
+      filtered.sort((a, b) => {
+        if (sortOption === "popularity-desc") {
+          return b.popularity - a.popularity;
+        } else if (sortOption === "popularity-asc") {
+          return a.popularity - b.popularity;
+        } else if (sortOption === "size-desc") {
+          return parseSize(b.size) - parseSize(a.size);
+        } else if (sortOption === "size-asc") {
+          return parseSize(a.size) - parseSize(b.size);
+        } else if (sortOption === "name-asc") {
+          return a.name.localeCompare(b.name, "ru");
+        } else if (sortOption === "name-desc") {
+          return b.name.localeCompare(a.name, "ru");
+        }
+        return 0;
+      });
+
+      // 3. Render
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="no-results">
+            <i data-lucide="search-slash"></i>
+            <h4>Ничего не найдено</h4>
+            <p>Попробуйте скорректировать запрос или выбрать другую категорию</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      // Render items incrementally to avoid thread block if size is large
+      const batchSize = 100;
+      let currentIndex = 0;
+
+      function renderBatch() {
+        const limit = Math.min(currentIndex + batchSize, filtered.length);
+        const fragment = document.createDocumentFragment();
+
+        for (let i = currentIndex; i < limit; i++) {
+          const p = filtered[i];
+          const catInfo = CATEGORY_MAP[p.category] || { class: "cat-others", short: "Другое" };
+
+          const card = document.createElement("div");
+          card.className = `card ${catInfo.class}`;
+
+          // Popularity Badge Class
+          let popClass = "pop-low";
+          let popFlame = '<i data-lucide="flame" style="width: 12px; height: 12px; display: inline-block;"></i> ';
+          if (p.popularity >= 5000) {
+            popClass = "pop-high";
+          } else if (p.popularity >= 1000) {
+            popClass = "pop-med";
+          } else if (p.popularity === 0) {
+            popFlame = ''; // No flame for 0 popularity
+          }
+
+          // Highlight matching title text
+          const highlightedName = highlightText(p.name, searchQuery);
+
+          card.innerHTML = `
+            <div class="card-top">
+              <div class="card-badges">
+                <span class="badge badge-cat">${catInfo.short}</span>
+                <span class="badge badge-pop ${popClass}">${popFlame}${p.popularity.toLocaleString("ru-RU")}</span>
+              </div>
+              <div class="card-title" title="Нажмите дважды, чтобы скопировать название" onclick="copyName('${p.name.replace(/'/g, "\'")}')">${highlightedName}</div>
+            </div>
+            <div class="card-bottom">
+              <div class="card-size">
+                <i data-lucide="hard-drive" style="width: 14px; height: 14px;"></i>
+                <span>${p.size}</span>
+              </div>
+              <button class="btn-copy" title="Скопировать название программы" onclick="copyName('${p.name.replace(/'/g, "\'")}')">
+                <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+          `;
+          fragment.appendChild(card);
+        }
+
+        grid.appendChild(fragment);
+        lucide.createIcons({ attrs: { class: 'lucide-icon' } }); // refresh newly added cards' icons
+
+        currentIndex = limit;
+        if (currentIndex < filtered.length) {
+          requestAnimationFrame(renderBatch);
+        }
+      }
+
+      renderBatch();
+    }
+
+    // Helper: Escape Regex special characters
+    function escapeRegex(string) {
+      return string.replace(/[/\-\[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+    }
+
+    // Helper: Highlight matched search text
+    function highlightText(text, search) {
+      if (!search) return text;
+      const regex = new RegExp(`(${escapeRegex(search)})`, 'gi');
+      return text.replace(regex, '<mark class="highlight">$1</mark>');
+    }
+
+    // Copy program name to clipboard
+    function copyName(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`Название "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}" скопировано в буфер!`);
+      }).catch(err => {
+        console.error('Не удалось скопировать текст: ', err);
+      });
+    }
+
+    // Show custom toast notification
+    let toastTimeout;
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      const toastText = document.getElementById("toastText");
+
+      toastText.textContent = message;
+      toast.classList.add("show");
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3000);
+    }
+
+    // Bind Keyboard shortcuts: '/' key to focus search bar
+    function initKeyboardShortcuts() {
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement !== document.getElementById("searchInput")) {
+          e.preventDefault();
+          document.getElementById("searchInput").focus();
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>
